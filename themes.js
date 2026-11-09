@@ -1,4 +1,53 @@
-// Visual Themes & High-Definition Block Renderer for Block Blast!
+// Dynamic Background Palettes that cycle infinitely during gameplay (every 400 points)
+const DYNAMIC_PALETTES = [
+  {
+    name: 'Classic Blue',
+    bgGradient: 'linear-gradient(180deg, #4766b4 0%, #3f5aa5 100%)',
+    themeColor: '#4766b4',
+    boardBg: '#1f2749',
+    boardBorder: '#1a2140',
+    cellEmpty: '#1f2749',
+    cellEmptyBorder: '#161c37'
+  },
+  {
+    name: 'Deep Purple',
+    bgGradient: 'linear-gradient(180deg, #5c3c92 0%, #462878 100%)',
+    themeColor: '#5c3c92',
+    boardBg: '#281a44',
+    boardBorder: '#201338',
+    cellEmpty: '#281a44',
+    cellEmptyBorder: '#1d1133'
+  },
+  {
+    name: 'Ocean Teal',
+    bgGradient: 'linear-gradient(180deg, #1b7b8a 0%, #13606c 100%)',
+    themeColor: '#1b7b8a',
+    boardBg: '#0f3c44',
+    boardBorder: '#0b2e34',
+    cellEmpty: '#0f3c44',
+    cellEmptyBorder: '#082328'
+  },
+  {
+    name: 'Sunset Crimson',
+    bgGradient: 'linear-gradient(180deg, #9e375f 0%, #80274a 100%)',
+    themeColor: '#9e375f',
+    boardBg: '#471429',
+    boardBorder: '#380e20',
+    cellEmpty: '#471429',
+    cellEmptyBorder: '#2a0917'
+  },
+  {
+    name: 'Emerald Forest',
+    bgGradient: 'linear-gradient(180deg, #2d7a52 0%, #205c3c 100%)',
+    themeColor: '#2d7a52',
+    boardBg: '#143d27',
+    boardBorder: '#0e2d1c',
+    cellEmpty: '#143d27',
+    cellEmptyBorder: '#091f13'
+  }
+];
+
+window.DYNAMIC_PALETTES = DYNAMIC_PALETTES;
 
 const THEMES = {
   classic: {

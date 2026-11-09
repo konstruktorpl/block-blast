@@ -560,3 +560,285 @@ button {
   transform: translateY(5px);
   box-shadow: 0 1px 0 #129472;
 }
+
+/* ---------- Quests & Modal Styles ---------- */
+.hud-header {
+  width: 100%;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px 0;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.hud-left {
+  display: flex;
+  align-items: center;
+  z-index: 2;
+}
+
+.hud-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
+}
+
+.quest-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1.5px solid rgba(255, 212, 59, 0.45);
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.12s ease;
+}
+
+.quest-btn:active {
+  transform: scale(0.92);
+}
+
+.trophy-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.trophy-val {
+  font-family: var(--font-game);
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #ffd43b;
+  line-height: 1;
+}
+
+.quest-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  background: #ff3b3b;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  font-size: 0.68rem;
+  font-weight: 900;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quests-card {
+  max-width: 380px;
+}
+
+.quests-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.trophy-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: var(--font-game);
+  font-weight: 800;
+  color: #ffd43b;
+  font-size: 1rem;
+}
+
+.quest-tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.quest-tab {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-game);
+  font-size: 0.95rem;
+  font-weight: 800;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quest-tab.active {
+  background: #2f4588;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.quest-section-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 8px;
+}
+
+.quest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quest-item {
+  background: #2f4588;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.quest-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quest-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.quest-progress-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.quest-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffd43b, #ff922b);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.quest-counter {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 700;
+}
+
+.quest-action-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  font-family: var(--font-game);
+  font-weight: 800;
+  font-size: 0.88rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.quest-action-btn.claim {
+  background: #1fc79b;
+  color: #fff;
+  box-shadow: 0 3px 0 #129472;
+}
+
+.quest-action-btn.claim:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #129472;
+}
+
+.quest-action-btn.done {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.45);
+  cursor: default;
+}
+
+.effects-hint {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 12px;
+}
+
+.effects-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.effect-card {
+  background: #2f4588;
+  border-radius: 12px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.effect-card.active {
+  border-color: #ffd43b;
+  background: rgba(255, 212, 59, 0.12);
+}
+
+.effect-icon {
+  font-size: 1.8rem;
+}
+
+.effect-name {
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.effect-status {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.effect-status.active {
+  background: #ffd43b;
+  color: #3a2a00;
+}
+
+.effect-status.unlock {
+  background: #1fc79b;
+  color: #fff;
+}
+
+.effect-status.locked {
+  background: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.6);
+}

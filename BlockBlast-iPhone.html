@@ -579,30 +579,324 @@ button {
   box-shadow: 0 1px 0 #129472;
 }
 
+/* ---------- Quests & Modal Styles ---------- */
+.hud-header {
+  width: 100%;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px 0;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.hud-left {
+  display: flex;
+  align-items: center;
+  z-index: 2;
+}
+
+.hud-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
+}
+
+.quest-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1.5px solid rgba(255, 212, 59, 0.45);
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.12s ease;
+}
+
+.quest-btn:active {
+  transform: scale(0.92);
+}
+
+.trophy-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.trophy-val {
+  font-family: var(--font-game);
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #ffd43b;
+  line-height: 1;
+}
+
+.quest-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  background: #ff3b3b;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  font-size: 0.68rem;
+  font-weight: 900;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quests-card {
+  max-width: 380px;
+}
+
+.quests-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.trophy-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: var(--font-game);
+  font-weight: 800;
+  color: #ffd43b;
+  font-size: 1rem;
+}
+
+.quest-tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.quest-tab {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-game);
+  font-size: 0.95rem;
+  font-weight: 800;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quest-tab.active {
+  background: #2f4588;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.quest-section-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 8px;
+}
+
+.quest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quest-item {
+  background: #2f4588;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.quest-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quest-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.quest-progress-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.quest-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffd43b, #ff922b);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.quest-counter {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 700;
+}
+
+.quest-action-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  font-family: var(--font-game);
+  font-weight: 800;
+  font-size: 0.88rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.quest-action-btn.claim {
+  background: #1fc79b;
+  color: #fff;
+  box-shadow: 0 3px 0 #129472;
+}
+
+.quest-action-btn.claim:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #129472;
+}
+
+.quest-action-btn.done {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.45);
+  cursor: default;
+}
+
+.effects-hint {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 12px;
+}
+
+.effects-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.effect-card {
+  background: #2f4588;
+  border-radius: 12px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.effect-card.active {
+  border-color: #ffd43b;
+  background: rgba(255, 212, 59, 0.12);
+}
+
+.effect-icon {
+  font-size: 1.8rem;
+}
+
+.effect-name {
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.effect-status {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.effect-status.active {
+  background: #ffd43b;
+  color: #3a2a00;
+}
+
+.effect-status.unlock {
+  background: #1fc79b;
+  color: #fff;
+}
+
+.effect-status.locked {
+  background: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.6);
+}
+
 </style>
 </head>
 <body>
   <div id="app" class="app-container">
     <!-- Top HUD: crown + best (left), gear (right), score (center) -->
     <header class="hud-header">
-      <div class="best-score" title="Рекорд">
-        <svg class="crown" viewBox="0 0 64 48" aria-hidden="true">
-          <path d="M4 14 L18 26 L32 6 L46 26 L60 14 L54 40 H10 Z" fill="#ffc633" stroke="#e09b0c" stroke-width="3" stroke-linejoin="round"/>
-          <rect x="10" y="40" width="44" height="6" rx="2" fill="#f0a915"/>
-          <circle cx="4" cy="14" r="4" fill="#ffc633"/>
-          <circle cx="32" cy="6" r="4" fill="#ffc633"/>
-          <circle cx="60" cy="14" r="4" fill="#ffc633"/>
-        </svg>
-        <span id="bestScoreValue">0</span>
+      <div class="hud-left">
+        <div class="best-score" title="Рекорд">
+          <svg class="crown" viewBox="0 0 64 48" aria-hidden="true">
+            <path d="M4 14 L18 26 L32 6 L46 26 L60 14 L54 40 H10 Z" fill="#ffc633" stroke="#e09b0c" stroke-width="3" stroke-linejoin="round"/>
+            <rect x="10" y="40" width="44" height="6" rx="2" fill="#f0a915"/>
+            <circle cx="4" cy="14" r="4" fill="#ffc633"/>
+            <circle cx="32" cy="6" r="4" fill="#ffc633"/>
+            <circle cx="60" cy="14" r="4" fill="#ffc633"/>
+          </svg>
+          <span id="bestScoreValue">0</span>
+        </div>
       </div>
 
       <div id="currentScore" class="current-score">0</div>
 
-      <button id="btnSettings" class="gear-btn" aria-label="Настройки">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path fill="#9fd8ff" d="M19.14 12.94a7.07 7.07 0 0 0 .06-.94 7.07 7.07 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.67 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.05.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/>
-        </svg>
-      </button>
+      <div class="hud-right">
+        <button id="btnQuests" class="hud-icon-btn quest-btn" aria-label="Квесты и кубки" title="Квесты">
+          <svg viewBox="0 0 24 24" class="trophy-icon" aria-hidden="true">
+            <path fill="#ffd43b" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.78-.37 3.22-1.63 3.61-3.06C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/>
+          </svg>
+          <span id="trophyCount" class="trophy-val">0</span>
+          <span id="questBadge" class="quest-badge hidden">!</span>
+        </button>
+
+        <button id="btnSettings" class="gear-btn" aria-label="Настройки">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#9fd8ff" d="M19.14 12.94a7.07 7.07 0 0 0 .06-.94 7.07 7.07 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.67 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.05.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/>
+          </svg>
+        </button>
+      </div>
     </header>
 
     <!-- Unified High-DPI Game Canvas (8x8 Board + 3-Piece Dock + Drag & FX) -->
@@ -717,8 +1011,292 @@ button {
     </div>
   </div>
 
+    <!-- Quests & Blast Effects Modal -->
+  <div id="questsModal" class="modal-backdrop hidden">
+    <div class="modal-card quests-card">
+      <div class="modal-header">
+        <div class="quests-header-title">
+          <h2>Квесты</h2>
+          <div class="trophy-pill">
+            <svg viewBox="0 0 24 24" class="trophy-icon"><path fill="#ffd43b" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.78-.37 3.22-1.63 3.61-3.06C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
+            <span id="modalTrophyCount">0</span>
+          </div>
+        </div>
+        <button class="close-btn" data-close="questsModal">✕</button>
+      </div>
+
+      <!-- Tabs: Quests / Blast Effects -->
+      <div class="quest-tabs">
+        <button id="tabQuests" class="quest-tab active">Задания</button>
+        <button id="tabEffects" class="quest-tab">Анимации взрыва</button>
+      </div>
+
+      <!-- Quests Tab Content -->
+      <div id="tabQuestsContent" class="tab-content active">
+        <div class="quest-section-label">ЕЖЕДНЕВНЫЕ КВЕСТЫ</div>
+        <div id="dailyQuestsList" class="quest-list"></div>
+
+        <div class="quest-section-label" style="margin-top: 14px;">ЕЖЕНЕДЕЛЬНЫЕ КВЕСТЫ</div>
+        <div id="weeklyQuestsList" class="quest-list"></div>
+      </div>
+
+      <!-- Effects Tab Content -->
+      <div id="tabEffectsContent" class="tab-content hidden">
+        <div class="effects-hint">Открывайте новые эффекты взрыва за заработанные кубки:</div>
+        <div id="effectsList" class="effects-grid"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
-// Visual Themes & High-Definition Block Renderer for Block Blast!
+// Quests & Trophies System for Block Blast!
+
+class QuestManager {
+  constructor() {
+    this.trophies = parseInt(localStorage.getItem('bb_trophies') || '0', 10);
+    this.unlockedEffects = JSON.parse(localStorage.getItem('bb_unlocked_effects') || '["cubes"]');
+    this.selectedEffect = localStorage.getItem('bb_selected_effect') || 'cubes';
+
+    this.dailyKey = this.getTodayKey();
+    this.weeklyKey = this.getCurrentWeekKey();
+
+    this.dailyQuests = [];
+    this.weeklyQuests = [];
+
+    this.loadQuests();
+  }
+
+  getTodayKey() {
+    const d = new Date();
+    return `d_${d.getFullYear()}_${d.getMonth() + 1}_${d.getDate()}`;
+  }
+
+  getCurrentWeekKey() {
+    const d = new Date();
+    const oneJan = new Date(d.getFullYear(), 0, 1);
+    const numberOfDays = Math.floor((d - oneJan) / (24 * 60 * 60 * 1000));
+    const week = Math.ceil((numberOfDays + oneJan.getDay() + 1) / 7);
+    return `w_${d.getFullYear()}_${week}`;
+  }
+
+  getDefaultDailyPool() {
+    return [
+      { id: 'play_3_games', title: 'Сыграть 3 игры', target: 3, reward: 10, type: 'games_played' },
+      { id: 'score_1000', title: 'Набрать 1 000 очков в игре', target: 1000, reward: 20, type: 'single_score' },
+      { id: 'clear_15_lines', title: 'Очистить 15 линий', target: 15, reward: 15, type: 'lines_cleared' },
+      { id: 'combo_3', title: 'Достичь комбо x3', target: 3, reward: 15, type: 'max_combo' },
+      { id: 'destroy_40_blocks', title: 'Уничтожить 40 блоков', target: 40, reward: 15, type: 'blocks_destroyed' }
+    ];
+  }
+
+  getDefaultWeeklyPool() {
+    return [
+      { id: 'play_15_games', title: 'Сыграть 15 игр', target: 15, reward: 40, type: 'games_played' },
+      { id: 'score_3000', title: 'Набрать 3 000 очков в игре', target: 3000, reward: 50, type: 'single_score' },
+      { id: 'clear_60_lines', title: 'Очистить 60 линий', target: 60, reward: 60, type: 'lines_cleared' },
+      { id: 'combo_5', title: 'Достичь комбо x5', target: 5, reward: 50, type: 'max_combo' },
+      { id: 'all_clear_1', title: 'Сделать «Чистое поле»', target: 1, reward: 70, type: 'all_clear' }
+    ];
+  }
+
+  loadQuests() {
+    const savedDailyKey = localStorage.getItem('bb_daily_key');
+    const savedDailyData = localStorage.getItem('bb_daily_quests');
+
+    if (savedDailyKey === this.dailyKey && savedDailyData) {
+      try {
+        this.dailyQuests = JSON.parse(savedDailyData);
+      } catch (e) {
+        this.initDailyQuests();
+      }
+    } else {
+      this.initDailyQuests();
+    }
+
+    const savedWeeklyKey = localStorage.getItem('bb_weekly_key');
+    const savedWeeklyData = localStorage.getItem('bb_weekly_quests');
+
+    if (savedWeeklyKey === this.weeklyKey && savedWeeklyData) {
+      try {
+        this.weeklyQuests = JSON.parse(savedWeeklyData);
+      } catch (e) {
+        this.initWeeklyQuests();
+      }
+    } else {
+      this.initWeeklyQuests();
+    }
+  }
+
+  initDailyQuests() {
+    const pool = this.getDefaultDailyPool();
+    // Pick 3 random quests
+    const shuffled = pool.sort(() => 0.5 - Math.random());
+    this.dailyQuests = shuffled.slice(0, 3).map(q => ({
+      ...q,
+      current: 0,
+      claimed: false
+    }));
+    localStorage.setItem('bb_daily_key', this.dailyKey);
+    this.saveQuests();
+  }
+
+  initWeeklyQuests() {
+    const pool = this.getDefaultWeeklyPool();
+    const shuffled = pool.sort(() => 0.5 - Math.random());
+    this.weeklyQuests = shuffled.slice(0, 3).map(q => ({
+      ...q,
+      current: 0,
+      claimed: false
+    }));
+    localStorage.setItem('bb_weekly_key', this.weeklyKey);
+    this.saveQuests();
+  }
+
+  saveQuests() {
+    localStorage.setItem('bb_daily_quests', JSON.stringify(this.dailyQuests));
+    localStorage.setItem('bb_weekly_quests', JSON.stringify(this.weeklyQuests));
+    localStorage.setItem('bb_trophies', String(this.trophies));
+    localStorage.setItem('bb_unlocked_effects', JSON.stringify(this.unlockedEffects));
+    localStorage.setItem('bb_selected_effect', this.selectedEffect);
+  }
+
+  onEvent(type, value = 1) {
+    let changed = false;
+    const processList = (list) => {
+      for (const q of list) {
+        if (q.claimed) continue;
+        if (q.type === type) {
+          if (type === 'single_score' || type === 'max_combo') {
+            if (value > q.current) {
+              q.current = Math.min(q.target, value);
+              changed = true;
+            }
+          } else {
+            q.current = Math.min(q.target, q.current + value);
+            changed = true;
+          }
+        }
+      }
+    };
+
+    processList(this.dailyQuests);
+    processList(this.weeklyQuests);
+
+    if (changed) {
+      this.saveQuests();
+      this.updateUIBadge();
+    }
+  }
+
+  hasUnclaimed() {
+    return (
+      this.dailyQuests.some(q => q.current >= q.target && !q.claimed) ||
+      this.weeklyQuests.some(q => q.current >= q.target && !q.claimed)
+    );
+  }
+
+  claim(questId, isWeekly = false) {
+    const list = isWeekly ? this.weeklyQuests : this.dailyQuests;
+    const q = list.find(item => item.id === questId);
+    if (q && q.current >= q.target && !q.claimed) {
+      q.claimed = true;
+      this.trophies += q.reward;
+      this.saveQuests();
+      this.updateUIBadge();
+      return q.reward;
+    }
+    return 0;
+  }
+
+  unlockEffect(effectId, cost) {
+    if (this.trophies >= cost && !this.unlockedEffects.includes(effectId)) {
+      this.trophies -= cost;
+      this.unlockedEffects.push(effectId);
+      this.selectedEffect = effectId;
+      this.saveQuests();
+      this.updateUIBadge();
+      return true;
+    }
+    return false;
+  }
+
+  selectEffect(effectId) {
+    if (this.unlockedEffects.includes(effectId)) {
+      this.selectedEffect = effectId;
+      this.saveQuests();
+      return true;
+    }
+    return false;
+  }
+
+  updateUIBadge() {
+    const badge = document.getElementById('questBadge');
+    const trophyVal = document.getElementById('trophyCount');
+    if (trophyVal) trophyVal.textContent = this.trophies;
+    if (badge) {
+      if (this.hasUnclaimed()) {
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+  }
+}
+
+window.questManager = new QuestManager();
+
+</script>
+  <script>
+// Dynamic Background Palettes that cycle infinitely during gameplay (every 400 points)
+const DYNAMIC_PALETTES = [
+  {
+    name: 'Classic Blue',
+    bgGradient: 'linear-gradient(180deg, #4766b4 0%, #3f5aa5 100%)',
+    themeColor: '#4766b4',
+    boardBg: '#1f2749',
+    boardBorder: '#1a2140',
+    cellEmpty: '#1f2749',
+    cellEmptyBorder: '#161c37'
+  },
+  {
+    name: 'Deep Purple',
+    bgGradient: 'linear-gradient(180deg, #5c3c92 0%, #462878 100%)',
+    themeColor: '#5c3c92',
+    boardBg: '#281a44',
+    boardBorder: '#201338',
+    cellEmpty: '#281a44',
+    cellEmptyBorder: '#1d1133'
+  },
+  {
+    name: 'Ocean Teal',
+    bgGradient: 'linear-gradient(180deg, #1b7b8a 0%, #13606c 100%)',
+    themeColor: '#1b7b8a',
+    boardBg: '#0f3c44',
+    boardBorder: '#0b2e34',
+    cellEmpty: '#0f3c44',
+    cellEmptyBorder: '#082328'
+  },
+  {
+    name: 'Sunset Crimson',
+    bgGradient: 'linear-gradient(180deg, #9e375f 0%, #80274a 100%)',
+    themeColor: '#9e375f',
+    boardBg: '#471429',
+    boardBorder: '#380e20',
+    cellEmpty: '#471429',
+    cellEmptyBorder: '#2a0917'
+  },
+  {
+    name: 'Emerald Forest',
+    bgGradient: 'linear-gradient(180deg, #2d7a52 0%, #205c3c 100%)',
+    themeColor: '#2d7a52',
+    boardBg: '#143d27',
+    boardBorder: '#0e2d1c',
+    cellEmpty: '#143d27',
+    cellEmptyBorder: '#091f13'
+  }
+];
+
+window.DYNAMIC_PALETTES = DYNAMIC_PALETTES;
 
 const THEMES = {
   classic: {
@@ -1515,6 +2093,84 @@ class FXManager {
   }
 
   spawnDebrisBurst(cx, cy, cellSize, colorObj) {
+    const effect = (window.questManager && window.questManager.selectedEffect) || 'cubes';
+
+    if (effect === 'fireworks') {
+      // Fireworks sparks & laser rings
+      const count = 16;
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.2;
+        const speed = (cellSize * 3.5) + Math.random() * (cellSize * 4.5);
+        this.particles.push({
+          x: cx,
+          y: cy,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          gravity: cellSize * 4.0,
+          size: cellSize * (0.12 + Math.random() * 0.14),
+          rotation: angle,
+          vRot: 0,
+          color: i % 2 === 0 ? '#ffffff' : colorObj.base,
+          glow: colorObj.glow || '#ffffff',
+          age: 0,
+          life: 0.5 + Math.random() * 0.25,
+          shape: 'spark'
+        });
+      }
+      return;
+    }
+
+    if (effect === 'stars') {
+      // Supernova Starburst
+      const count = 12;
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = (cellSize * 2.0) + Math.random() * (cellSize * 3.6);
+        this.particles.push({
+          x: cx + (Math.random() - 0.5) * (cellSize * 0.2),
+          y: cy + (Math.random() - 0.5) * (cellSize * 0.2),
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - cellSize * 1.8,
+          gravity: cellSize * 7.0,
+          size: cellSize * (0.22 + Math.random() * 0.16),
+          rotation: Math.random() * Math.PI * 2,
+          vRot: (Math.random() - 0.5) * 12,
+          color: i % 3 === 0 ? '#ffd43b' : (i % 2 === 0 ? '#fff3bf' : colorObj.base),
+          glow: '#ffd43b',
+          age: 0,
+          life: 0.6 + Math.random() * 0.3,
+          shape: 'star'
+        });
+      }
+      return;
+    }
+
+    if (effect === 'bubbles') {
+      // Candy Bubble Pop
+      const count = 10;
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = (cellSize * 1.5) + Math.random() * (cellSize * 3.0);
+        this.particles.push({
+          x: cx + (Math.random() - 0.5) * (cellSize * 0.3),
+          y: cy + (Math.random() - 0.5) * (cellSize * 0.3),
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - cellSize * 2.2,
+          gravity: cellSize * 2.5,
+          size: cellSize * (0.2 + Math.random() * 0.2),
+          rotation: 0,
+          vRot: 0,
+          color: colorObj.top || colorObj.base,
+          glow: colorObj.glow,
+          age: 0,
+          life: 0.55 + Math.random() * 0.25,
+          shape: 'bubble'
+        });
+      }
+      return;
+    }
+
+    // Default: Classic 3D Cubes
     const count = 8;
     for (let i = 0; i < count; i++) {
       const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.45;
@@ -1532,7 +2188,7 @@ class FXManager {
         glow: colorObj.glow || colorObj.base,
         age: 0,
         life: 0.45 + Math.random() * 0.28,
-        shape: i % 4 === 0 ? 'star' : 'cube'
+        shape: 'cube'
       });
     }
   }
@@ -1688,7 +2344,32 @@ class FXManager {
 
       if (p.shape === 'star') {
         ctx.beginPath();
-        ctx.arc(0, 0, s * 0.55, 0, Math.PI * 2);
+        const spikes = 5;
+        const outer = s * 0.6;
+        const inner = s * 0.25;
+        for (let k = 0; k < spikes * 2; k++) {
+          const r = k % 2 === 0 ? outer : inner;
+          const a = (k * Math.PI) / spikes;
+          if (k === 0) ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+          else ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+        }
+        ctx.closePath();
+        ctx.fill();
+      } else if (p.shape === 'spark') {
+        ctx.beginPath();
+        ctx.ellipse(0, 0, s * 1.5, s * 0.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (p.shape === 'bubble') {
+        ctx.beginPath();
+        ctx.arc(0, 0, s * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        // Little white highlight
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(-s * 0.2, -s * 0.2, s * 0.15, 0, Math.PI * 2);
         ctx.fill();
       } else {
         window.roundRectPath(ctx, -s / 2, -s / 2, s, s, Math.max(2, s * 0.22));
@@ -1880,6 +2561,7 @@ class BlockBlastGame {
     this.drag.active = false;
 
     this.spawnNewTray();
+    if (window.questManager) window.questManager.onEvent("games_played", 1);
     this.saveGameState();
     this.updateHUD(true);
     document.getElementById('gameOverModal').classList.add('hidden');
@@ -1971,6 +2653,7 @@ class BlockBlastGame {
       this.scoreEl.textContent = this.score.toLocaleString('ru-RU');
     }
     this.bestScoreEl.textContent = this.bestScore.toLocaleString('ru-RU');
+    if (window.questManager) window.questManager.updateUIBadge();
 
     const soundLabel = document.getElementById('soundLabel');
     if (soundLabel) {
@@ -2733,6 +3416,124 @@ class BlockBlastGame {
     this.fx.draw(ctx, width, boardY + boardSize * 0.46, this.themeId);
 
     ctx.restore();
+  }
+
+
+  renderQuestsModal() {
+    if (!window.questManager) return;
+    const qm = window.questManager;
+    document.getElementById('modalTrophyCount').textContent = qm.trophies;
+
+    const renderList = (elId, list, isWeekly) => {
+      const container = document.getElementById(elId);
+      if (!container) return;
+      container.innerHTML = '';
+
+      list.forEach(q => {
+        const item = document.createElement('div');
+        item.className = 'quest-item';
+        const pct = Math.min(100, Math.round((q.current / q.target) * 100));
+        const canClaim = q.current >= q.target && !q.claimed;
+
+        let btnHtml = '';
+        if (q.claimed) {
+          btnHtml = '<button class="quest-action-btn done" disabled>Получено ✓</button>';
+        } else if (canClaim) {
+          btnHtml = `<button class="quest-action-btn claim" data-claim="${q.id}" data-weekly="${isWeekly}">Забрать +${q.reward} 🏆</button>`;
+        } else {
+          btnHtml = `<div class="quest-action-btn done">${q.reward} 🏆</div>`;
+        }
+
+        item.innerHTML = `
+          <div class="quest-info">
+            <div class="quest-title">${q.title}</div>
+            <div class="quest-progress-bar-bg">
+              <div class="quest-progress-fill" style="width: ${pct}%"></div>
+            </div>
+            <div class="quest-counter">${q.current} / ${q.target}</div>
+          </div>
+          ${btnHtml}
+        `;
+
+        container.appendChild(item);
+      });
+    };
+
+    renderList('dailyQuestsList', qm.dailyQuests, false);
+    renderList('weeklyQuestsList', qm.weeklyQuests, true);
+
+    // Bind claim buttons
+    document.querySelectorAll('[data-claim]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const qId = btn.getAttribute('data-claim');
+        const isWeekly = btn.getAttribute('data-weekly') === 'true';
+        const reward = qm.claim(qId, isWeekly);
+        if (reward > 0) {
+          window.soundEngine.playNewRecord();
+          this.renderQuestsModal();
+          this.updateHUD();
+        }
+      });
+    });
+  }
+
+  renderEffectsList() {
+    if (!window.questManager) return;
+    const qm = window.questManager;
+    const container = document.getElementById('effectsList');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const effects = [
+      { id: 'cubes', name: 'Классические 3D кубы', icon: '🧊', cost: 0 },
+      { id: 'fireworks', name: 'Неоновый Салют', icon: '🎆', cost: 35 },
+      { id: 'stars', name: 'Звёздная Сверхновая', icon: '⭐', cost: 75 },
+      { id: 'bubbles', name: 'Карамельные Пузыри', icon: '🫧', cost: 120 }
+    ];
+
+    effects.forEach(eff => {
+      const isUnlocked = qm.unlockedEffects.includes(eff.id);
+      const isSelected = qm.selectedEffect === eff.id;
+
+      const card = document.createElement('div');
+      card.className = `effect-card ${isSelected ? 'active' : ''}`;
+
+      let statusHtml = '';
+      if (isSelected) {
+        statusHtml = '<span class="effect-status active">Выбрано ✓</span>';
+      } else if (isUnlocked) {
+        statusHtml = '<span class="effect-status unlock">Выбрать</span>';
+      } else {
+        statusHtml = `<span class="effect-status locked">${eff.cost} 🏆</span>`;
+      }
+
+      card.innerHTML = `
+        <div class="effect-icon">${eff.icon}</div>
+        <div class="effect-name">${eff.name}</div>
+        ${statusHtml}
+      `;
+
+      card.addEventListener('click', () => {
+        if (isUnlocked) {
+          qm.selectEffect(eff.id);
+          window.soundEngine.playPickup();
+          this.renderEffectsList();
+        } else {
+          if (qm.trophies >= eff.cost) {
+            if (qm.unlockEffect(eff.id, eff.cost)) {
+              window.soundEngine.playNewRecord();
+              document.getElementById('modalTrophyCount').textContent = qm.trophies;
+              this.renderEffectsList();
+              this.updateHUD();
+            }
+          } else {
+            window.soundEngine.playGameOver();
+          }
+        }
+      });
+
+      container.appendChild(card);
+    });
   }
 
   renderThemeModalList() {

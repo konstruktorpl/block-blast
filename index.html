@@ -21,24 +21,36 @@
   <div id="app" class="app-container">
     <!-- Top HUD: crown + best (left), gear (right), score (center) -->
     <header class="hud-header">
-      <div class="best-score" title="Рекорд">
-        <svg class="crown" viewBox="0 0 64 48" aria-hidden="true">
-          <path d="M4 14 L18 26 L32 6 L46 26 L60 14 L54 40 H10 Z" fill="#ffc633" stroke="#e09b0c" stroke-width="3" stroke-linejoin="round"/>
-          <rect x="10" y="40" width="44" height="6" rx="2" fill="#f0a915"/>
-          <circle cx="4" cy="14" r="4" fill="#ffc633"/>
-          <circle cx="32" cy="6" r="4" fill="#ffc633"/>
-          <circle cx="60" cy="14" r="4" fill="#ffc633"/>
-        </svg>
-        <span id="bestScoreValue">0</span>
+      <div class="hud-left">
+        <div class="best-score" title="Рекорд">
+          <svg class="crown" viewBox="0 0 64 48" aria-hidden="true">
+            <path d="M4 14 L18 26 L32 6 L46 26 L60 14 L54 40 H10 Z" fill="#ffc633" stroke="#e09b0c" stroke-width="3" stroke-linejoin="round"/>
+            <rect x="10" y="40" width="44" height="6" rx="2" fill="#f0a915"/>
+            <circle cx="4" cy="14" r="4" fill="#ffc633"/>
+            <circle cx="32" cy="6" r="4" fill="#ffc633"/>
+            <circle cx="60" cy="14" r="4" fill="#ffc633"/>
+          </svg>
+          <span id="bestScoreValue">0</span>
+        </div>
       </div>
 
       <div id="currentScore" class="current-score">0</div>
 
-      <button id="btnSettings" class="gear-btn" aria-label="Настройки">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path fill="#9fd8ff" d="M19.14 12.94a7.07 7.07 0 0 0 .06-.94 7.07 7.07 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.67 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.05.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/>
-        </svg>
-      </button>
+      <div class="hud-right">
+        <button id="btnQuests" class="hud-icon-btn quest-btn" aria-label="Квесты и кубки" title="Квесты">
+          <svg viewBox="0 0 24 24" class="trophy-icon" aria-hidden="true">
+            <path fill="#ffd43b" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.78-.37 3.22-1.63 3.61-3.06C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/>
+          </svg>
+          <span id="trophyCount" class="trophy-val">0</span>
+          <span id="questBadge" class="quest-badge hidden">!</span>
+        </button>
+
+        <button id="btnSettings" class="gear-btn" aria-label="Настройки">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#9fd8ff" d="M19.14 12.94a7.07 7.07 0 0 0 .06-.94 7.07 7.07 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.67 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.05.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/>
+          </svg>
+        </button>
+      </div>
     </header>
 
     <!-- Unified High-DPI Game Canvas (8x8 Board + 3-Piece Dock + Drag & FX) -->
@@ -153,6 +165,44 @@
     </div>
   </div>
 
+    <!-- Quests & Blast Effects Modal -->
+  <div id="questsModal" class="modal-backdrop hidden">
+    <div class="modal-card quests-card">
+      <div class="modal-header">
+        <div class="quests-header-title">
+          <h2>Квесты</h2>
+          <div class="trophy-pill">
+            <svg viewBox="0 0 24 24" class="trophy-icon"><path fill="#ffd43b" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.78-.37 3.22-1.63 3.61-3.06C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
+            <span id="modalTrophyCount">0</span>
+          </div>
+        </div>
+        <button class="close-btn" data-close="questsModal">✕</button>
+      </div>
+
+      <!-- Tabs: Quests / Blast Effects -->
+      <div class="quest-tabs">
+        <button id="tabQuests" class="quest-tab active">Задания</button>
+        <button id="tabEffects" class="quest-tab">Анимации взрыва</button>
+      </div>
+
+      <!-- Quests Tab Content -->
+      <div id="tabQuestsContent" class="tab-content active">
+        <div class="quest-section-label">ЕЖЕДНЕВНЫЕ КВЕСТЫ</div>
+        <div id="dailyQuestsList" class="quest-list"></div>
+
+        <div class="quest-section-label" style="margin-top: 14px;">ЕЖЕНЕДЕЛЬНЫЕ КВЕСТЫ</div>
+        <div id="weeklyQuestsList" class="quest-list"></div>
+      </div>
+
+      <!-- Effects Tab Content -->
+      <div id="tabEffectsContent" class="tab-content hidden">
+        <div class="effects-hint">Открывайте новые эффекты взрыва за заработанные кубки:</div>
+        <div id="effectsList" class="effects-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="quests.js"></script>
   <script src="themes.js"></script>
   <script src="audio.js"></script>
   <script src="shapes.js"></script>

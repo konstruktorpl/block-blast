@@ -108,6 +108,7 @@ class BlockBlastGame {
     this.drag.active = false;
 
     this.spawnNewTray();
+    if (window.questManager) window.questManager.onEvent("games_played", 1);
     this.saveGameState();
     this.updateHUD(true);
     document.getElementById('gameOverModal').classList.add('hidden');
@@ -199,6 +200,7 @@ class BlockBlastGame {
       this.scoreEl.textContent = this.score.toLocaleString('ru-RU');
     }
     this.bestScoreEl.textContent = this.bestScore.toLocaleString('ru-RU');
+    if (window.questManager) window.questManager.updateUIBadge();
 
     const soundLabel = document.getElementById('soundLabel');
     if (soundLabel) {
@@ -961,6 +963,124 @@ class BlockBlastGame {
     this.fx.draw(ctx, width, boardY + boardSize * 0.46, this.themeId);
 
     ctx.restore();
+  }
+
+
+  renderQuestsModal() {
+    if (!window.questManager) return;
+    const qm = window.questManager;
+    document.getElementById('modalTrophyCount').textContent = qm.trophies;
+
+    const renderList = (elId, list, isWeekly) => {
+      const container = document.getElementById(elId);
+      if (!container) return;
+      container.innerHTML = '';
+
+      list.forEach(q => {
+        const item = document.createElement('div');
+        item.className = 'quest-item';
+        const pct = Math.min(100, Math.round((q.current / q.target) * 100));
+        const canClaim = q.current >= q.target && !q.claimed;
+
+        let btnHtml = '';
+        if (q.claimed) {
+          btnHtml = '<button class="quest-action-btn done" disabled>Получено ✓</button>';
+        } else if (canClaim) {
+          btnHtml = `<button class="quest-action-btn claim" data-claim="${q.id}" data-weekly="${isWeekly}">Забрать +${q.reward} 🏆</button>`;
+        } else {
+          btnHtml = `<div class="quest-action-btn done">${q.reward} 🏆</div>`;
+        }
+
+        item.innerHTML = `
+          <div class="quest-info">
+            <div class="quest-title">${q.title}</div>
+            <div class="quest-progress-bar-bg">
+              <div class="quest-progress-fill" style="width: ${pct}%"></div>
+            </div>
+            <div class="quest-counter">${q.current} / ${q.target}</div>
+          </div>
+          ${btnHtml}
+        `;
+
+        container.appendChild(item);
+      });
+    };
+
+    renderList('dailyQuestsList', qm.dailyQuests, false);
+    renderList('weeklyQuestsList', qm.weeklyQuests, true);
+
+    // Bind claim buttons
+    document.querySelectorAll('[data-claim]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const qId = btn.getAttribute('data-claim');
+        const isWeekly = btn.getAttribute('data-weekly') === 'true';
+        const reward = qm.claim(qId, isWeekly);
+        if (reward > 0) {
+          window.soundEngine.playNewRecord();
+          this.renderQuestsModal();
+          this.updateHUD();
+        }
+      });
+    });
+  }
+
+  renderEffectsList() {
+    if (!window.questManager) return;
+    const qm = window.questManager;
+    const container = document.getElementById('effectsList');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const effects = [
+      { id: 'cubes', name: 'Классические 3D кубы', icon: '🧊', cost: 0 },
+      { id: 'fireworks', name: 'Неоновый Салют', icon: '🎆', cost: 35 },
+      { id: 'stars', name: 'Звёздная Сверхновая', icon: '⭐', cost: 75 },
+      { id: 'bubbles', name: 'Карамельные Пузыри', icon: '🫧', cost: 120 }
+    ];
+
+    effects.forEach(eff => {
+      const isUnlocked = qm.unlockedEffects.includes(eff.id);
+      const isSelected = qm.selectedEffect === eff.id;
+
+      const card = document.createElement('div');
+      card.className = `effect-card ${isSelected ? 'active' : ''}`;
+
+      let statusHtml = '';
+      if (isSelected) {
+        statusHtml = '<span class="effect-status active">Выбрано ✓</span>';
+      } else if (isUnlocked) {
+        statusHtml = '<span class="effect-status unlock">Выбрать</span>';
+      } else {
+        statusHtml = `<span class="effect-status locked">${eff.cost} 🏆</span>`;
+      }
+
+      card.innerHTML = `
+        <div class="effect-icon">${eff.icon}</div>
+        <div class="effect-name">${eff.name}</div>
+        ${statusHtml}
+      `;
+
+      card.addEventListener('click', () => {
+        if (isUnlocked) {
+          qm.selectEffect(eff.id);
+          window.soundEngine.playPickup();
+          this.renderEffectsList();
+        } else {
+          if (qm.trophies >= eff.cost) {
+            if (qm.unlockEffect(eff.id, eff.cost)) {
+              window.soundEngine.playNewRecord();
+              document.getElementById('modalTrophyCount').textContent = qm.trophies;
+              this.renderEffectsList();
+              this.updateHUD();
+            }
+          } else {
+            window.soundEngine.playGameOver();
+          }
+        }
+      });
+
+      container.appendChild(card);
+    });
   }
 
   renderThemeModalList() {

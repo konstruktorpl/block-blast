@@ -30,6 +30,84 @@ class FXManager {
   }
 
   spawnDebrisBurst(cx, cy, cellSize, colorObj) {
+    const effect = (window.questManager && window.questManager.selectedEffect) || 'cubes';
+
+    if (effect === 'fireworks') {
+      // Fireworks sparks & laser rings
+      const count = 16;
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.2;
+        const speed = (cellSize * 3.5) + Math.random() * (cellSize * 4.5);
+        this.particles.push({
+          x: cx,
+          y: cy,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          gravity: cellSize * 4.0,
+          size: cellSize * (0.12 + Math.random() * 0.14),
+          rotation: angle,
+          vRot: 0,
+          color: i % 2 === 0 ? '#ffffff' : colorObj.base,
+          glow: colorObj.glow || '#ffffff',
+          age: 0,
+          life: 0.5 + Math.random() * 0.25,
+          shape: 'spark'
+        });
+      }
+      return;
+    }
+
+    if (effect === 'stars') {
+      // Supernova Starburst
+      const count = 12;
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = (cellSize * 2.0) + Math.random() * (cellSize * 3.6);
+        this.particles.push({
+          x: cx + (Math.random() - 0.5) * (cellSize * 0.2),
+          y: cy + (Math.random() - 0.5) * (cellSize * 0.2),
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - cellSize * 1.8,
+          gravity: cellSize * 7.0,
+          size: cellSize * (0.22 + Math.random() * 0.16),
+          rotation: Math.random() * Math.PI * 2,
+          vRot: (Math.random() - 0.5) * 12,
+          color: i % 3 === 0 ? '#ffd43b' : (i % 2 === 0 ? '#fff3bf' : colorObj.base),
+          glow: '#ffd43b',
+          age: 0,
+          life: 0.6 + Math.random() * 0.3,
+          shape: 'star'
+        });
+      }
+      return;
+    }
+
+    if (effect === 'bubbles') {
+      // Candy Bubble Pop
+      const count = 10;
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = (cellSize * 1.5) + Math.random() * (cellSize * 3.0);
+        this.particles.push({
+          x: cx + (Math.random() - 0.5) * (cellSize * 0.3),
+          y: cy + (Math.random() - 0.5) * (cellSize * 0.3),
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - cellSize * 2.2,
+          gravity: cellSize * 2.5,
+          size: cellSize * (0.2 + Math.random() * 0.2),
+          rotation: 0,
+          vRot: 0,
+          color: colorObj.top || colorObj.base,
+          glow: colorObj.glow,
+          age: 0,
+          life: 0.55 + Math.random() * 0.25,
+          shape: 'bubble'
+        });
+      }
+      return;
+    }
+
+    // Default: Classic 3D Cubes
     const count = 8;
     for (let i = 0; i < count; i++) {
       const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.45;
@@ -47,7 +125,7 @@ class FXManager {
         glow: colorObj.glow || colorObj.base,
         age: 0,
         life: 0.45 + Math.random() * 0.28,
-        shape: i % 4 === 0 ? 'star' : 'cube'
+        shape: 'cube'
       });
     }
   }
@@ -203,7 +281,32 @@ class FXManager {
 
       if (p.shape === 'star') {
         ctx.beginPath();
-        ctx.arc(0, 0, s * 0.55, 0, Math.PI * 2);
+        const spikes = 5;
+        const outer = s * 0.6;
+        const inner = s * 0.25;
+        for (let k = 0; k < spikes * 2; k++) {
+          const r = k % 2 === 0 ? outer : inner;
+          const a = (k * Math.PI) / spikes;
+          if (k === 0) ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+          else ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+        }
+        ctx.closePath();
+        ctx.fill();
+      } else if (p.shape === 'spark') {
+        ctx.beginPath();
+        ctx.ellipse(0, 0, s * 1.5, s * 0.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (p.shape === 'bubble') {
+        ctx.beginPath();
+        ctx.arc(0, 0, s * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        // Little white highlight
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(-s * 0.2, -s * 0.2, s * 0.15, 0, Math.PI * 2);
         ctx.fill();
       } else {
         window.roundRectPath(ctx, -s / 2, -s / 2, s, s, Math.max(2, s * 0.22));
