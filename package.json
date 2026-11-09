@@ -1,0 +1,9 @@
+{
+  "name": "block-blast-ios",
+  "version": "1.0.0",
+  "description": "Block Blast! iPhone PWA Clone with 3D Themes, Web Audio & Particle FX",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

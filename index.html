@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Block Blast" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" id="metaThemeColor" content="#253478" />
+  <title>Block Blast!</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app" class="app-container">
+    <!-- Top HUD Header -->
+    <header class="hud-header">
+      <div class="hud-left">
+        <div class="best-score-pill" title="Ваш рекорд">
+          <span class="crown-icon">👑</span>
+          <span id="bestScoreValue">0</span>
+        </div>
+        <div id="streakPill" class="streak-pill hidden">
+          <span class="fire-icon">🔥</span>
+          <span id="streakValue">x1</span>
+        </div>
+      </div>
+
+      <div class="hud-actions">
+        <button id="btnTheme" class="icon-btn" aria-label="Темы оформления" title="Сменить тему">
+          🎨
+        </button>
+        <button id="btnSound" class="icon-btn" aria-label="Звук" title="Звуковые эффекты">
+          🔊
+        </button>
+        <button id="btnIphone" class="icon-btn" aria-label="Открыть на iPhone" title="Играть на iPhone (QR-код)">
+          📱
+        </button>
+        <button id="btnRestart" class="icon-btn" aria-label="Заново" title="Начать заново">
+          🔄
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Score Display (Block Blast Center Style) -->
+    <div class="score-section">
+      <div id="currentScore" class="current-score">0</div>
+      <div id="comboHeartBar" class="combo-heart-bar hidden">
+        <span class="combo-label">КОМБО АКТИВНО</span>
+        <div class="combo-dots">
+          <span class="combo-dot active"></span>
+          <span class="combo-dot active"></span>
+          <span class="combo-dot active"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Unified High-DPI Game Canvas (8x8 Board + 3-Piece Dock + Drag & FX) -->
+    <main class="canvas-wrapper" id="canvasWrapper">
+      <canvas id="gameCanvas"></canvas>
+    </main>
+  </div>
+
+  <!-- Theme Picker Modal -->
+  <div id="themeModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>🎨 Тема оформления</h2>
+        <button class="close-btn" data-close="themeModal">✕</button>
+      </div>
+      <div id="themeList" class="theme-list"></div>
+    </div>
+  </div>
+
+  <!-- iPhone QR & PWA Instructions Modal -->
+  <div id="iphoneModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>📱 Играть на iPhone</h2>
+        <button class="close-btn" data-close="iphoneModal">✕</button>
+      </div>
+      <div class="iphone-modal-body">
+        <p class="modal-desc">
+          Наведите камеру iPhone на QR-код (работает через <strong>мобильный интернет 4G/5G</strong> и любой Wi-Fi):
+        </p>
+        <div id="qrContainer" class="qr-container">
+          <div class="qr-loading">Загрузка QR-кода...</div>
+        </div>
+        <div id="lanUrlBox" class="lan-url-box"></div>
+
+        <div class="pwa-steps">
+          <h3>Как добавить иконку на экран «Домой»:</h3>
+          <ol>
+            <li>Откройте ссылку в <strong>Safari</strong> на iPhone.</li>
+            <li>Нажмите кнопку <strong>«Поделиться»</strong> <span class="ios-share-icon">⬆️</span> внизу экрана.</li>
+            <li>Выберите <strong>«На экран «Домой»»</strong> (Add to Home Screen).</li>
+            <li>Готово! Игра запускается на весь экран и работает даже <strong>без интернета</strong>.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over Modal -->
+  <div id="gameOverModal" class="modal-backdrop hidden">
+    <div class="modal-card gameover-card">
+      <div class="gameover-badge" id="newRecordBadge">🏆 НОВЫЙ РЕКОРД!</div>
+      <h2 class="gameover-title">Ходов нет!</h2>
+      <p class="gameover-subtitle">На поле больше нет места для оставшихся фигур</p>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <span class="stat-label">СЧЁТ</span>
+          <span class="stat-value" id="finalScoreValue">0</span>
+        </div>
+        <div class="stat-box highlight">
+          <span class="stat-label">👑 РЕКОРД</span>
+          <span class="stat-value" id="finalBestValue">0</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">🔥 МАКС. КОМБО</span>
+          <span class="stat-value" id="finalComboValue">x1</span>
+        </div>
+      </div>
+
+      <button id="btnPlayAgain" class="primary-btn">
+        Играть снова
+      </button>
+    </div>
+  </div>
+
+  <script src="themes.js"></script>
+  <script src="audio.js"></script>
+  <script src="shapes.js"></script>
+  <script src="particles.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
