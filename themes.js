@@ -253,7 +253,9 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
     ctx.restore();
   } else {
     // Classic Block Blast flat bevel (sharp square block)
-    const bevel = Math.max(2, bs * 0.13);
+    // Scale bevel proportionally, but ensure it never overwhelms smaller dock pieces
+    const bevelRatio = bs < 22 ? 0.16 : 0.14;
+    const bevel = Math.max(1.5, Math.min(bs * bevelRatio, 4));
     roundRectPath(ctx, bx, by, bs, bs, theme.styleType === 'bevel3d' ? Math.max(1, bs * 0.05) : radius);
     ctx.save();
     ctx.clip();

@@ -973,7 +973,9 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
     ctx.restore();
   } else {
     // Classic Block Blast flat bevel (sharp square block)
-    const bevel = Math.max(2, bs * 0.13);
+    // Scale bevel proportionally, but ensure it never overwhelms smaller dock pieces
+    const bevelRatio = bs < 22 ? 0.16 : 0.14;
+    const bevel = Math.max(1.5, Math.min(bs * bevelRatio, 4));
     roundRectPath(ctx, bx, by, bs, bs, theme.styleType === 'bevel3d' ? Math.max(1, bs * 0.05) : radius);
     ctx.save();
     ctx.clip();
@@ -2682,7 +2684,8 @@ class BlockBlastGame {
       const startX = center.x - pW / 2;
       const startY = center.y - pH / 2;
 
-      const alpha = item.canFit === false ? 0.36 : 1;
+      // Always draw with full brightness and opacity (1.0), exactly like on the game board
+      const alpha = 1.0;
 
       for (const cell of shape.cells) {
         window.drawStyledBlock(

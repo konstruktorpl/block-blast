@@ -912,7 +912,8 @@ class BlockBlastGame {
       const startX = center.x - pW / 2;
       const startY = center.y - pH / 2;
 
-      const alpha = item.canFit === false ? 0.36 : 1;
+      // Always draw with full brightness and opacity (1.0), exactly like on the game board
+      const alpha = 1.0;
 
       for (const cell of shape.cells) {
         window.drawStyledBlock(
