@@ -79,38 +79,47 @@ button {
 /* ---------- HUD ---------- */
 .hud-header {
   width: 100%;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-areas:
-    "best gear"
-    "score score";
+  display: flex;
   align-items: center;
-  padding: 4px 8px 0;
+  justify-content: space-between;
+  padding: 4px 6px 0;
   flex-shrink: 0;
+  position: relative;
+}
+
+.hud-left {
+  display: flex;
+  align-items: center;
+  z-index: 2;
+}
+
+.hud-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
 }
 
 .best-score {
-  grid-area: best;
   display: flex;
   align-items: center;
   gap: 6px;
   font-family: var(--font-game);
   font-weight: 800;
-  font-size: 1.45rem;
+  font-size: 1.4rem;
   line-height: 1;
   color: var(--text-accent);
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
 }
 
 .best-score .crown {
-  width: 34px;
-  height: 26px;
+  width: 30px;
+  height: 24px;
 }
 
 .gear-btn {
-  grid-area: gear;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border: none;
   background: none;
   cursor: pointer;
@@ -121,8 +130,8 @@ button {
 }
 
 .gear-btn svg {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
 }
 
 .gear-btn:active {
@@ -130,14 +139,16 @@ button {
 }
 
 .current-score {
-  grid-area: score;
+  position: absolute;
+  left: 0;
+  right: 0;
   text-align: center;
   font-family: var(--font-game);
   font-weight: 800;
-  font-size: clamp(2.6rem, 11vw, 3.4rem);
+  font-size: clamp(2.4rem, 10vw, 3.2rem);
   line-height: 1.1;
   color: #fff;
-  margin: 2px 0 4px;
+  pointer-events: none;
   transition: transform 0.12s ease-out;
 }
 
@@ -580,29 +591,6 @@ button {
 }
 
 /* ---------- Quests & Modal Styles ---------- */
-.hud-header {
-  width: 100%;
-  display: flex !important;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 6px 0;
-  flex-shrink: 0;
-  position: relative;
-}
-
-.hud-left {
-  display: flex;
-  align-items: center;
-  z-index: 2;
-}
-
-.hud-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  z-index: 2;
-}
-
 .quest-btn {
   display: flex;
   align-items: center;
@@ -861,6 +849,9 @@ button {
   color: rgba(255, 255, 255, 0.6);
 }
 
+.menu-btn.orange { background: #f07a2a; box-shadow: 0 6px 0 #ad4f12; }
+.menu-btn.orange:active { transform: translateY(5px); box-shadow: 0 1px 0 #ad4f12; }
+
 </style>
 </head>
 <body>
@@ -924,6 +915,10 @@ button {
         <svg viewBox="0 0 40 20"><path d="M10 3a7 7 0 1 0 0 14c4 0 6-3 10-7s6-7 10-7a7 7 0 1 1 0 14c-4 0-6-3-10-7S14 3 10 3z" fill="none" stroke="#fff" stroke-width="3.2"/></svg>
         <span>Classic</span>
       </button>
+      <button id="btnStartQuests" class="menu-btn orange">
+        <svg viewBox="0 0 24 24" style="width: 32px; height: 32px;"><path fill="#fff" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.78-.37 3.22-1.63 3.61-3.06C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2z"/></svg>
+        <span>Квесты</span>
+      </button>
     </div>
   </div>
 
@@ -936,6 +931,7 @@ button {
       </div>
       <div class="settings-list">
         <button id="btnSound" class="settings-row"><span>Звук</span><span id="soundLabel" class="row-value">Вкл</span></button>
+        <button id="btnSettingsQuests" class="settings-row"><span>Квесты и награды</span><span class="row-value">🏆</span></button>
         <button id="btnTheme" class="settings-row"><span>Тема</span><span class="row-value">›</span></button>
         <button id="btnRestart" class="settings-row"><span>Начать заново</span><span class="row-value">›</span></button>
         <button id="btnHome" class="settings-row"><span>Главное меню</span><span class="row-value">›</span></button>
