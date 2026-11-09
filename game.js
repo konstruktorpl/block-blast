@@ -9,10 +9,6 @@ class BlockBlastGame {
     // UI Elements
     this.scoreEl = document.getElementById('currentScore');
     this.bestScoreEl = document.getElementById('bestScoreValue');
-    this.streakPillEl = document.getElementById('streakPill');
-    this.streakValEl = document.getElementById('streakValue');
-    this.comboHeartBarEl = document.getElementById('comboHeartBar');
-    this.comboDots = Array.from(document.querySelectorAll('.combo-dot'));
 
     this.fx = new window.FXManager();
 
@@ -202,26 +198,9 @@ class BlockBlastGame {
     }
     this.bestScoreEl.textContent = this.bestScore.toLocaleString('ru-RU');
 
-    if (this.comboStreak >= 2) {
-      this.streakPillEl.classList.remove('hidden');
-      this.streakValEl.textContent = `x${this.comboStreak}`;
-    } else {
-      this.streakPillEl.classList.add('hidden');
-    }
-
-    if (this.comboStreak >= 1) {
-      this.comboHeartBarEl.classList.remove('hidden');
-      const remainingMoves = Math.max(0, 3 - this.movesSinceLastClear);
-      this.comboDots.forEach((dot, idx) => {
-        dot.classList.toggle('active', idx < remainingMoves);
-      });
-    } else {
-      this.comboHeartBarEl.classList.add('hidden');
-    }
-
-    const soundBtn = document.getElementById('btnSound');
-    if (soundBtn) {
-      soundBtn.textContent = window.soundEngine.enabled ? '🔊' : '🔇';
+    const soundLabel = document.getElementById('soundLabel');
+    if (soundLabel) {
+      soundLabel.textContent = window.soundEngine.enabled ? 'Вкл' : 'Выкл';
     }
   }
 
@@ -243,7 +222,7 @@ class BlockBlastGame {
     const maxBoardSpaceW = w - 8;
 
     const boardSize = Math.floor(Math.min(maxBoardSpaceW, maxBoardSpaceH));
-    const boardPad = Math.max(6, Math.round(boardSize * 0.024));
+    const boardPad = Math.max(3, Math.round(boardSize * 0.01));
     const cellSize = (boardSize - boardPad * 2) / 8;
 
     const boardX = Math.round((w - boardSize) / 2);
@@ -288,7 +267,23 @@ class BlockBlastGame {
       }
     }, { passive: false });
 
-    // Header Buttons
+    const hide = (id) => document.getElementById(id).classList.add('hidden');
+    const show = (id) => document.getElementById(id).classList.remove('hidden');
+
+    // Start screen
+    document.getElementById('btnStartClassic').addEventListener('click', () => {
+      window.soundEngine.init();
+      window.soundEngine.playPickup();
+      hide('startScreen');
+    });
+
+    // Settings (gear)
+    document.getElementById('btnSettings').addEventListener('click', () => {
+      window.soundEngine.playPickup();
+      this.updateHUD();
+      show('settingsModal');
+    });
+
     document.getElementById('btnSound').addEventListener('click', () => {
       window.soundEngine.toggle();
       this.updateHUD();
@@ -296,7 +291,14 @@ class BlockBlastGame {
 
     document.getElementById('btnRestart').addEventListener('click', () => {
       window.soundEngine.playPickup();
+      hide('settingsModal');
       this.startNewGame();
+    });
+
+    document.getElementById('btnHome').addEventListener('click', () => {
+      window.soundEngine.playPickup();
+      hide('settingsModal');
+      show('startScreen');
     });
 
     document.getElementById('btnPlayAgain').addEventListener('click', () => {
@@ -306,12 +308,14 @@ class BlockBlastGame {
 
     document.getElementById('btnTheme').addEventListener('click', () => {
       window.soundEngine.playPickup();
+      hide('settingsModal');
       this.renderThemeModalList();
-      document.getElementById('themeModal').classList.remove('hidden');
+      show('themeModal');
     });
 
     document.getElementById('btnIphone').addEventListener('click', () => {
       window.soundEngine.playPickup();
+      hide('settingsModal');
       this.openIphoneModal();
     });
 
@@ -726,8 +730,12 @@ class BlockBlastGame {
     const dt = Math.min(0.05, (now - this.lastTime) / 1000);
     this.lastTime = now;
 
-    this.update(dt, now);
-    this.draw(now);
+    try {
+      this.update(dt, now);
+      this.draw(now);
+    } catch (err) {
+      console.error(err);
+    }
 
     requestAnimationFrame((t) => this.loop(t));
   }
@@ -791,17 +799,12 @@ class BlockBlastGame {
       ctx.translate(sx, sy);
     }
 
-    // 1. Draw 8x8 Board Container
+    // 1. Board: flat dark panel with thin grid lines (original Block Blast look)
     ctx.save();
-    window.roundRectPath(ctx, boardX, boardY, boardSize, boardSize, 18);
+    window.roundRectPath(ctx, boardX, boardY, boardSize, boardSize, 4);
     ctx.fillStyle = theme.boardBg;
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
-    ctx.shadowBlur = 22;
-    ctx.shadowOffsetY = 8;
     ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetY = 0;
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 2;
     ctx.strokeStyle = theme.boardBorder;
     ctx.stroke();
     ctx.restore();
@@ -809,26 +812,21 @@ class BlockBlastGame {
     const gridOriginX = boardX + boardPad;
     const gridOriginY = boardY + boardPad;
 
-    // 2. Draw 8x8 Empty Recessed Cells
-    const cellRadius = Math.max(4, cellSize * 0.14);
-    for (let r = 0; r < 8; r++) {
-      for (let c = 0; c < 8; c++) {
-        const cx = gridOriginX + c * cellSize;
-        const cy = gridOriginY + r * cellSize;
-        const pad = Math.max(1.5, cellSize * 0.045);
-
-        window.roundRectPath(
-          ctx,
-          cx + pad,
-          cy + pad,
-          cellSize - pad * 2,
-          cellSize - pad * 2,
-          cellRadius
-        );
-        ctx.fillStyle = theme.cellEmpty;
-        ctx.fill();
-      }
+    // 2. Grid lines
+    ctx.save();
+    ctx.strokeStyle = theme.cellEmptyBorder;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 1; i < 8; i++) {
+      const gx = Math.round(gridOriginX + i * cellSize) + 0.5;
+      const gy = Math.round(gridOriginY + i * cellSize) + 0.5;
+      ctx.moveTo(gx, gridOriginY);
+      ctx.lineTo(gx, gridOriginY + cellSize * 8);
+      ctx.moveTo(gridOriginX, gy);
+      ctx.lineTo(gridOriginX + cellSize * 8, gy);
     }
+    ctx.stroke();
+    ctx.restore();
 
     // Pulse factor for lines that are about to clear while holding a piece
     const previewPulse = 0.5 + 0.5 * Math.sin(now * 0.014);
@@ -875,15 +873,7 @@ class BlockBlastGame {
       }
     }
 
-    // 5. Draw Bottom 3-Piece Dock Container
-    ctx.save();
-    window.roundRectPath(ctx, boardX, dockY, boardSize, dockHeight, 18);
-    ctx.fillStyle = theme.dockBg;
-    ctx.fill();
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = theme.dockBorder;
-    ctx.stroke();
-    ctx.restore();
+    // 5. Dock has no container in the original — pieces sit on the background
 
     // 6. Draw Dock Pieces
     for (let i = 0; i < 3; i++) {
@@ -897,7 +887,7 @@ class BlockBlastGame {
 
       // Scale piece so even 5-long bars and 3x3 squares fit neatly inside their dock slot
       const maxDim = Math.max(shape.rows, shape.cols);
-      const baseDockScale = maxDim >= 5 ? 0.44 : maxDim === 4 ? 0.50 : 0.56;
+      const baseDockScale = maxDim >= 5 ? 0.5 : maxDim === 4 ? 0.56 : 0.6;
       const dCellSize = cellSize * baseDockScale * item.scale;
 
       const pW = shape.cols * dCellSize;
@@ -1233,5 +1223,8 @@ if ('serviceWorker' in navigator) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+  if (/[?&]play\b/.test(window.location.search)) {
+    document.getElementById('startScreen').classList.add('hidden');
+  }
   window.game = new BlockBlastGame();
 });

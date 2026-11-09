@@ -224,7 +224,7 @@ class FXManager {
       ctx.translate(ft.x, ft.y);
       ctx.scale(elastic * ft.scale, elastic * ft.scale);
       ctx.globalAlpha = alpha;
-      ctx.font = '900 24px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif';
+      ctx.font = '800 26px "Baloo 2", "Nunito", -apple-system, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.lineWidth = 5;
@@ -256,7 +256,7 @@ class FXManager {
       ctx.textBaseline = 'middle';
 
       // Title
-      ctx.font = '900 34px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif';
+      ctx.font = '800 36px "Baloo 2", "Nunito", -apple-system, sans-serif';
       ctx.lineWidth = 8;
       ctx.strokeStyle = 'rgba(8, 12, 34, 0.92)';
       ctx.strokeText(bn.title, 0, 0);
@@ -269,7 +269,7 @@ class FXManager {
       ctx.fillText(bn.title, 0, 0);
 
       if (bn.subtitle) {
-        ctx.font = '800 19px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif';
+        ctx.font = '800 19px "Baloo 2", "Nunito", -apple-system, sans-serif';
         ctx.lineWidth = 5;
         ctx.strokeText(bn.subtitle, 0, 32);
         ctx.fillStyle = '#ffffff';

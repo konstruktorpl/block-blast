@@ -3,29 +3,29 @@
 const THEMES = {
   classic: {
     id: 'classic',
-    name: 'Классика Block Blast',
-    subtitle: 'Оригинальный глянцевый 3D-стиль',
-    bgGradient: 'linear-gradient(180deg, #2d3e8b 0%, #1c2863 55%, #141d4b 100%)',
-    themeColor: '#253478',
-    boardBg: '#121a3d',
-    boardBorder: '#35489c',
-    boardShadow: '0 14px 36px rgba(6, 10, 28, 0.65), inset 0 2px 6px rgba(0, 0, 0, 0.5)',
-    cellEmpty: '#1b2654',
-    cellEmptyBorder: '#151e45',
+    name: 'Классика',
+    subtitle: 'Как в оригинальном Block Blast',
+    bgGradient: 'linear-gradient(180deg, #4766b4 0%, #3f5aa5 100%)',
+    themeColor: '#4766b4',
+    boardBg: '#1f2749',
+    boardBorder: '#1a2140',
+    boardShadow: 'none',
+    cellEmpty: '#1f2749',
+    cellEmptyBorder: '#161c37',
     cellHighlight: 'rgba(255, 255, 255, 0.14)',
-    dockBg: 'rgba(18, 26, 61, 0.6)',
-    dockBorder: 'rgba(72, 96, 198, 0.35)',
+    dockBg: 'transparent',
+    dockBorder: 'transparent',
     textPrimary: '#ffffff',
-    textAccent: '#ffd43b',
+    textAccent: '#ffc633',
     styleType: 'bevel3d',
     palette: [
-      { id: 'red',    base: '#f03e3e', top: '#ff8787', left: '#fa5252', right: '#c92a2a', bottom: '#a51111', inner: '#f03e3e', glow: '#ff6b6b' },
-      { id: 'orange', base: '#f76707', top: '#ffa94d', left: '#fd7e14', right: '#d9480f', bottom: '#b43403', inner: '#f76707', glow: '#ff922b' },
-      { id: 'yellow', base: '#f59f00', top: '#ffe066', left: '#fcc419', right: '#e67700', bottom: '#b85d00', inner: '#f59f00', glow: '#ffd43b' },
-      { id: 'green',  base: '#37b24d', top: '#8ce99a', left: '#51cf66', right: '#2b8a3e', bottom: '#1b6528', inner: '#37b24d', glow: '#69db7c' },
-      { id: 'cyan',   base: '#1098ad', top: '#66d9e8', left: '#22b8cf', right: '#0b7285', bottom: '#064e5c', inner: '#1098ad', glow: '#3bc9db' },
-      { id: 'blue',   base: '#1c7ed6', top: '#74c0fc', left: '#339af0', right: '#1864ab', bottom: '#10477d', inner: '#1c7ed6', glow: '#4dabf7' },
-      { id: 'purple', base: '#7950f2', top: '#b197fc', left: '#845ef7', right: '#5f3dc4', bottom: '#442799', inner: '#7950f2', glow: '#9775fa' }
+      { id: 'red',    base: '#e5484d', top: '#f58b8e', left: '#ec6468', right: '#c23338', bottom: '#a3262b', inner: '#e5484d', glow: '#f58b8e' },
+      { id: 'orange', base: '#f07a2a', top: '#f9a868', left: '#f48d45', right: '#d0611a', bottom: '#ad4f12', inner: '#f07a2a', glow: '#f9a868' },
+      { id: 'yellow', base: '#f5b72e', top: '#fcd875', left: '#f8c64c', right: '#d99a17', bottom: '#b9800c', inner: '#f5b72e', glow: '#fcd875' },
+      { id: 'green',  base: '#4dc35a', top: '#8ae394', left: '#66d072', right: '#36a243', bottom: '#288535', inner: '#4dc35a', glow: '#8ae394' },
+      { id: 'cyan',   base: '#34bfe0', top: '#7ddcf0', left: '#52cbe7', right: '#229fbe', bottom: '#1a84a0', inner: '#34bfe0', glow: '#7ddcf0' },
+      { id: 'blue',   base: '#4a6ee0', top: '#8aa5f0', left: '#6385e8', right: '#3555c0', bottom: '#2742a2', inner: '#4a6ee0', glow: '#8aa5f0' },
+      { id: 'purple', base: '#9461d9', top: '#bf9aee', left: '#a87ae3', right: '#7a49bb', bottom: '#62379d', inner: '#9461d9', glow: '#bf9aee' }
     ]
   },
 
@@ -112,7 +112,9 @@ const THEMES = {
 };
 
 function roundRectPath(ctx, x, y, w, h, r) {
-  const radius = Math.min(r, w / 2, h / 2);
+  w = Math.max(0, w);
+  h = Math.max(0, h);
+  const radius = Math.max(0, Math.min(r, w / 2, h / 2));
   ctx.beginPath();
   ctx.moveTo(x + radius, y);
   ctx.arcTo(x + w, y, x + w, y + h, radius);
@@ -133,11 +135,11 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
   } = opts;
 
   const theme = THEMES[themeId] || THEMES.classic;
-  const pad = Math.max(1, size * 0.035);
+  const pad = Math.max(0.5, size * 0.018);
   const bx = x + pad;
   const by = y + pad;
   const bs = size - pad * 2;
-  if (bs <= 2) return;
+  if (bs < 4) return;
 
   ctx.save();
   ctx.globalAlpha = alpha;
@@ -250,8 +252,9 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
 
     ctx.restore();
   } else {
-    // Classic Block Blast 3D Gem Bevel & Pastel Candy
-    roundRectPath(ctx, bx, by, bs, bs, radius);
+    // Classic Block Blast flat bevel (sharp square block)
+    const bevel = Math.max(2, bs * 0.13);
+    roundRectPath(ctx, bx, by, bs, bs, theme.styleType === 'bevel3d' ? Math.max(1, bs * 0.05) : radius);
     ctx.save();
     ctx.clip();
 
@@ -299,46 +302,26 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
     ctx.fillStyle = color.bottom;
     ctx.fill();
 
-    // Inner face with subtle gradient
+    // Inner face: flat color, like the original game
     const innerX = bx + bevel;
     const innerY = by + bevel;
     const innerS = bs - bevel * 2;
-    const grad = ctx.createLinearGradient(innerX, innerY, innerX, innerY + innerS);
-    grad.addColorStop(0, color.left || color.base);
-    grad.addColorStop(1, color.right || color.base);
+    ctx.fillStyle = color.base;
+    ctx.fillRect(innerX, innerY, innerS, innerS);
 
-    roundRectPath(ctx, innerX, innerY, innerS, innerS, Math.max(2, radius * 0.45));
-    ctx.fillStyle = grad;
-    ctx.fill();
-
-    // Inner subtle rim light
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+    // Thin dark outline
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.22)';
     ctx.lineWidth = 1;
-    ctx.stroke();
-
-    // Glossy top-left shine dot/bar
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.36)';
-    roundRectPath(
-      ctx,
-      innerX + innerS * 0.12,
-      innerY + innerS * 0.1,
-      innerS * 0.45,
-      innerS * 0.18,
-      innerS * 0.09
-    );
-    ctx.fill();
+    ctx.strokeRect(bx + 0.5, by + 0.5, bs - 1, bs - 1);
 
     ctx.restore();
   }
 
-  // If this cell is part of a row/column about to be cleared while dragging, draw a bright golden/white pulse!
+  // Row/column about to be cleared while dragging: soft light overlay
   if (pulse > 0) {
-    roundRectPath(ctx, bx, by, bs, bs, radius);
-    ctx.fillStyle = `rgba(255, 255, 255, ${0.32 + pulse * 0.38})`;
+    roundRectPath(ctx, bx, by, bs, bs, theme.styleType === 'bevel3d' ? 2 : radius);
+    ctx.fillStyle = `rgba(255, 255, 255, ${0.12 + pulse * 0.18})`;
     ctx.fill();
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.stroke();
   }
 
   ctx.restore();

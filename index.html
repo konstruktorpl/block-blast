@@ -12,51 +12,34 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" type="image/svg+xml" href="icon.svg" />
   <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="app" class="app-container">
-    <!-- Top HUD Header -->
+    <!-- Top HUD: crown + best (left), gear (right), score (center) -->
     <header class="hud-header">
-      <div class="hud-left">
-        <div class="best-score-pill" title="Ваш рекорд">
-          <span class="crown-icon">👑</span>
-          <span id="bestScoreValue">0</span>
-        </div>
-        <div id="streakPill" class="streak-pill hidden">
-          <span class="fire-icon">🔥</span>
-          <span id="streakValue">x1</span>
-        </div>
+      <div class="best-score" title="Рекорд">
+        <svg class="crown" viewBox="0 0 64 48" aria-hidden="true">
+          <path d="M4 14 L18 26 L32 6 L46 26 L60 14 L54 40 H10 Z" fill="#ffc633" stroke="#e09b0c" stroke-width="3" stroke-linejoin="round"/>
+          <rect x="10" y="40" width="44" height="6" rx="2" fill="#f0a915"/>
+          <circle cx="4" cy="14" r="4" fill="#ffc633"/>
+          <circle cx="32" cy="6" r="4" fill="#ffc633"/>
+          <circle cx="60" cy="14" r="4" fill="#ffc633"/>
+        </svg>
+        <span id="bestScoreValue">0</span>
       </div>
 
-      <div class="hud-actions">
-        <button id="btnTheme" class="icon-btn" aria-label="Темы оформления" title="Сменить тему">
-          🎨
-        </button>
-        <button id="btnSound" class="icon-btn" aria-label="Звук" title="Звуковые эффекты">
-          🔊
-        </button>
-        <button id="btnIphone" class="icon-btn" aria-label="Открыть на iPhone" title="Играть на iPhone (QR-код)">
-          📱
-        </button>
-        <button id="btnRestart" class="icon-btn" aria-label="Заново" title="Начать заново">
-          🔄
-        </button>
-      </div>
-    </header>
-
-    <!-- Main Score Display (Block Blast Center Style) -->
-    <div class="score-section">
       <div id="currentScore" class="current-score">0</div>
-      <div id="comboHeartBar" class="combo-heart-bar hidden">
-        <span class="combo-label">КОМБО АКТИВНО</span>
-        <div class="combo-dots">
-          <span class="combo-dot active"></span>
-          <span class="combo-dot active"></span>
-          <span class="combo-dot active"></span>
-        </div>
-      </div>
-    </div>
+
+      <button id="btnSettings" class="gear-btn" aria-label="Настройки">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="#9fd8ff" d="M19.14 12.94a7.07 7.07 0 0 0 .06-.94 7.07 7.07 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.67 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.05.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/>
+        </svg>
+      </button>
+    </header>
 
     <!-- Unified High-DPI Game Canvas (8x8 Board + 3-Piece Dock + Drag & FX) -->
     <main class="canvas-wrapper" id="canvasWrapper">
@@ -64,11 +47,50 @@
     </main>
   </div>
 
+  <!-- Start Screen -->
+  <div id="startScreen" class="start-screen">
+    <div class="logo">
+      <div class="logo-top">
+        <span class="l-b">B</span><span class="l-l">L</span><span class="l-o">O<svg class="logo-crown" viewBox="0 0 64 44"><path d="M4 14 L18 26 L32 6 L46 26 L60 14 L54 40 H10 Z" fill="#ffc633" stroke="#d98f0b" stroke-width="3" stroke-linejoin="round"/><circle cx="4" cy="14" r="4.5" fill="#ffc633"/><circle cx="32" cy="6" r="4.5" fill="#ffc633"/><circle cx="60" cy="14" r="4.5" fill="#ffc633"/></svg></span><span class="l-c">C</span><span class="l-k">K</span>
+      </div>
+      <div class="logo-bottom">BLAST</div>
+    </div>
+
+    <div class="start-piece">
+      <i></i><i></i><b></b>
+      <b></b><i></i><i></i>
+    </div>
+
+    <div class="start-buttons">
+      <button id="btnStartClassic" class="menu-btn green">
+        <svg viewBox="0 0 40 20"><path d="M10 3a7 7 0 1 0 0 14c4 0 6-3 10-7s6-7 10-7a7 7 0 1 1 0 14c-4 0-6-3-10-7S14 3 10 3z" fill="none" stroke="#fff" stroke-width="3.2"/></svg>
+        <span>Classic</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Настройки</h2>
+        <button class="close-btn" data-close="settingsModal">✕</button>
+      </div>
+      <div class="settings-list">
+        <button id="btnSound" class="settings-row"><span>Звук</span><span id="soundLabel" class="row-value">Вкл</span></button>
+        <button id="btnTheme" class="settings-row"><span>Тема</span><span class="row-value">›</span></button>
+        <button id="btnIphone" class="settings-row"><span>Открыть на iPhone</span><span class="row-value">›</span></button>
+        <button id="btnRestart" class="settings-row"><span>Начать заново</span><span class="row-value">›</span></button>
+        <button id="btnHome" class="settings-row"><span>Главное меню</span><span class="row-value">›</span></button>
+      </div>
+    </div>
+  </div>
+
   <!-- Theme Picker Modal -->
   <div id="themeModal" class="modal-backdrop hidden">
     <div class="modal-card">
       <div class="modal-header">
-        <h2>🎨 Тема оформления</h2>
+        <h2>Тема</h2>
         <button class="close-btn" data-close="themeModal">✕</button>
       </div>
       <div id="themeList" class="theme-list"></div>
@@ -79,7 +101,7 @@
   <div id="iphoneModal" class="modal-backdrop hidden">
     <div class="modal-card">
       <div class="modal-header">
-        <h2>📱 Играть на iPhone</h2>
+        <h2>Играть на iPhone</h2>
         <button class="close-btn" data-close="iphoneModal">✕</button>
       </div>
       <div class="iphone-modal-body">
@@ -95,7 +117,7 @@
           <h3>Как добавить иконку на экран «Домой»:</h3>
           <ol>
             <li>Откройте ссылку в <strong>Safari</strong> на iPhone.</li>
-            <li>Нажмите кнопку <strong>«Поделиться»</strong> <span class="ios-share-icon">⬆️</span> внизу экрана.</li>
+            <li>Нажмите кнопку <strong>«Поделиться»</strong> внизу экрана.</li>
             <li>Выберите <strong>«На экран «Домой»»</strong> (Add to Home Screen).</li>
             <li>Готово! Игра запускается на весь экран и работает даже <strong>без интернета</strong>.</li>
           </ol>
@@ -107,7 +129,7 @@
   <!-- Game Over Modal -->
   <div id="gameOverModal" class="modal-backdrop hidden">
     <div class="modal-card gameover-card">
-      <div class="gameover-badge" id="newRecordBadge">🏆 НОВЫЙ РЕКОРД!</div>
+      <div class="gameover-badge" id="newRecordBadge">НОВЫЙ РЕКОРД</div>
       <h2 class="gameover-title">Ходов нет!</h2>
       <p class="gameover-subtitle">На поле больше нет места для оставшихся фигур</p>
 
@@ -117,11 +139,11 @@
           <span class="stat-value" id="finalScoreValue">0</span>
         </div>
         <div class="stat-box highlight">
-          <span class="stat-label">👑 РЕКОРД</span>
+          <span class="stat-label">РЕКОРД</span>
           <span class="stat-value" id="finalBestValue">0</span>
         </div>
         <div class="stat-box">
-          <span class="stat-label">🔥 МАКС. КОМБО</span>
+          <span class="stat-label">КОМБО</span>
           <span class="stat-value" id="finalComboValue">x1</span>
         </div>
       </div>
