@@ -2740,18 +2740,48 @@ class BlockBlastGame {
       }
     }, { passive: false });
 
-    const hide = (id) => document.getElementById(id).classList.add('hidden');
-    const show = (id) => document.getElementById(id).classList.remove('hidden');
+    const hide = (id) => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    };
+    const show = (id) => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('hidden');
+    };
 
-    // Quests Modal Opening
+    // Open Quests helper
+    const openQuests = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      window.soundEngine.init();
+      window.soundEngine.playPickup();
+      this.renderQuestsModal();
+      show('questsModal');
+    };
+
+    // Quests Button in HUD
     const btnQuests = document.getElementById('btnQuests');
     if (btnQuests) {
-      btnQuests.addEventListener('click', (e) => {
-        e.stopPropagation();
-        window.soundEngine.init();
-        window.soundEngine.playPickup();
-        this.renderQuestsModal();
-        show('questsModal');
+      btnQuests.addEventListener('pointerup', openQuests);
+      btnQuests.addEventListener('click', openQuests);
+    }
+
+    // Quests Button in Settings Menu
+    const btnSettingsQuests = document.getElementById('btnSettingsQuests');
+    if (btnSettingsQuests) {
+      btnSettingsQuests.addEventListener('click', (e) => {
+        hide('settingsModal');
+        openQuests(e);
+      });
+    }
+
+    // Quests Button on Start Screen
+    const btnStartQuests = document.getElementById('btnStartQuests');
+    if (btnStartQuests) {
+      btnStartQuests.addEventListener('click', (e) => {
+        openQuests(e);
       });
     }
 
