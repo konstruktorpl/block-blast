@@ -286,6 +286,46 @@ class BlockBlastGame {
     const hide = (id) => document.getElementById(id).classList.add('hidden');
     const show = (id) => document.getElementById(id).classList.remove('hidden');
 
+    // Quests Modal Opening
+    const btnQuests = document.getElementById('btnQuests');
+    if (btnQuests) {
+      btnQuests.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.soundEngine.init();
+        window.soundEngine.playPickup();
+        this.renderQuestsModal();
+        show('questsModal');
+      });
+    }
+
+    // Quests Tabs
+    const tabQuests = document.getElementById('tabQuests');
+    const tabEffects = document.getElementById('tabEffects');
+    if (tabQuests && tabEffects) {
+      tabQuests.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.soundEngine.playPickup();
+        tabQuests.classList.add('active');
+        tabEffects.classList.remove('active');
+        document.getElementById('tabQuestsContent').classList.add('active');
+        document.getElementById('tabQuestsContent').classList.remove('hidden');
+        document.getElementById('tabEffectsContent').classList.add('hidden');
+        document.getElementById('tabEffectsContent').classList.remove('active');
+      });
+
+      tabEffects.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.soundEngine.playPickup();
+        tabEffects.classList.add('active');
+        tabQuests.classList.remove('active');
+        document.getElementById('tabEffectsContent').classList.add('active');
+        document.getElementById('tabEffectsContent').classList.remove('hidden');
+        document.getElementById('tabQuestsContent').classList.add('hidden');
+        document.getElementById('tabQuestsContent').classList.remove('active');
+        this.renderEffectsList();
+      });
+    }
+
     // Start screen
     document.getElementById('btnStartClassic').addEventListener('click', () => {
       window.soundEngine.init();
