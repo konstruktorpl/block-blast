@@ -86,6 +86,8 @@ class BlockBlastGame {
     localStorage.setItem('bb_theme', themeId);
     const t = this.theme;
     document.documentElement.style.setProperty('--bg-gradient', t.bgGradient);
+    document.documentElement.style.background = t.themeColor;
+    document.body.style.background = t.bgGradient;
     document.documentElement.style.setProperty('--text-primary', t.textPrimary);
     document.documentElement.style.setProperty('--text-accent', t.textAccent);
     document.documentElement.style.setProperty('--board-bg', t.boardBg);
@@ -253,6 +255,18 @@ class BlockBlastGame {
 
   bindEvents() {
     window.addEventListener('resize', () => this.resize());
+    window.addEventListener('orientationchange', () => setTimeout(() => this.resize(), 100));
+
+    // Global unlock for WebAudio on iOS Safari
+    const unlockAudio = () => {
+      window.soundEngine.init();
+      if (window.soundEngine.ctx && window.soundEngine.ctx.state === 'suspended') {
+        window.soundEngine.ctx.resume();
+      }
+    };
+    ['touchstart', 'touchend', 'pointerdown', 'click'].forEach(evt => {
+      document.addEventListener(evt, unlockAudio, { passive: true, once: false });
+    });
 
     // Pointer / Touch Unified Handling on Canvas
     this.canvas.addEventListener('pointerdown', (e) => this.onPointerDown(e), { passive: false });
@@ -313,11 +327,14 @@ class BlockBlastGame {
       show('themeModal');
     });
 
-    document.getElementById('btnIphone').addEventListener('click', () => {
-      window.soundEngine.playPickup();
-      hide('settingsModal');
-      this.openIphoneModal();
-    });
+    const btnIphone = document.getElementById('btnIphone');
+    if (btnIphone) {
+      btnIphone.addEventListener('click', () => {
+        window.soundEngine.playPickup();
+        hide('settingsModal');
+        this.openIphoneModal();
+      });
+    }
 
     document.querySelectorAll('[data-close]').forEach((btn) => {
       btn.addEventListener('click', () => {

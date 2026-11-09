@@ -33,13 +33,15 @@ class SoundEngine {
       this.ctx.resume().catch(() => {});
     }
     if (this.ctx && !this.unlocked) {
-      // Play silent buffer to unlock audio on iOS Safari
+      // Play a tiny audible click to truly wake up iOS WebAudio hardware
       try {
-        const buffer = this.ctx.createBuffer(1, 1, 22050);
-        const source = this.ctx.createBufferSource();
-        source.buffer = buffer;
-        source.connect(this.ctx.destination);
-        source.start(0);
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        gain.gain.value = 0.001; // nearly silent, but non-zero
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(0);
+        osc.stop(this.ctx.currentTime + 0.05);
         this.unlocked = true;
       } catch (e) {}
     }
