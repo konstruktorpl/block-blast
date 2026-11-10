@@ -1,9 +1,11 @@
 // Authentic Block Blast! Polyomino Catalog & Smart Fair Spawner
-// Note: Authentic Block Blast does NOT feature single 1x1 dots or 3-block mini-corners.
-// The catalog consists exclusively of 2-bars, 2-diagonals, 3-bars, 4-bars, 5-bars,
-// 2x2 squares, 3x3 giant squares, 4-block T, L, J, Z, S shapes, 5-block Big Corners, and 6-block rectangles.
+// Includes standard polyominoes (2-bars..5-bars, squares, rectangles, T/L/Z/S, small & big corners, diagonals)
+// PLUS the special 1x1 Rescue Dot (`dot1`) which NEVER spawns in regular rolls and appears strictly as a rare clutch assist!
 
 const SHAPES = [
+  // Ultra-rare clutch rescue single 1x1 block (weight: 0 -> excluded from normal pools!)
+  { id: 'dot1', tier: 'special', weight: 0, isRescueOnly: true, matrix: [[1]] },
+
   // 2-block bars
   { id: 'h2', tier: 'small', weight: 14, matrix: [[1, 1]] },
   { id: 'v2', tier: 'small', weight: 14, matrix: [[1], [1]] },
@@ -201,6 +203,7 @@ function findKeyClearingShapes(grid) {
   const clearingCandidates = [];
 
   for (const shape of SHAPES) {
+    if (shape.isRescueOnly) continue;
     const placements = getAllValidPlacements(grid, shape);
     if (!placements.length) continue;
 
@@ -261,6 +264,7 @@ function findHoleFillingShapes(grid) {
   }
 
   for (const shape of SHAPES) {
+    if (shape.isRescueOnly) continue;
     const placements = getAllValidPlacements(grid, shape);
     if (!placements.length) continue;
 
@@ -357,6 +361,55 @@ function findHoleFillingShapes(grid) {
   return holeCandidates;
 }
 
+/**
+ * Finds rare emergency clutch opportunities for the special 1x1 Single Rescue Dot (`dot1`):
+ * 1) Seals an isolated unfillable 1x1 hole on the board (especially if it also clears a 7/8 line!).
+ * 2) Completes a 7/8 line when the board is getting crowded and no standard clearer exists.
+ * 3) Last-resort survival save when zero >=2-cell pieces can fit anywhere on the board.
+ */
+function findClutchSingleDotRescue(grid) {
+  const dotShape = SHAPES.find((s) => s.id === 'dot1');
+  if (!dotShape) return null;
+
+  let bestScore = -1;
+  let bestPlacement = null;
+  let bestCleared = 0;
+  let bestFixesTrappedHole = false;
+
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      if (grid[r][c] !== null) continue;
+
+      const hasOpenH = (c > 0 && grid[r][c - 1] === null) || (c < 7 && grid[r][c + 1] === null);
+      const hasOpenV = (r > 0 && grid[r - 1][c] === null) || (r < 7 && grid[r + 1][c] === null);
+      const isTrappedHole = !hasOpenH && !hasOpenV;
+
+      const sim = simulatePlacement(grid, dotShape, r, c);
+      let score = 0;
+      if (isTrappedHole) score += 60;
+      if (sim.cleared >= 2) score += 80;
+      else if (sim.cleared === 1) score += 45;
+
+      // Only qualify as a meaningful rescue if it fixes a trapped hole or completes a line
+      if (score > bestScore) {
+        bestScore = score;
+        bestPlacement = { r, c };
+        bestCleared = sim.cleared;
+        bestFixesTrappedHole = isTrappedHole;
+      }
+    }
+  }
+
+  if (!bestPlacement) return null;
+  return {
+    shape: dotShape,
+    placement: bestPlacement,
+    cleared: bestCleared,
+    fixesTrappedHole: bestFixesTrappedHole,
+    score: bestScore
+  };
+}
+
 function pickWeightedItem(list) {
   let total = 0;
   for (const item of list) total += item.weight;
@@ -395,8 +448,8 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
     tension = Math.min(1.0, (overrun - 2500) / 3500);
   }
 
-  // Dynamic shape weights shaped by board density and Record Tension
-  const weightedPool = SHAPES.map((s) => {
+  // Dynamic shape weights shaped by board density and Record Tension (excluding rescue-only 1x1 dot!)
+  const weightedPool = SHAPES.filter((s) => !s.isRescueOnly).map((s) => {
     let w = s.weight;
     const isAwkward = s.id.startsWith('z_') || s.id.startsWith('s_') || s.id.startsWith('diag');
 
@@ -650,12 +703,47 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
     }
   }
 
-  // Safety fallback: ensure at least the first piece can be placed
-  if (!bestCandidate || getAllValidPlacements(grid, bestCandidate[0]).length === 0) {
-    const fittingShapes = weightedPool.filter((s) => getAllValidPlacements(grid, s).length > 0);
-    if (fittingShapes.length > 0) {
-      if (!bestCandidate) bestCandidate = [fittingShapes[0], fittingShapes[0], fittingShapes[0]];
-      bestCandidate[0] = pickWeightedShape(fittingShapes);
+  // Safety fallback: ensure bestCandidate is always a valid 3-piece array with at least one playable move
+  const normalFitting = weightedPool.filter((s) => getAllValidPlacements(grid, s).length > 0);
+  const dotRescue = findClutchSingleDotRescue(grid);
+  if (!bestCandidate) {
+    if (normalFitting.length > 0) {
+      bestCandidate = [pickWeightedShape(normalFitting), pickWeightedShape(weightedPool), pickWeightedShape(weightedPool)];
+    } else if (dotRescue) {
+      bestCandidate = [dotRescue.shape, pickWeightedShape(weightedPool), pickWeightedShape(weightedPool)];
+    } else {
+      bestCandidate = [pickWeightedShape(weightedPool), pickWeightedShape(weightedPool), pickWeightedShape(weightedPool)];
+    }
+  } else if (getAllValidPlacements(grid, bestCandidate[0]).length === 0 && !bestCandidate.some((s) => getAllValidPlacements(grid, s).length > 0)) {
+    if (normalFitting.length > 0) {
+      bestCandidate[0] = pickWeightedShape(normalFitting);
+    }
+  }
+
+  // Ultra-rare authentic 1x1 Rescue Dot (`dot1`) — NEVER spawns casually!
+  // Appears only on cooldown (movesSinceDot >= 12) when truly needed to rescue or plug a trapped 1x1 hole.
+  const movesSinceDot = meta.movesSinceDot ?? 99;
+  if (!bestCandidate.some((s) => s.id === 'dot1') && dotRescue) {
+    const noNormalFits = normalFitting.length === 0;
+    const isEmergencyClear = fillRatio >= 0.54 && keyClearingShapes.length === 0 && dotRescue.cleared >= 1;
+    let dotChance = 0;
+
+    if (noNormalFits && tension < 0.85) {
+      dotChance = 1.0; // Miracle survival when >=2-cell shapes can no longer fit!
+    } else if (movesSinceDot >= 12 && tension < 0.75) {
+      if (dotRescue.fixesTrappedHole && dotRescue.cleared >= 1) dotChance = 0.50;
+      else if (dotRescue.fixesTrappedHole) dotChance = 0.28;
+      else if (isEmergencyClear) dotChance = isEarlyShield ? 0.45 : 0.30;
+    }
+
+    if (dotChance > 0 && Math.random() < dotChance) {
+      const nonLargeIndices = bestCandidate
+        .map((s, idx) => (s.tier !== 'large' ? idx : -1))
+        .filter((idx) => idx !== -1);
+      const targetSlot = nonLargeIndices.length > 0
+        ? nonLargeIndices[Math.floor(Math.random() * nonLargeIndices.length)]
+        : Math.floor(Math.random() * 3);
+      bestCandidate[targetSlot] = dotRescue.shape;
     }
   }
 
@@ -789,5 +877,6 @@ window.simulatePlacement = simulatePlacement;
 window.countTrappedSingleHoles = countTrappedSingleHoles;
 window.findKeyClearingShapes = findKeyClearingShapes;
 window.findHoleFillingShapes = findHoleFillingShapes;
+window.findClutchSingleDotRescue = findClutchSingleDotRescue;
 window.generateSmartTray = generateSmartTray;
 window.generateOpeningHand = generateOpeningHand;

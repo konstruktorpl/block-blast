@@ -28,6 +28,7 @@ class BlockBlastGame {
     this.maxCombo = 1;
     this.movesCount = 0;
     this.revivesUsed = 0;
+    this.movesSinceDot = 99;
     this.movesSinceLastClear = 0; // In Block Blast, combo stays alive for up to 3 placements
     this.isGameOver = false;
     this.hasCountedGamePlayed = false;
@@ -162,6 +163,7 @@ class BlockBlastGame {
     this.maxCombo = 1;
     this.movesCount = 0;
     this.revivesUsed = 0;
+    this.movesSinceDot = 99;
     this.initialBestScore = this.bestScore;
     this.movesSinceLastClear = 0;
     this.isGameOver = false;
@@ -502,8 +504,12 @@ class BlockBlastGame {
     } else {
       this.tray = window.generateSmartTray(this.grid, this.theme.palette, this.score, this.comboStreak, {
         movesCount: this.movesCount,
-        initialBestScore: this.initialBestScore
+        initialBestScore: this.initialBestScore,
+        movesSinceDot: this.movesSinceDot
       });
+    }
+    if (this.tray.some((t) => t && t.shape && t.shape.id === 'dot1')) {
+      this.movesSinceDot = 0;
     }
     this.checkPieceFitStates();
   }
@@ -532,6 +538,7 @@ class BlockBlastGame {
         maxCombo: this.maxCombo,
         movesCount: this.movesCount,
         revivesUsed: this.revivesUsed,
+        movesSinceDot: this.movesSinceDot,
         initialBestScore: this.initialBestScore,
         movesSinceLastClear: this.movesSinceLastClear,
         tray: this.tray.map((t) => ({
@@ -559,6 +566,7 @@ class BlockBlastGame {
       this.maxCombo = data.maxCombo || 1;
       this.movesCount = data.movesCount || 0;
       this.revivesUsed = data.revivesUsed || 0;
+      this.movesSinceDot = typeof data.movesSinceDot === 'number' ? data.movesSinceDot : 99;
       this.initialBestScore = typeof data.initialBestScore === 'number' ? data.initialBestScore : this.bestScore;
       this.movesSinceLastClear = data.movesSinceLastClear || 0;
 
@@ -1061,6 +1069,7 @@ class BlockBlastGame {
     }
     piece.placed = true;
     this.movesCount = (this.movesCount || 0) + 1;
+    this.movesSinceDot = (this.movesSinceDot ?? 99) + 1;
 
     // Quest: First block placed counts as a game played
     if (!this.hasCountedGamePlayed) {
