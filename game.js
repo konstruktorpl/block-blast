@@ -557,17 +557,6 @@ class BlockBlastGame {
       });
     }
 
-    const btnPlayIntro = document.getElementById('btnPlayIntro');
-    if (btnPlayIntro) {
-      btnPlayIntro.addEventListener('click', () => {
-        window.soundEngine.playPickup();
-        hide('settingsModal');
-        this.startIntroAnimation(() => {
-          this.spawnNewTray();
-        });
-      });
-    }
-
     const btnReloadApp = document.getElementById('btnReloadApp');
     if (btnReloadApp) {
       btnReloadApp.addEventListener('click', async () => {

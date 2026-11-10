@@ -943,7 +943,6 @@ button {
         <button id="btnTheme" class="settings-row"><span>Тема</span><span class="row-value">›</span></button>
         <button id="btnRestart" class="settings-row"><span>Начать заново</span><span class="row-value">›</span></button>
         <button id="btnHome" class="settings-row"><span>Главное меню</span><span class="row-value">›</span></button>
-        <button id="btnPlayIntro" class="settings-row"><span>Вступительная анимация</span><span class="row-value">🎬 Показать</span></button>
         <button id="btnReloadApp" class="settings-row" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.12);"><span>Очистить кэш / Обновить</span><span class="row-value">v15 🔄</span></button>
       </div>
     </div>
@@ -3018,17 +3017,6 @@ class BlockBlastGame {
         window.soundEngine.playPickup();
         hide('settingsModal');
         this.openIphoneModal();
-      });
-    }
-
-    const btnPlayIntro = document.getElementById('btnPlayIntro');
-    if (btnPlayIntro) {
-      btnPlayIntro.addEventListener('click', () => {
-        window.soundEngine.playPickup();
-        hide('settingsModal');
-        this.startIntroAnimation(() => {
-          this.spawnNewTray();
-        });
       });
     }
 
