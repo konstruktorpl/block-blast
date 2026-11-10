@@ -41,7 +41,6 @@ class BlockBlastGame {
       isHeart: false,
       cells: [],
       shattered: false,
-      bannerSpawned: false,
       lastSoundTime: 0,
       onComplete: null
     };
@@ -239,7 +238,6 @@ class BlockBlastGame {
       isHeart,
       cells,
       shattered: false,
-      bannerSpawned: false,
       lastSoundTime: 0,
       onComplete
     };
@@ -1056,16 +1054,6 @@ class BlockBlastGame {
         }
       }
 
-      // Spawn banner during hold
-      if (t >= 0.55 && !this.introAnim.bannerSpawned) {
-        this.introAnim.bannerSpawned = true;
-        if (this.introAnim.isHeart) {
-          this.fx.spawnBanner('❤️ С ЛЮБОВЬЮ! ❤️', 'УДАЧИ В ИГРЕ!', '#ff6b8b');
-        } else {
-          this.fx.spawnBanner('BLOCK BLAST!', 'ПОЕХАЛИ!', '#66d9e8');
-        }
-      }
-
       // Shatter phase at 0.88s
       if (t >= 0.88 && !this.introAnim.shattered) {
         this.introAnim.shattered = true;
@@ -1671,7 +1659,7 @@ if ('serviceWorker' in navigator) {
   });
 
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=13').then((reg) => {
+    navigator.serviceWorker.register('./sw.js?v=14').then((reg) => {
       reg.update().catch(() => {});
     }).catch(() => {});
   });
