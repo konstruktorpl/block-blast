@@ -30,6 +30,10 @@ class BlockBlastGame {
     this.hasCountedGamePlayed = false;
     this.currentDynPalette = '';
 
+    // Persistent circular palette progression (never resets on new game, cycles endlessly)
+    this.paletteIndex = parseInt(localStorage.getItem('bb_palette_idx') || '0', 10) || 0;
+    this.paletteProgress = parseInt(localStorage.getItem('bb_palette_pts') || '0', 10) || 0;
+
     // Drag State
     this.drag = {
       active: false,
@@ -87,32 +91,19 @@ class BlockBlastGame {
     this.themeId = themeId;
     localStorage.setItem('bb_theme', themeId);
 
-    if (this.themeId === 'classic' && window.DYNAMIC_PALETTES && window.DYNAMIC_PALETTES.length > 0) {
-      this.currentDynPalette = '';
-      this.updateDynamicPalette();
-      this.renderThemeModalList();
-      return;
-    }
-
-    const t = this.theme;
-    document.documentElement.style.setProperty('--bg-gradient', t.bgGradient);
-    document.documentElement.style.background = t.themeColor;
-    document.body.style.background = t.bgGradient;
-    document.documentElement.style.setProperty('--text-primary', t.textPrimary);
-    document.documentElement.style.setProperty('--text-accent', t.textAccent);
-    document.documentElement.style.setProperty('--board-bg', t.boardBg);
-    document.documentElement.style.setProperty('--board-border', t.boardBorder);
-    const metaTheme = document.getElementById('metaThemeColor');
-    if (metaTheme) metaTheme.setAttribute('content', t.themeColor);
+    // Apply the persistent dynamic palette index so colors never reset
+    this.applyPaletteIndex(this.paletteIndex);
     this.renderThemeModalList();
   }
 
-  updateDynamicPalette() {
-    if (this.themeId !== 'classic') return;
+  applyPaletteIndex(index) {
     if (!window.DYNAMIC_PALETTES || window.DYNAMIC_PALETTES.length === 0) return;
-    const idx = Math.floor(Math.max(0, this.score) / 400) % window.DYNAMIC_PALETTES.length;
-    const dyn = window.DYNAMIC_PALETTES[idx];
-    if (!dyn || this.currentDynPalette === dyn.name) return;
+    const len = window.DYNAMIC_PALETTES.length;
+    this.paletteIndex = ((index % len) + len) % len;
+    localStorage.setItem('bb_palette_idx', String(this.paletteIndex));
+
+    const dyn = window.DYNAMIC_PALETTES[this.paletteIndex];
+    if (!dyn) return;
 
     this.currentDynPalette = dyn.name;
     document.documentElement.style.setProperty('--bg-gradient', dyn.bgGradient);
@@ -144,7 +135,9 @@ class BlockBlastGame {
     this.drag.active = false;
     this.hasCountedGamePlayed = false;
 
-    this.updateDynamicPalette();
+    // DO NOT reset paletteIndex! Keep current color in continuous circle!
+    this.applyPaletteIndex(this.paletteIndex);
+
     this.spawnNewTray();
     if (window.questManager) {
       window.questManager.updateUIBadge();
@@ -229,7 +222,7 @@ class BlockBlastGame {
         if (!anyFits) return false;
       }
       this.hasCountedGamePlayed = true;
-      this.updateDynamicPalette();
+      this.applyPaletteIndex(this.paletteIndex);
       if (window.questManager) {
         window.questManager.onEvent('single_score', this.score);
         window.questManager.onEvent('max_combo', this.maxCombo || 1);
@@ -428,6 +421,24 @@ class BlockBlastGame {
         window.soundEngine.playPickup();
         hide('settingsModal');
         this.openIphoneModal();
+      });
+    }
+
+    const btnReloadApp = document.getElementById('btnReloadApp');
+    if (btnReloadApp) {
+      btnReloadApp.addEventListener('click', async () => {
+        window.soundEngine.playPickup();
+        try {
+          if ('caches' in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(k => caches.delete(k)));
+          }
+          if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (const r of regs) await r.unregister();
+          }
+        } catch (e) {}
+        window.location.href = window.location.origin + window.location.pathname + '?reload=' + Date.now();
       });
     }
 
@@ -811,8 +822,14 @@ class BlockBlastGame {
       window.questManager.onEvent('single_score', this.score);
     }
 
-    // Dynamic color palette transition every 400 pts
-    this.updateDynamicPalette();
+    // Rotate color palette every 250 points in an endless loop without resetting!
+    this.paletteProgress += movePoints;
+    if (this.paletteProgress >= 250) {
+      const steps = Math.floor(this.paletteProgress / 250);
+      this.paletteProgress = this.paletteProgress % 250;
+      this.applyPaletteIndex(this.paletteIndex + steps);
+    }
+    localStorage.setItem('bb_palette_pts', String(this.paletteProgress));
 
     // Bump score animation
     this.scoreEl.classList.remove('bump');
@@ -1430,10 +1447,20 @@ class BlockBlastGame {
   }
 }
 
-// Register Service Worker for offline iPhone Home Screen play
+// Register Service Worker with instant auto-update for iPhone PWA / Safari
 if ('serviceWorker' in navigator) {
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) {
+      refreshing = true;
+      window.location.reload();
+    }
+  });
+
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    navigator.serviceWorker.register('./sw.js?v=11').then((reg) => {
+      reg.update().catch(() => {});
+    }).catch(() => {});
   });
 }
 
