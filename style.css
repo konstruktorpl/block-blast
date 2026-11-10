@@ -628,6 +628,68 @@ button {
   box-shadow: 0 1px 0 #129472;
 }
 
+.gameover-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.revive-btn {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(180deg, #ffbe26 0%, #f59f00 100%);
+  color: #3a2300;
+  font-family: var(--font-game);
+  font-size: 1.32rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #c77700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: transform 0.1s ease, filter 0.15s ease;
+}
+
+.revive-btn:active {
+  transform: translateY(5px);
+  box-shadow: 0 1px 0 #c77700;
+}
+
+.revive-btn.locked {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+}
+
+.revive-btn.locked:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+}
+
+.revive-cost-pill {
+  background: rgba(0, 0, 0, 0.22);
+  color: #fff6cf;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.revive-btn.locked .revive-cost-pill {
+  background: rgba(255, 212, 59, 0.18);
+  color: #ffd43b;
+}
+
+.revive-hint {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.72);
+  margin-top: -2px;
+  margin-bottom: 4px;
+  min-height: 16px;
+}
+
 /* ---------- Quests & Modal Styles ---------- */
 .quest-btn {
   display: flex;

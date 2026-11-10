@@ -387,12 +387,12 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
   // - Effective baseline target for new players with 0 record is 4500.
   // - Below recordTarget -> easy ("до рекорда дойти очень легко")
   // - recordTarget to recordTarget + 2500 -> generous sweet spot ("дать набрать пару лишних тысяч")
-  // - Above recordTarget + 2500 -> smooth tension ramp up to 1.0 over next 5500 points ("опять начинает усложнять")
+  // - Above recordTarget + 2500 -> smooth tension ramp up to 1.0 over next 3500 points ("опять начинает усложнять")
   const recordTarget = Math.max(initialBestScore, 4500);
   const overrun = score - recordTarget;
   let tension = 0;
   if (overrun > 2500) {
-    tension = Math.min(1.0, (overrun - 2500) / 5500);
+    tension = Math.min(1.0, (overrun - 2500) / 3500);
   }
 
   // Dynamic shape weights shaped by board density and Record Tension
@@ -405,9 +405,10 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
       if (s.tier === 'small') w *= (1.95 - tension * 0.70);
     } else if (fillRatio < 0.52) {
       // Open board: big, satisfying shapes dominate below record
-      const boostScale = 1.0 - tension * 0.50;
-      if (s.tier === 'large') w *= (1.0 + 0.85 * boostScale);
-      if (s.id === 'sq3' || s.id === 'rect_2x3' || s.id === 'rect_3x2') w *= (1.0 + 1.0 * boostScale);
+      const boostScale = 1.0 - tension * 0.45;
+      if (s.tier === 'large') w *= (1.0 + 0.90 * boostScale);
+      if (s.id === 'sq3') w *= (1.0 + 1.45 * boostScale);
+      else if (s.id === 'rect_2x3' || s.id === 'rect_3x2') w *= (1.0 + 1.15 * boostScale);
       if (s.id.startsWith('h4') || s.id.startsWith('v4') || s.id.startsWith('h5') || s.id.startsWith('v5') || s.id === 'sq2') {
         w *= (1.0 + 0.5 * boostScale);
       }
@@ -415,10 +416,10 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
 
     // Below record: suppress awkward Z/S & diagonals; high tension past record mixes them back in strongly
     if (isAwkward) {
-      w *= (0.45 + tension * 1.65);
+      w *= (0.45 + tension * 1.75);
     }
     if (tension > 0.2 && (s.id.startsWith('bigL_') || s.id.startsWith('l_') || s.id.startsWith('t_'))) {
-      w *= (1.0 + tension * 0.85);
+      w *= (1.0 + tension * 0.95);
     }
 
     return { ...s, weight: w };
@@ -437,18 +438,18 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
     // 100% protection against frustrating abrupt deaths in the first 30 moves
     assistChance = 1.0;
   } else if (isHighCombo) {
-    // Rewards reaching x4+ so players smoothly hit x8-x12 below record,
-    // gradually tapering on extreme streaks (x13+) or in post-record high tension!
-    const extremeTaper = comboStreak > 12 ? Math.min(0.30, (comboStreak - 12) * 0.04) : 0;
-    const baseComboAssist = 0.96 - extremeTaper;
-    assistChance = Math.max(0.30, baseComboAssist - tension * 0.62);
+    // Helps reach exciting x4-x8 combos below record, then gently softens boost on x8+ supercombos
+    // so ultra-long streaks require genuine skill instead of infinite autopilot!
+    const superComboTaper = comboStreak >= 8 ? Math.min(0.55, (comboStreak - 7) * 0.08) : 0;
+    const baseComboAssist = 0.90 - superComboTaper;
+    assistChance = Math.max(0.20, baseComboAssist - tension * 0.58);
   } else if (comboStreak >= 1) {
-    assistChance = Math.max(0.28, 0.90 - tension * 0.60);
+    assistChance = Math.max(0.24, 0.88 - tension * 0.62);
   } else if (fillRatio >= 0.28) {
-    // Proactive Keep-Board-Clean sweep when blocks accumulate >= 28%, dialing down as tension climbs
-    assistChance = Math.max(0.20, 0.88 - tension * 0.68);
+    // Proactive Keep-Board-Clean sweep when blocks accumulate >= 28%, dialing down sharply as tension climbs
+    assistChance = Math.max(0.18, 0.86 - tension * 0.68);
   } else {
-    assistChance = Math.max(0.18, 0.82 - tension * 0.64);
+    assistChance = Math.max(0.15, 0.78 - tension * 0.62);
   }
 
   const hasAssists = keyClearingShapes.length > 0 || holeFillingShapes.length > 0;
@@ -499,7 +500,10 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
       const nextHoleFillers = findHoleFillingShapes(simGrid);
 
       let secondObj = null;
-      const chainProbability = isHighCombo ? 0.85 : Math.max(0.35, 0.78 - tension * 0.35);
+      const superComboChainPenalty = comboStreak >= 7 ? Math.min(0.45, (comboStreak - 6) * 0.08) : 0;
+      const chainProbability = isHighCombo
+        ? Math.max(0.20, 0.72 - superComboChainPenalty - tension * 0.35)
+        : Math.max(0.25, 0.72 - tension * 0.40);
 
       if (nextClearers.length > 0 && Math.random() < chainProbability) {
         secondObj = pickWeightedItem(nextClearers);
@@ -536,8 +540,8 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
       const thirdClearers = findKeyClearingShapes(finalSimGrid);
       const thirdHoleFillers = findHoleFillingShapes(finalSimGrid);
       const thirdClearChance = isHighCombo
-        ? Math.max(0.30, 0.82 - tension * 0.50)
-        : Math.max(0.20, 0.65 - tension * 0.45);
+        ? Math.max(0.15, 0.52 - (comboStreak >= 7 ? Math.min(0.30, (comboStreak - 6) * 0.06) : 0) - tension * 0.35)
+        : Math.max(0.15, 0.55 - tension * 0.40);
 
       const safeThirdFilter = (s) => {
         if (getAllValidPlacements(finalSimGrid, s).length === 0) return false;

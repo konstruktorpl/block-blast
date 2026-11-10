@@ -321,8 +321,13 @@ class PlaytestGame {
       if (isAllClear) this.allClearsCount++;
 
       const baseLineScore = 30 * ((clearedCount * (clearedCount + 1)) / 2);
-      const comboMultiplier = Math.max(1, this.comboStreak);
-      const comboBonus = baseLineScore * comboMultiplier + (this.comboStreak >= 2 ? (this.comboStreak - 1) * 50 : 0);
+      const effectiveCombo = this.comboStreak <= 10
+        ? this.comboStreak
+        : 10 + Math.sqrt(this.comboStreak - 10) * 1.6;
+      const cappedStepBonus = Math.min(this.comboStreak, 12);
+      const comboBonus = Math.round(
+        baseLineScore * effectiveCombo + (cappedStepBonus >= 2 ? (cappedStepBonus - 1) * 40 : 0)
+      );
       const allClearBonus = isAllClear ? 500 : 0;
       movePoints += comboBonus + allClearBonus;
       this.score += movePoints;
@@ -540,6 +545,27 @@ if (qm.hourlyQuests.length > 0) {
   } else {
     console.log('❌ FAIL: Progress was not reset to 0!');
   }
+}
+
+// 4. Trophy Economy & Revive Spend Verification
+console.log('\n--- TEST 4: TROPHY CLAIM & REVIVE PURCHASE VERIFICATION ---');
+let claimedTotal = 0;
+qm.dailyQuests.forEach(q => {
+  if (q.current >= q.target && !q.claimed) {
+    claimedTotal += qm.claim(q.id, 'daily');
+  }
+});
+qm.hourlyQuests.forEach(q => {
+  if (q.current >= q.target && !q.claimed) {
+    claimedTotal += qm.claim(q.id, 'hourly');
+  }
+});
+console.log(`Trophies earned from completed quests: +${claimedTotal} (Balance: ${qm.trophies})`);
+const spent = qm.spendTrophies(50);
+console.log(`Attempt Revive #1 purchase (-50 🏆): success=${spent}, remaining balance=${qm.trophies}`);
+if (qm.trophies < 100) {
+  const failSpend = qm.spendTrophies(100);
+  console.log(`Insufficient funds check (-100 🏆): success=${failSpend} (expected false if <100)`);
 }
 
 console.log('\n================================================================');

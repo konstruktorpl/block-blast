@@ -27,6 +27,7 @@ class BlockBlastGame {
     this.comboStreak = 0;
     this.maxCombo = 1;
     this.movesCount = 0;
+    this.revivesUsed = 0;
     this.movesSinceLastClear = 0; // In Block Blast, combo stays alive for up to 3 placements
     this.isGameOver = false;
     this.hasCountedGamePlayed = false;
@@ -160,6 +161,7 @@ class BlockBlastGame {
     this.comboStreak = 0;
     this.maxCombo = 1;
     this.movesCount = 0;
+    this.revivesUsed = 0;
     this.initialBestScore = this.bestScore;
     this.movesSinceLastClear = 0;
     this.isGameOver = false;
@@ -466,6 +468,7 @@ class BlockBlastGame {
         comboStreak: this.comboStreak,
         maxCombo: this.maxCombo,
         movesCount: this.movesCount,
+        revivesUsed: this.revivesUsed,
         initialBestScore: this.initialBestScore,
         movesSinceLastClear: this.movesSinceLastClear,
         tray: this.tray.map((t) => ({
@@ -492,6 +495,7 @@ class BlockBlastGame {
       this.comboStreak = data.comboStreak || 0;
       this.maxCombo = data.maxCombo || 1;
       this.movesCount = data.movesCount || 0;
+      this.revivesUsed = data.revivesUsed || 0;
       this.initialBestScore = typeof data.initialBestScore === 'number' ? data.initialBestScore : this.bestScore;
       this.movesSinceLastClear = data.movesSinceLastClear || 0;
 
@@ -712,6 +716,13 @@ class BlockBlastGame {
       show('startScreen');
     });
 
+    const btnRevive = document.getElementById('btnRevive');
+    if (btnRevive) {
+      btnRevive.addEventListener('click', () => {
+        this.reviveGame();
+      });
+    }
+
     document.getElementById('btnPlayAgain').addEventListener('click', () => {
       window.soundEngine.playPickup();
       this.startNewGame(true);
@@ -755,6 +766,9 @@ class BlockBlastGame {
       btn.addEventListener('click', () => {
         const target = btn.getAttribute('data-close');
         document.getElementById(target).classList.add('hidden');
+        if (target === 'questsModal' && this.isGameOver) {
+          this.updateReviveUI();
+        }
       });
     });
 
@@ -762,6 +776,9 @@ class BlockBlastGame {
       backdrop.addEventListener('click', (e) => {
         if (e.target === backdrop && backdrop.id !== 'gameOverModal') {
           backdrop.classList.add('hidden');
+          if (backdrop.id === 'questsModal' && this.isGameOver) {
+            this.updateReviveUI();
+          }
         }
       });
     });
@@ -1099,10 +1116,16 @@ class BlockBlastGame {
       // Check if the entire 8x8 board is now completely empty ("ALL CLEAR!")
       const isAllClear = this.grid.every((row) => row.every((cell) => cell === null));
 
-      // Authentic Block Blast Line Clear & High-Yield Combo Multiplier Scoring
+      // Authentic Block Blast Line Clear & Balanced Combo Multiplier Scoring
+      // Smoothly compresses ultra-high x10+ streaks so scores climb naturally without hyperinflation
       const baseLineScore = 30 * ((totalLines * (totalLines + 1)) / 2);
-      const comboMultiplier = Math.max(1, this.comboStreak);
-      const comboBonus = baseLineScore * comboMultiplier + (this.comboStreak >= 2 ? (this.comboStreak - 1) * 50 : 0);
+      const effectiveCombo = this.comboStreak <= 10
+        ? this.comboStreak
+        : 10 + Math.sqrt(this.comboStreak - 10) * 1.6;
+      const cappedStepBonus = Math.min(this.comboStreak, 12);
+      const comboBonus = Math.round(
+        baseLineScore * effectiveCombo + (cappedStepBonus >= 2 ? (cappedStepBonus - 1) * 40 : 0)
+      );
       const allClearBonus = isAllClear ? 500 : 0;
       movePoints += comboBonus + allClearBonus;
 
@@ -1242,8 +1265,117 @@ class BlockBlastGame {
         badge.classList.add('hidden');
       }
 
+      this.updateReviveUI();
       document.getElementById('gameOverModal').classList.remove('hidden');
     }, 620);
+  }
+
+  getReviveCost() {
+    return this.revivesUsed === 0 ? 50 : 100;
+  }
+
+  updateReviveUI() {
+    const btn = document.getElementById('btnRevive');
+    const pill = document.getElementById('reviveCostPill');
+    const hint = document.getElementById('reviveHint');
+    if (!btn || !pill || !hint) return;
+
+    if (this.revivesUsed >= 2) {
+      btn.classList.add('hidden');
+      hint.textContent = 'Лимит возрождений за партию (2/2) исчерпан';
+      return;
+    }
+
+    btn.classList.remove('hidden');
+    const cost = this.getReviveCost();
+    const trophies = window.questManager ? window.questManager.trophies : 0;
+    pill.textContent = `${cost} 🏆`;
+
+    if (trophies >= cost) {
+      btn.classList.remove('locked');
+      hint.textContent = `Взорвёт 4×4 в центре завала и сменит фигуры • У вас: ${trophies} 🏆`;
+    } else {
+      btn.classList.add('locked');
+      const missing = cost - trophies;
+      const hasClaimable = window.questManager && window.questManager.hasUnclaimed();
+      hint.textContent = hasClaimable
+        ? 'Есть готовые награды в квестах! Нажми, чтобы забрать 🏆'
+        : `Не хватает ${missing} 🏆 — нажми, чтобы открыть квесты`;
+    }
+  }
+
+  reviveGame() {
+    if (!this.isGameOver || this.revivesUsed >= 2) return;
+    const cost = this.getReviveCost();
+    const qm = window.questManager;
+
+    if (!qm || qm.trophies < cost) {
+      window.soundEngine.playPickup();
+      this.renderQuestsModal();
+      document.getElementById('questsModal').classList.remove('hidden');
+      return;
+    }
+
+    if (!qm.spendTrophies(cost)) return;
+
+    this.revivesUsed += 1;
+    this.isGameOver = false;
+    document.getElementById('gameOverModal').classList.add('hidden');
+
+    // Locate the densest 4x4 region (biased near board center) and blast it clear
+    let bestR = 2;
+    let bestC = 2;
+    let bestScore = -1;
+    for (let r = 0; r <= 4; r++) {
+      for (let c = 0; c <= 4; c++) {
+        let count = 0;
+        for (let dr = 0; dr < 4; dr++) {
+          for (let dc = 0; dc < 4; dc++) {
+            if (this.grid[r + dr][c + dc] !== null) count++;
+          }
+        }
+        const centerDist = Math.abs(r - 2) + Math.abs(c - 2);
+        const s = count * 10 - centerDist;
+        if (s > bestScore) {
+          bestScore = s;
+          bestR = r;
+          bestC = c;
+        }
+      }
+    }
+
+    const { boardX, boardY, boardPad, cellSize } = this.metrics;
+    const gridOriginX = boardX + boardPad;
+    const gridOriginY = boardY + boardPad;
+
+    for (let dr = 0; dr < 4; dr++) {
+      for (let dc = 0; dc < 4; dc++) {
+        const rr = bestR + dr;
+        const cc = bestC + dc;
+        const cIdx = this.grid[rr][cc];
+        if (cIdx !== null) {
+          const cObj = this.theme.palette[cIdx % this.theme.palette.length];
+          const cx = gridOriginX + (cc + 0.5) * cellSize;
+          const cy = gridOriginY + (rr + 0.5) * cellSize;
+          const delay = (dr + dc) * 0.025;
+          this.fx.spawnCellShatter(cx, cy, cellSize, cObj, delay);
+          this.grid[rr][cc] = null;
+        }
+      }
+    }
+
+    // Refresh dock with a guaranteed-solvable 3-piece hand
+    this.spawnNewTray();
+    this.checkPieceFitStates();
+    this.updateHUD();
+    this.saveGameState();
+
+    this.fx.triggerShake(10, 0.35);
+    this.fx.spawnBanner('ВТОРОЙ ШАНС!', 'ПОЛЕ РАСЧИЩЕНО', '#ffd43b');
+    window.soundEngine.playLineClear(3, Math.max(3, this.comboStreak || 1), true);
+    if (navigator.vibrate) {
+      navigator.vibrate([30, 40, 50]);
+    }
   }
 
   loop(now) {

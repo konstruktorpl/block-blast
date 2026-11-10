@@ -51,29 +51,29 @@ class QuestManager {
     return `${h}ч ${m}м`;
   }
 
-  // Express 1-hour fast quests (meaningful challenge for 1h window)
+  // Express 1-hour fast quests (calibrated to 1h session benchmarks & Revive economy)
   getDefaultHourlyPool() {
     return [
-      { id: 'exp_clear_20_lines', title: 'Очистить 20 линий', target: 20, reward: 20, type: 'lines_cleared' },
-      { id: 'exp_combo_4', title: 'Достичь комбо x4', target: 4, reward: 25, type: 'max_combo' },
-      { id: 'exp_score_2000', title: 'Набрать 2 000 очков в игре', target: 2000, reward: 25, type: 'single_score' },
-      { id: 'exp_destroy_90_blocks', title: 'Уничтожить 90 блоков', target: 90, reward: 20, type: 'blocks_destroyed' },
-      { id: 'exp_play_4_games', title: 'Сыграть 4 игры', target: 4, reward: 15, type: 'games_played' },
-      { id: 'exp_clear_30_lines', title: 'Очистить 30 линий', target: 30, reward: 30, type: 'lines_cleared' },
-      { id: 'exp_score_3000', title: 'Набрать 3 000 очков в игре', target: 3000, reward: 30, type: 'single_score' }
+      { id: 'exp_clear_80_lines', title: 'Очистить 80 линий', target: 80, reward: 25, type: 'lines_cleared' },
+      { id: 'exp_combo_10', title: 'Достичь комбо x10', target: 10, reward: 30, type: 'max_combo' },
+      { id: 'exp_score_15000', title: 'Набрать 15 000 очков в игре', target: 15000, reward: 30, type: 'single_score' },
+      { id: 'exp_destroy_450_blocks', title: 'Уничтожить 450 блоков', target: 450, reward: 25, type: 'blocks_destroyed' },
+      { id: 'exp_play_3_games', title: 'Сыграть 3 игры', target: 3, reward: 20, type: 'games_played' },
+      { id: 'exp_clear_120_lines', title: 'Очистить 120 линий', target: 120, reward: 35, type: 'lines_cleared' },
+      { id: 'exp_score_25000', title: 'Набрать 25 000 очков в игре', target: 25000, reward: 40, type: 'single_score' }
     ];
   }
 
-  // Daily 24-hour quests (solid milestones throughout the day)
+  // Daily 24-hour quests (solid daily milestones feeding Trophy/Revive loop)
   getDefaultDailyPool() {
     return [
-      { id: 'd_play_8_games', title: 'Сыграть 8 игр', target: 8, reward: 35, type: 'games_played' },
-      { id: 'd_score_5000', title: 'Набрать 5 000 очков в игре', target: 5000, reward: 50, type: 'single_score' },
-      { id: 'd_clear_60_lines', title: 'Очистить 60 линий', target: 60, reward: 45, type: 'lines_cleared' },
-      { id: 'd_combo_6', title: 'Достичь комбо x6', target: 6, reward: 50, type: 'max_combo' },
-      { id: 'd_destroy_250_blocks', title: 'Уничтожить 250 блоков', target: 250, reward: 45, type: 'blocks_destroyed' },
-      { id: 'd_all_clear_1', title: 'Сделать «Чистое поле»', target: 1, reward: 60, type: 'all_clear' },
-      { id: 'd_clear_90_lines', title: 'Очистить 90 линий', target: 90, reward: 60, type: 'lines_cleared' }
+      { id: 'd_play_6_games', title: 'Сыграть 6 игр', target: 6, reward: 50, type: 'games_played' },
+      { id: 'd_score_40000', title: 'Набрать 40 000 очков в игре', target: 40000, reward: 80, type: 'single_score' },
+      { id: 'd_clear_250_lines', title: 'Очистить 250 линий', target: 250, reward: 70, type: 'lines_cleared' },
+      { id: 'd_combo_16', title: 'Достичь комбо x16', target: 16, reward: 75, type: 'max_combo' },
+      { id: 'd_destroy_1200_blocks', title: 'Уничтожить 1 200 блоков', target: 1200, reward: 70, type: 'blocks_destroyed' },
+      { id: 'd_all_clear_1', title: 'Сделать «Чистое поле»', target: 1, reward: 90, type: 'all_clear' },
+      { id: 'd_clear_400_lines', title: 'Очистить 400 линий', target: 400, reward: 95, type: 'lines_cleared' }
     ];
   }
 
@@ -154,8 +154,8 @@ class QuestManager {
   }
 
   loadQuests() {
-    const savedDailyData = localStorage.getItem('bb_daily_quests_v3') || localStorage.getItem('bb_daily_quests_v2');
-    const savedHourlyData = localStorage.getItem('bb_hourly_quests_v3') || localStorage.getItem('bb_hourly_quests_v2');
+    const savedDailyData = localStorage.getItem('bb_daily_quests_v4');
+    const savedHourlyData = localStorage.getItem('bb_hourly_quests_v4');
 
     // 1. Daily Quests
     if (savedDailyData) {
@@ -225,11 +225,20 @@ class QuestManager {
   }
 
   saveQuests() {
-    localStorage.setItem('bb_daily_quests_v3', JSON.stringify(this.dailyQuests));
-    localStorage.setItem('bb_hourly_quests_v3', JSON.stringify(this.hourlyQuests));
+    localStorage.setItem('bb_daily_quests_v4', JSON.stringify(this.dailyQuests));
+    localStorage.setItem('bb_hourly_quests_v4', JSON.stringify(this.hourlyQuests));
     localStorage.setItem('bb_hourly_expires_at', String(this.hourlyExpiresAt));
     localStorage.setItem('bb_daily_expires_at', String(this.dailyExpiresAt));
     localStorage.setItem('bb_trophies', String(this.trophies));
+  }
+
+  spendTrophies(amount) {
+    const cost = Number(amount) || 0;
+    if (cost <= 0 || this.trophies < cost) return false;
+    this.trophies -= cost;
+    this.saveQuests();
+    this.updateUIBadge();
+    return true;
   }
 
   onEvent(type, value = 1) {
