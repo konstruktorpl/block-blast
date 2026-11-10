@@ -1,39 +1,40 @@
 // Quests & Trophies System for Block Blast!
-// Features Daily Quests (24h) and Flash Hourly Quests (1h) with live timers!
+// Features Daily Quests (24h) and Flash Hourly Express Quests (1h) with live timers!
+// Uncompleted quests strictly reset progress to 0 if the time limit expires!
 
 class QuestManager {
   constructor() {
     this.trophies = parseInt(localStorage.getItem('bb_trophies') || '0', 10) || 0;
 
-    this.dailyKey = this.getTodayKey();
-    this.hourlyKey = this.getCurrentHourKey();
+    const now = Date.now();
+    const savedHourlyExpires = parseInt(localStorage.getItem('bb_hourly_expires_at'), 10);
+    const savedDailyExpires = parseInt(localStorage.getItem('bb_daily_expires_at'), 10);
+
+    this.hourlyExpiresAt = (!isNaN(savedHourlyExpires) && savedHourlyExpires > now)
+      ? savedHourlyExpires
+      : now + 3600 * 1000;
+
+    const nextMidnight = new Date();
+    nextMidnight.setHours(24, 0, 0, 0);
+    this.dailyExpiresAt = (!isNaN(savedDailyExpires) && savedDailyExpires > now)
+      ? savedDailyExpires
+      : nextMidnight.getTime();
 
     this.dailyQuests = [];
     this.hourlyQuests = [];
 
     this.loadQuests();
-  }
-
-  getTodayKey() {
-    const d = new Date();
-    return `d_${d.getFullYear()}_${d.getMonth() + 1}_${d.getDate()}`;
-  }
-
-  getCurrentHourKey() {
-    const d = new Date();
-    return `h_${d.getFullYear()}_${d.getMonth() + 1}_${d.getDate()}_${d.getHours()}`;
+    this.checkTimeExpiry();
   }
 
   getRemainingHourSeconds() {
-    const now = new Date();
-    const nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0, 0);
-    return Math.max(0, Math.floor((nextHour - now) / 1000));
+    const now = Date.now();
+    return Math.max(0, Math.floor((this.hourlyExpiresAt - now) / 1000));
   }
 
   getRemainingDaySeconds() {
-    const now = new Date();
-    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
-    return Math.max(0, Math.floor((tomorrow - now) / 1000));
+    const now = Date.now();
+    return Math.max(0, Math.floor((this.dailyExpiresAt - now) / 1000));
   }
 
   getRemainingHourFormatted() {
@@ -77,34 +78,91 @@ class QuestManager {
   }
 
   checkTimeExpiry() {
+    const now = Date.now();
     let changed = false;
-    const curHour = this.getCurrentHourKey();
-    if (curHour !== this.hourlyKey) {
-      this.hourlyKey = curHour;
-      this.initHourlyQuests();
+
+    // 1. Express 1-hour fast quests
+    if (now >= this.hourlyExpiresAt) {
+      const pool = this.getDefaultHourlyPool();
+      const hasQuests = Array.isArray(this.hourlyQuests) && this.hourlyQuests.length > 0;
+
+      if (!hasQuests) {
+        this.initHourlyQuests();
+      } else {
+        this.hourlyQuests.forEach((q) => {
+          if (!q.claimed && (Number(q.current) || 0) < (Number(q.target) || 1)) {
+            // Did not manage to complete in time: reset progress to 0!
+            q.current = 0;
+          } else if (q.claimed) {
+            // Already claimed: rotate to a fresh quest from pool
+            const activeIds = this.hourlyQuests.map((hq) => hq.id);
+            const available = pool.filter((p) => !activeIds.includes(p.id));
+            const next = available.length > 0
+              ? available[Math.floor(Math.random() * available.length)]
+              : pool[Math.floor(Math.random() * pool.length)];
+            Object.assign(q, { ...next, current: 0, claimed: false });
+          }
+          // If completed but unclaimed (current >= target && !claimed), keep so player can claim trophies!
+        });
+      }
+
+      this.hourlyExpiresAt = now + 3600 * 1000;
+      this.saveQuests();
       changed = true;
     }
 
-    const curDay = this.getTodayKey();
-    if (curDay !== this.dailyKey) {
-      this.dailyKey = curDay;
-      this.initDailyQuests();
+    // 2. Daily 24-hour quests
+    if (now >= this.dailyExpiresAt) {
+      const pool = this.getDefaultDailyPool();
+      const hasQuests = Array.isArray(this.dailyQuests) && this.dailyQuests.length > 0;
+
+      if (!hasQuests) {
+        this.initDailyQuests();
+      } else {
+        this.dailyQuests.forEach((q) => {
+          if (!q.claimed && (Number(q.current) || 0) < (Number(q.target) || 1)) {
+            // Did not manage to complete in time: reset progress to 0!
+            q.current = 0;
+          } else if (q.claimed) {
+            // Already claimed: rotate to a fresh daily quest
+            const activeIds = this.dailyQuests.map((dq) => dq.id);
+            const available = pool.filter((p) => !activeIds.includes(p.id));
+            const next = available.length > 0
+              ? available[Math.floor(Math.random() * available.length)]
+              : pool[Math.floor(Math.random() * pool.length)];
+            Object.assign(q, { ...next, current: 0, claimed: false });
+          }
+        });
+      }
+
+      const nextMidnight = new Date();
+      nextMidnight.setHours(24, 0, 0, 0);
+      this.dailyExpiresAt = nextMidnight.getTime();
+      this.saveQuests();
       changed = true;
+    }
+
+    if (changed) {
+      this.updateUIBadge();
+      const modal = document.getElementById('questsModal');
+      if (modal && !modal.classList.contains('hidden') && window.game && typeof window.game.renderQuestsModal === 'function') {
+        window.game.renderQuestsModal();
+      }
     }
 
     return changed;
   }
 
   loadQuests() {
-    // 1. Daily Quests
-    const savedDailyKey = localStorage.getItem('bb_daily_key_v2');
-    const savedDailyData = localStorage.getItem('bb_daily_quests_v2');
+    const savedDailyData = localStorage.getItem('bb_daily_quests_v3') || localStorage.getItem('bb_daily_quests_v2');
+    const savedHourlyData = localStorage.getItem('bb_hourly_quests_v3') || localStorage.getItem('bb_hourly_quests_v2');
 
-    if (savedDailyKey === this.dailyKey && savedDailyData) {
+    // 1. Daily Quests
+    if (savedDailyData) {
       try {
         const parsed = JSON.parse(savedDailyData);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          this.dailyQuests = parsed.map(q => ({
+          this.dailyQuests = parsed.map((q) => ({
             ...q,
             current: Number(q.current) || 0,
             target: Number(q.target) || 1,
@@ -122,14 +180,11 @@ class QuestManager {
     }
 
     // 2. Hourly Quests
-    const savedHourlyKey = localStorage.getItem('bb_hourly_key_v2');
-    const savedHourlyData = localStorage.getItem('bb_hourly_quests_v2');
-
-    if (savedHourlyKey === this.hourlyKey && savedHourlyData) {
+    if (savedHourlyData) {
       try {
         const parsed = JSON.parse(savedHourlyData);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          this.hourlyQuests = parsed.map(q => ({
+          this.hourlyQuests = parsed.map((q) => ({
             ...q,
             current: Number(q.current) || 0,
             target: Number(q.target) || 1,
@@ -150,30 +205,30 @@ class QuestManager {
   initDailyQuests() {
     const pool = this.getDefaultDailyPool();
     const shuffled = pool.sort(() => 0.5 - Math.random());
-    this.dailyQuests = shuffled.slice(0, 3).map(q => ({
+    this.dailyQuests = shuffled.slice(0, 3).map((q) => ({
       ...q,
       current: 0,
       claimed: false
     }));
-    localStorage.setItem('bb_daily_key_v2', this.dailyKey);
     this.saveQuests();
   }
 
   initHourlyQuests() {
     const pool = this.getDefaultHourlyPool();
     const shuffled = pool.sort(() => 0.5 - Math.random());
-    this.hourlyQuests = shuffled.slice(0, 2).map(q => ({
+    this.hourlyQuests = shuffled.slice(0, 2).map((q) => ({
       ...q,
       current: 0,
       claimed: false
     }));
-    localStorage.setItem('bb_hourly_key_v2', this.hourlyKey);
     this.saveQuests();
   }
 
   saveQuests() {
-    localStorage.setItem('bb_daily_quests_v2', JSON.stringify(this.dailyQuests));
-    localStorage.setItem('bb_hourly_quests_v2', JSON.stringify(this.hourlyQuests));
+    localStorage.setItem('bb_daily_quests_v3', JSON.stringify(this.dailyQuests));
+    localStorage.setItem('bb_hourly_quests_v3', JSON.stringify(this.hourlyQuests));
+    localStorage.setItem('bb_hourly_expires_at', String(this.hourlyExpiresAt));
+    localStorage.setItem('bb_daily_expires_at', String(this.dailyExpiresAt));
     localStorage.setItem('bb_trophies', String(this.trophies));
   }
 

@@ -1248,7 +1248,15 @@ class BlockBlastGame {
     requestAnimationFrame((t) => this.loop(t));
   }
 
-  update(dt) {
+  update(dt, now) {
+    // Periodic quest expiry check (~1 sec) to reset progress if time limit ran out
+    if (!this._lastQuestCheck || now - this._lastQuestCheck > 1000) {
+      this._lastQuestCheck = now;
+      if (window.questManager) {
+        window.questManager.checkTimeExpiry();
+      }
+    }
+
     // Intro board fill and disassemble animation
     if (this.introAnim && this.introAnim.active) {
       this.introAnim.elapsed += dt;
