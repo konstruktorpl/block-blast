@@ -130,19 +130,21 @@ button {
   position: absolute;
   left: 0;
   right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   text-align: center;
   font-family: var(--font-game);
   font-weight: 800;
-  font-size: clamp(2.8rem, 11vw, 3.8rem);
-  line-height: 1.05;
+  font-size: clamp(2.3rem, 9.5vw, 3.2rem);
+  line-height: 1;
   color: #fff;
-  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.28);
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
   pointer-events: none;
   transition: transform 0.12s ease-out;
 }
 
 .current-score.bump {
-  transform: scale(1.1);
+  transform: translateY(-50%) scale(1.1);
 }
 
 /* ---------- Canvas ---------- */

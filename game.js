@@ -459,27 +459,23 @@ class BlockBlastGame {
     this.canvas.height = Math.round(h * dpr);
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Give comfortable side padding and breathing room from HUD score
-    const sideMargin = Math.max(14, Math.round(w * 0.04));
-    const maxBoardSpaceW = w - sideMargin * 2;
+    // Reserve ~25% of height for the 3-piece dock at bottom
+    const minDockH = Math.min(150, Math.max(110, h * 0.24));
+    // Comfortable top margin below HUD (neat ~16px breathing room, no giant gap)
+    const topMargin = Math.max(12, Math.min(22, Math.round(h * 0.025)));
+    const gapBetweenBoardAndDock = Math.max(14, Math.min(26, Math.round(h * 0.03)));
 
-    const dockTargetH = Math.min(145, Math.max(105, Math.round(h * 0.22)));
-    const topMargin = Math.max(20, Math.min(44, Math.round(h * 0.05)));
-    const gapBetweenBoardAndDock = Math.max(16, Math.min(32, Math.round(h * 0.032)));
+    const maxBoardSpaceH = h - minDockH - topMargin - gapBetweenBoardAndDock;
+    const maxBoardSpaceW = w - 10;
 
-    const maxBoardSpaceH = h - dockTargetH - topMargin - gapBetweenBoardAndDock - 14;
     const boardSize = Math.floor(Math.min(maxBoardSpaceW, maxBoardSpaceH));
-    const boardPad = Math.max(4, Math.round(boardSize * 0.014));
+    const boardPad = Math.max(3, Math.round(boardSize * 0.012));
     const cellSize = (boardSize - boardPad * 2) / 8;
 
     const boardX = Math.round((w - boardSize) / 2);
-
-    // Harmoniously distribute remaining vertical space so the board is lowered below the score
-    const totalContentH = boardSize + gapBetweenBoardAndDock + dockTargetH;
-    const extraH = Math.max(0, h - totalContentH);
-    const boardY = Math.round(topMargin + extraH * 0.28);
-    const dockY = boardY + boardSize + gapBetweenBoardAndDock + Math.round(extraH * 0.06);
-    const dockHeight = Math.max(90, h - dockY - 4);
+    const boardY = topMargin;
+    const dockY = boardY + boardSize + gapBetweenBoardAndDock;
+    const dockHeight = Math.max(96, h - dockY - 6);
 
     const slotW = boardSize / 3;
     const dockSlotCenters = [

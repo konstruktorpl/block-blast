@@ -376,95 +376,67 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
 
     ctx.restore();
   } else {
-    // Authentic Block Blast Soft Cushion 3D Block (Pillowed Bevel)
-    const r = Math.max(3, Math.round(bs * 0.16));
-    const bevel = Math.max(2, Math.min(bs * 0.17, 7));
-
-    // 1. Base rounded block
-    roundRectPath(ctx, bx, by, bs, bs, r);
-    ctx.fillStyle = color.base;
-    ctx.fill();
-
+    // Classic Block Blast flat bevel (sharp square block)
+    const bevelRatio = bs < 22 ? 0.16 : 0.14;
+    const bevel = Math.max(1.5, Math.min(bs * bevelRatio, 4));
+    roundRectPath(ctx, bx, by, bs, bs, theme.styleType === 'bevel3d' ? Math.max(1, bs * 0.05) : radius);
     ctx.save();
     ctx.clip();
 
-    // 2. Soft top-left highlight bevel (illuminated cushion rim)
+    ctx.fillStyle = color.base;
+    ctx.fillRect(bx, by, bs, bs);
+
     ctx.beginPath();
     ctx.moveTo(bx, by);
     ctx.lineTo(bx + bs, by);
     ctx.lineTo(bx + bs - bevel, by + bevel);
     ctx.lineTo(bx + bevel, by + bevel);
-    ctx.lineTo(bx + bevel, by + bs - bevel);
-    ctx.lineTo(bx, by + bs);
     ctx.closePath();
     ctx.fillStyle = color.top;
     ctx.fill();
 
-    // 3. Left secondary highlight for depth
     ctx.beginPath();
     ctx.moveTo(bx, by);
     ctx.lineTo(bx + bevel, by + bevel);
     ctx.lineTo(bx + bevel, by + bs - bevel);
     ctx.lineTo(bx, by + bs);
     ctx.closePath();
-    ctx.fillStyle = color.left || color.top;
+    ctx.fillStyle = color.left;
     ctx.fill();
 
-    // 4. Soft bottom-right shadow bevel
     ctx.beginPath();
     ctx.moveTo(bx + bs, by);
     ctx.lineTo(bx + bs, by + bs);
-    ctx.lineTo(bx, by + bs);
-    ctx.lineTo(bx + bevel, by + bs - bevel);
     ctx.lineTo(bx + bs - bevel, by + bs - bevel);
     ctx.lineTo(bx + bs - bevel, by + bevel);
+    ctx.closePath();
+    ctx.fillStyle = color.right;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(bx, by + bs);
+    ctx.lineTo(bx + bevel, by + bs - bevel);
+    ctx.lineTo(bx + bs - bevel, by + bs - bevel);
+    ctx.lineTo(bx + bs, by + bs);
     ctx.closePath();
     ctx.fillStyle = color.bottom;
     ctx.fill();
 
-    // 5. Right shadow facet
-    ctx.beginPath();
-    ctx.moveTo(bx + bs, by);
-    ctx.lineTo(bx + bs, by + bs);
-    ctx.lineTo(bx + bs - bevel, by + bs - bevel);
-    ctx.lineTo(bx + bs - bevel, by + bevel);
-    ctx.closePath();
-    ctx.fillStyle = color.right || color.bottom;
-    ctx.fill();
-
-    // 6. Raised center cushion face (smooth pillowed top facet)
     const innerX = bx + bevel;
     const innerY = by + bevel;
     const innerS = bs - bevel * 2;
-    if (innerS > 3) {
-      const innerR = Math.max(2, Math.round(r * 0.6));
-      roundRectPath(ctx, innerX, innerY, innerS, innerS, innerR);
+    ctx.fillStyle = color.base;
+    ctx.fillRect(innerX, innerY, innerS, innerS);
 
-      // Subtle gradient from top-left to base
-      const grad = ctx.createLinearGradient(innerX, innerY, innerX + innerS, innerY + innerS);
-      grad.addColorStop(0, color.left || color.top);
-      grad.addColorStop(0.35, color.base);
-      grad.addColorStop(1, color.base);
-      ctx.fillStyle = grad;
-      ctx.fill();
-
-      // Soft delicate specular shine line along the top inner cushion
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
-      roundRectPath(ctx, innerX + 1, innerY + 1, innerS - 2, Math.max(1.5, innerS * 0.16), 1);
-      ctx.fill();
-    }
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.22)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(bx + 0.5, by + 0.5, bs - 1, bs - 1);
 
     ctx.restore();
-
-    // 7. Gentle, soft outer contour for block separation (no harsh black border)
-    roundRectPath(ctx, bx, by, bs, bs, r);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.14)';
-    ctx.stroke();
   }
 
   if (pulse > 0) {
-    roundRectPath(ctx, bx, by, bs, bs, radius);
+    roundRectPath(ctx, bx, by, bs, bs, theme.styleType === 'bevel3d' ? 2 : radius);
     ctx.fillStyle = `rgba(255, 255, 255, ${0.12 + pulse * 0.18})`;
     ctx.fill();
   }
