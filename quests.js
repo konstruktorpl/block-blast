@@ -52,7 +52,18 @@ class QuestManager {
 
     if (savedDailyKey === this.dailyKey && savedDailyData) {
       try {
-        this.dailyQuests = JSON.parse(savedDailyData);
+        const parsed = JSON.parse(savedDailyData);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          this.dailyQuests = parsed.map(q => ({
+            ...q,
+            current: Number(q.current) || 0,
+            target: Number(q.target) || 1,
+            reward: Number(q.reward) || 10,
+            claimed: Boolean(q.claimed)
+          }));
+        } else {
+          this.initDailyQuests();
+        }
       } catch (e) {
         this.initDailyQuests();
       }
@@ -65,7 +76,18 @@ class QuestManager {
 
     if (savedWeeklyKey === this.weeklyKey && savedWeeklyData) {
       try {
-        this.weeklyQuests = JSON.parse(savedWeeklyData);
+        const parsed = JSON.parse(savedWeeklyData);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          this.weeklyQuests = parsed.map(q => ({
+            ...q,
+            current: Number(q.current) || 0,
+            target: Number(q.target) || 1,
+            reward: Number(q.reward) || 40,
+            claimed: Boolean(q.claimed)
+          }));
+        } else {
+          this.initWeeklyQuests();
+        }
       } catch (e) {
         this.initWeeklyQuests();
       }
@@ -105,19 +127,28 @@ class QuestManager {
   }
 
   onEvent(type, value = 1) {
+    const numVal = Number(value) || 0;
+    if (numVal <= 0 && type !== 'single_score') return;
+
     let changed = false;
     const processList = (list) => {
       for (const q of list) {
         if (q.claimed) continue;
         if (q.type === type) {
+          const cur = Number(q.current) || 0;
+          const target = Number(q.target) || 1;
           if (type === 'single_score' || type === 'max_combo') {
-            if (value > q.current) {
-              q.current = Math.min(q.target, value);
+            const nextVal = Math.min(target, Math.max(cur, numVal));
+            if (nextVal !== cur) {
+              q.current = nextVal;
               changed = true;
             }
           } else {
-            q.current = Math.min(q.target, q.current + value);
-            changed = true;
+            const nextVal = Math.min(target, cur + numVal);
+            if (nextVal !== cur) {
+              q.current = nextVal;
+              changed = true;
+            }
           }
         }
       }
@@ -129,22 +160,26 @@ class QuestManager {
     if (changed) {
       this.saveQuests();
       this.updateUIBadge();
+      const modal = document.getElementById('questsModal');
+      if (modal && !modal.classList.contains('hidden') && window.game && typeof window.game.renderQuestsModal === 'function') {
+        window.game.renderQuestsModal();
+      }
     }
   }
 
   hasUnclaimed() {
     return (
-      this.dailyQuests.some(q => q.current >= q.target && !q.claimed) ||
-      this.weeklyQuests.some(q => q.current >= q.target && !q.claimed)
+      this.dailyQuests.some(q => (Number(q.current) || 0) >= (Number(q.target) || 1) && !q.claimed) ||
+      this.weeklyQuests.some(q => (Number(q.current) || 0) >= (Number(q.target) || 1) && !q.claimed)
     );
   }
 
   claim(questId, isWeekly = false) {
     const list = isWeekly ? this.weeklyQuests : this.dailyQuests;
     const q = list.find(item => item.id === questId);
-    if (q && q.current >= q.target && !q.claimed) {
+    if (q && (Number(q.current) || 0) >= (Number(q.target) || 1) && !q.claimed) {
       q.claimed = true;
-      this.trophies += q.reward;
+      this.trophies = (Number(this.trophies) || 0) + (Number(q.reward) || 10);
       this.saveQuests();
       this.updateUIBadge();
       return q.reward;

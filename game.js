@@ -27,6 +27,8 @@ class BlockBlastGame {
     this.maxCombo = 1;
     this.movesSinceLastClear = 0; // In Block Blast, combo stays alive for up to 3 placements
     this.isGameOver = false;
+    this.hasCountedGamePlayed = false;
+    this.currentDynPalette = '';
 
     // Drag State
     this.drag = {
@@ -84,6 +86,14 @@ class BlockBlastGame {
     if (!window.THEMES[themeId]) return;
     this.themeId = themeId;
     localStorage.setItem('bb_theme', themeId);
+
+    if (this.themeId === 'classic' && window.DYNAMIC_PALETTES && window.DYNAMIC_PALETTES.length > 0) {
+      this.currentDynPalette = '';
+      this.updateDynamicPalette();
+      this.renderThemeModalList();
+      return;
+    }
+
     const t = this.theme;
     document.documentElement.style.setProperty('--bg-gradient', t.bgGradient);
     document.documentElement.style.background = t.themeColor;
@@ -97,6 +107,32 @@ class BlockBlastGame {
     this.renderThemeModalList();
   }
 
+  updateDynamicPalette() {
+    if (this.themeId !== 'classic') return;
+    if (!window.DYNAMIC_PALETTES || window.DYNAMIC_PALETTES.length === 0) return;
+    const idx = Math.floor(Math.max(0, this.score) / 400) % window.DYNAMIC_PALETTES.length;
+    const dyn = window.DYNAMIC_PALETTES[idx];
+    if (!dyn || this.currentDynPalette === dyn.name) return;
+
+    this.currentDynPalette = dyn.name;
+    document.documentElement.style.setProperty('--bg-gradient', dyn.bgGradient);
+    document.documentElement.style.background = dyn.themeColor;
+    document.body.style.background = dyn.bgGradient;
+    document.documentElement.style.setProperty('--board-bg', dyn.boardBg);
+    document.documentElement.style.setProperty('--board-border', dyn.boardBorder);
+    const metaTheme = document.getElementById('metaThemeColor');
+    if (metaTheme) metaTheme.setAttribute('content', dyn.themeColor);
+
+    const activeTheme = this.theme;
+    activeTheme.bgGradient = dyn.bgGradient;
+    activeTheme.themeColor = dyn.themeColor;
+    activeTheme.boardBg = dyn.boardBg;
+    activeTheme.boardBorder = dyn.boardBorder;
+    activeTheme.cellEmpty = dyn.cellEmpty;
+    activeTheme.cellEmptyBorder = dyn.cellEmptyBorder;
+    activeTheme.palette = dyn.palette;
+  }
+
   startNewGame() {
     this.grid = Array.from({ length: 8 }, () => Array(8).fill(null));
     this.score = 0;
@@ -106,9 +142,13 @@ class BlockBlastGame {
     this.movesSinceLastClear = 0;
     this.isGameOver = false;
     this.drag.active = false;
+    this.hasCountedGamePlayed = false;
 
+    this.updateDynamicPalette();
     this.spawnNewTray();
-    if (window.questManager) window.questManager.onEvent("games_played", 1);
+    if (window.questManager) {
+      window.questManager.updateUIBadge();
+    }
     this.saveGameState();
     this.updateHUD(true);
     document.getElementById('gameOverModal').classList.add('hidden');
@@ -187,6 +227,13 @@ class BlockBlastGame {
       } else {
         const anyFits = this.checkPieceFitStates();
         if (!anyFits) return false;
+      }
+      this.hasCountedGamePlayed = true;
+      this.updateDynamicPalette();
+      if (window.questManager) {
+        window.questManager.onEvent('single_score', this.score);
+        window.questManager.onEvent('max_combo', this.maxCombo || 1);
+        window.questManager.updateUIBadge();
       }
       return true;
     } catch (e) {
@@ -293,11 +340,15 @@ class BlockBlastGame {
     };
 
     // Open Quests helper
+    let lastQuestOpen = 0;
     const openQuests = (e) => {
       if (e) {
         e.preventDefault();
         e.stopPropagation();
       }
+      const now = Date.now();
+      if (now - lastQuestOpen < 300) return;
+      lastQuestOpen = now;
       window.soundEngine.init();
       window.soundEngine.playPickup();
       this.renderQuestsModal();
@@ -325,34 +376,6 @@ class BlockBlastGame {
     if (btnStartQuests) {
       btnStartQuests.addEventListener('click', (e) => {
         openQuests(e);
-      });
-    }
-
-    // Quests Tabs
-    const tabQuests = document.getElementById('tabQuests');
-    const tabEffects = document.getElementById('tabEffects');
-    if (tabQuests && tabEffects) {
-      tabQuests.addEventListener('click', (e) => {
-        e.stopPropagation();
-        window.soundEngine.playPickup();
-        tabQuests.classList.add('active');
-        tabEffects.classList.remove('active');
-        document.getElementById('tabQuestsContent').classList.add('active');
-        document.getElementById('tabQuestsContent').classList.remove('hidden');
-        document.getElementById('tabEffectsContent').classList.add('hidden');
-        document.getElementById('tabEffectsContent').classList.remove('active');
-      });
-
-      tabEffects.addEventListener('click', (e) => {
-        e.stopPropagation();
-        window.soundEngine.playPickup();
-        tabEffects.classList.add('active');
-        tabQuests.classList.remove('active');
-        document.getElementById('tabEffectsContent').classList.add('active');
-        document.getElementById('tabEffectsContent').classList.remove('hidden');
-        document.getElementById('tabQuestsContent').classList.add('hidden');
-        document.getElementById('tabQuestsContent').classList.remove('active');
-        this.renderEffectsList();
       });
     }
 
@@ -625,6 +648,14 @@ class BlockBlastGame {
     }
     piece.placed = true;
 
+    // Quest: First block placed counts as a game played
+    if (!this.hasCountedGamePlayed) {
+      this.hasCountedGamePlayed = true;
+      if (window.questManager) {
+        window.questManager.onEvent('games_played', 1);
+      }
+    }
+
     // Base placement points (= number of blocks in the piece)
     const placementPoints = shape.blockCount;
     let movePoints = placementPoints;
@@ -712,6 +743,16 @@ class BlockBlastGame {
       const allClearBonus = isAllClear ? 300 : 0;
       movePoints += comboBonus + allClearBonus;
 
+      // Quests tracking for line clears, destroyed blocks, combo, all clear
+      if (window.questManager) {
+        window.questManager.onEvent('lines_cleared', totalLines);
+        window.questManager.onEvent('blocks_destroyed', clearedSet.size);
+        window.questManager.onEvent('max_combo', this.comboStreak);
+        if (isAllClear) {
+          window.questManager.onEvent('all_clear', 1);
+        }
+      }
+
       // Audio & Haptics
       window.soundEngine.playLineClear(totalLines, this.comboStreak, isAllClear);
       if (navigator.vibrate) {
@@ -765,6 +806,14 @@ class BlockBlastGame {
       localStorage.setItem('bb_best_score', String(this.bestScore));
     }
 
+    // Quest: Score update
+    if (window.questManager) {
+      window.questManager.onEvent('single_score', this.score);
+    }
+
+    // Dynamic color palette transition every 400 pts
+    this.updateDynamicPalette();
+
     // Bump score animation
     this.scoreEl.classList.remove('bump');
     void this.scoreEl.offsetWidth;
@@ -798,6 +847,12 @@ class BlockBlastGame {
     localStorage.removeItem('bb_saved_state');
     this.fx.triggerShake(8, 0.35);
     window.soundEngine.playGameOver();
+
+    if (window.questManager) {
+      window.questManager.onEvent('single_score', this.score);
+      window.questManager.onEvent('max_combo', this.maxCombo);
+      window.questManager.updateUIBadge();
+    }
 
     setTimeout(() => {
       document.getElementById('finalScoreValue').textContent = this.score.toLocaleString('ru-RU');
@@ -1081,7 +1136,14 @@ class BlockBlastGame {
 
     // Bind claim buttons
     document.querySelectorAll('[data-claim]').forEach(btn => {
-      btn.addEventListener('click', () => {
+      let claimedOnce = false;
+      const handleClaim = (e) => {
+        if (claimedOnce) return;
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        claimedOnce = true;
         const qId = btn.getAttribute('data-claim');
         const isWeekly = btn.getAttribute('data-weekly') === 'true';
         const reward = qm.claim(qId, isWeekly);
@@ -1090,7 +1152,9 @@ class BlockBlastGame {
           this.renderQuestsModal();
           this.updateHUD();
         }
-      });
+      };
+      btn.addEventListener('pointerup', handleClaim);
+      btn.addEventListener('click', handleClaim);
     });
   }
 
