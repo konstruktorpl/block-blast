@@ -111,8 +111,9 @@ window.DYNAMIC_PALETTES = DYNAMIC_PALETTES;
 const THEMES = {
   classic: {
     id: 'classic',
-    name: 'Классика',
-    subtitle: 'Как в оригинальном Block Blast',
+    name: 'Классика (Хамелеон)',
+    subtitle: 'Сочный оригинал • поддержка авто-смены цветов',
+    supportsAutoPalette: true,
     bgGradient: 'linear-gradient(180deg, #4766b4 0%, #3f5aa5 100%)',
     themeColor: '#4766b4',
     boardBg: '#1b2447',
@@ -121,6 +122,9 @@ const THEMES = {
     cellEmpty: '#222d56',
     cellEmptyBorder: '#18203f',
     cellHighlight: 'rgba(255, 255, 255, 0.14)',
+    modalBg: '#364d94',
+    modalRow: '#2b3f7d',
+    modalShadow: '#213063',
     dockBg: 'transparent',
     dockBorder: 'transparent',
     textPrimary: '#ffffff',
@@ -139,8 +143,8 @@ const THEMES = {
 
   sage: {
     id: 'sage',
-    name: 'Шалфей (Оригинал)',
-    subtitle: 'Аутентичный зелёный стиль',
+    name: 'Шалфей (Дзен)',
+    subtitle: 'Спокойный зелёный минимализм',
     bgGradient: 'linear-gradient(180deg, #98baa0 0%, #8bb194 100%)',
     themeColor: '#98baa0',
     boardBg: '#526e57',
@@ -149,6 +153,9 @@ const THEMES = {
     cellEmpty: '#3f5644',
     cellEmptyBorder: '#344738',
     cellHighlight: 'rgba(255, 255, 255, 0.16)',
+    modalBg: '#46614b',
+    modalRow: '#384f3c',
+    modalShadow: '#2a3d2d',
     dockBg: 'transparent',
     dockBorder: 'transparent',
     textPrimary: '#ffffff',
@@ -167,15 +174,18 @@ const THEMES = {
   neon: {
     id: 'neon',
     name: 'Неоновый Киберпанк',
-    subtitle: 'Светящиеся лазерные блоки',
-    bgGradient: 'linear-gradient(180deg, #0d081d 0%, #070610 60%, #05040a 100%)',
-    themeColor: '#0b0719',
-    boardBg: '#080711',
-    boardBorder: '#2e1f5e',
-    boardShadow: '0 0 34px rgba(121, 80, 242, 0.28), inset 0 0 18px rgba(0, 0, 0, 0.8)',
-    cellEmpty: '#121024',
-    cellEmptyBorder: '#1b1736',
-    cellHighlight: 'rgba(0, 245, 212, 0.16)',
+    subtitle: 'Тёмный ультрафиолет и лазерное свечение',
+    bgGradient: 'linear-gradient(180deg, #110924 0%, #070512 60%, #040309 100%)',
+    themeColor: '#0e0720',
+    boardBg: '#090714',
+    boardBorder: '#3f277a',
+    boardShadow: '0 0 34px rgba(121, 80, 242, 0.35), inset 0 0 18px rgba(0, 0, 0, 0.85)',
+    cellEmpty: '#141129',
+    cellEmptyBorder: '#201b40',
+    cellHighlight: 'rgba(0, 245, 212, 0.18)',
+    modalBg: '#191333',
+    modalRow: '#241c47',
+    modalShadow: '#0a0718',
     dockBg: 'rgba(14, 12, 30, 0.72)',
     dockBorder: 'rgba(132, 94, 247, 0.35)',
     textPrimary: '#f8f9fa',
@@ -194,15 +204,18 @@ const THEMES = {
   wood: {
     id: 'wood',
     name: 'Деревянная Классика',
-    subtitle: 'Тёплое резное дерево и уют',
-    bgGradient: 'linear-gradient(180deg, #4a3020 0%, #332014 60%, #24160d 100%)',
-    themeColor: '#422a1b',
+    subtitle: 'Тёплое резное дерево с фактурой',
+    bgGradient: 'linear-gradient(180deg, #523421 0%, #382315 60%, #24160d 100%)',
+    themeColor: '#482d1c',
     boardBg: '#23150c',
-    boardBorder: '#6e472b',
+    boardBorder: '#754c2e',
     boardShadow: '0 14px 36px rgba(0, 0, 0, 0.65), inset 0 3px 8px rgba(0, 0, 0, 0.7)',
-    cellEmpty: '#311e12',
+    cellEmpty: '#331f13',
     cellEmptyBorder: '#24150c',
     cellHighlight: 'rgba(255, 216, 168, 0.16)',
+    modalBg: '#3e2718',
+    modalRow: '#2e1c10',
+    modalShadow: '#1c1008',
     dockBg: 'rgba(35, 21, 12, 0.7)',
     dockBorder: 'rgba(138, 90, 54, 0.45)',
     textPrimary: '#fff4e6',
@@ -221,15 +234,18 @@ const THEMES = {
   pastel: {
     id: 'pastel',
     name: 'Карамель (Пастель)',
-    subtitle: 'Мягкие конфетные 3D-кубики',
-    bgGradient: 'linear-gradient(180deg, #322c56 0%, #231e42 60%, #191530 100%)',
-    themeColor: '#2c264c',
-    boardBg: '#18142c',
-    boardBorder: '#4c437a',
+    subtitle: 'Мягкие глянцевые 3D-кубики',
+    bgGradient: 'linear-gradient(180deg, #433970 0%, #2c2452 60%, #1c1638 100%)',
+    themeColor: '#372e60',
+    boardBg: '#1c1736',
+    boardBorder: '#574c8c',
     boardShadow: '0 14px 34px rgba(10, 8, 22, 0.55), inset 0 2px 6px rgba(0, 0, 0, 0.4)',
-    cellEmpty: '#241f3e',
-    cellEmptyBorder: '#1b1730',
+    cellEmpty: '#28224a',
+    cellEmptyBorder: '#1d1838',
     cellHighlight: 'rgba(255, 255, 255, 0.14)',
+    modalBg: '#2d2654',
+    modalRow: '#393066',
+    modalShadow: '#191433',
     dockBg: 'rgba(26, 22, 48, 0.65)',
     dockBorder: 'rgba(116, 102, 184, 0.35)',
     textPrimary: '#ffffff',
@@ -242,6 +258,36 @@ const THEMES = {
       { id: 'mint',     base: '#63e6be', top: '#c3fae8', left: '#96f2d7', right: '#20c997', bottom: '#0ca678', inner: '#63e6be', glow: '#96f2d7' },
       { id: 'sky',      base: '#74c0fc', top: '#d0ebff', left: '#a5d8ff', right: '#339af0', bottom: '#1c7ed6', inner: '#74c0fc', glow: '#a5d8ff' },
       { id: 'lavender', base: '#b197fc', top: '#e5dbff', left: '#d0bfff', right: '#845ef7', bottom: '#6741d9', inner: '#b197fc', glow: '#d0bfff' }
+    ]
+  },
+
+  ocean: {
+    id: 'ocean',
+    name: 'Морской Кристалл',
+    subtitle: 'Глубокий бирюзовый океан и блеск граней',
+    bgGradient: 'linear-gradient(180deg, #136f82 0%, #0b4a59 60%, #07303b 100%)',
+    themeColor: '#105c6d',
+    boardBg: '#082c36',
+    boardBorder: '#1f7a8c',
+    boardShadow: '0 14px 36px rgba(0, 20, 30, 0.6)',
+    cellEmpty: '#0d3b47',
+    cellEmptyBorder: '#07242c',
+    cellHighlight: 'rgba(102, 217, 232, 0.18)',
+    modalBg: '#0f4754',
+    modalRow: '#155c6d',
+    modalShadow: '#07242b',
+    dockBg: 'transparent',
+    dockBorder: 'transparent',
+    textPrimary: '#f0fbff',
+    textAccent: '#66d9e8',
+    styleType: 'crystal',
+    palette: [
+      { id: 'aqua',    base: '#06b6d4', top: '#a5f3fc', left: '#22d3ee', right: '#0891b2', bottom: '#155e75', inner: '#06b6d4', glow: '#67e8f9' },
+      { id: 'emerald', base: '#10b981', top: '#a7f3d0', left: '#34d399', right: '#059669', bottom: '#065f46', inner: '#10b981', glow: '#6ee7b7' },
+      { id: 'amber',   base: '#f59f00', top: '#fef08a', left: '#fcc419', right: '#d97706', bottom: '#92400e', inner: '#f59f00', glow: '#fde68a' },
+      { id: 'coral',   base: '#fb7185', top: '#fecdd3', left: '#fda4af', right: '#e11d48', bottom: '#9f1239', inner: '#fb7185', glow: '#ffe4e6' },
+      { id: 'indigo',  base: '#6366f1', top: '#c7d2fe', left: '#818cf8', right: '#4338ca', bottom: '#312e81', inner: '#6366f1', glow: '#a5b4fc' },
+      { id: 'teal',    base: '#14b8a6', top: '#99f6e4', left: '#2dd4bf', right: '#0d9488', bottom: '#115e59', inner: '#14b8a6', glow: '#5eead4' }
     ]
   }
 };
@@ -427,6 +473,23 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
     const innerS = bs - bevel * 2;
     ctx.fillStyle = color.base;
     ctx.fillRect(innerX, innerY, innerS, innerS);
+
+    if (theme.styleType === 'pastel') {
+      // Candy glossy pillow highlight
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.34)';
+      roundRectPath(ctx, innerX + 2, innerY + 2, innerS * 0.62, innerS * 0.24, Math.max(2, innerS * 0.1));
+      ctx.fill();
+    } else if (theme.styleType === 'crystal') {
+      // Crystal diagonal specular band
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+      ctx.beginPath();
+      ctx.moveTo(innerX, innerY + innerS * 0.45);
+      ctx.lineTo(innerX + innerS * 0.45, innerY);
+      ctx.lineTo(innerX + innerS * 0.78, innerY);
+      ctx.lineTo(innerX, innerY + innerS * 0.78);
+      ctx.closePath();
+      ctx.fill();
+    }
 
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.22)';
     ctx.lineWidth = 1;

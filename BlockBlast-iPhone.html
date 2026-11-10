@@ -20,6 +20,9 @@
   --bg-gradient: linear-gradient(180deg, #4766b4 0%, #3f5aa5 100%);
   --text-primary: #ffffff;
   --text-accent: #ffc633;
+  --modal-bg: #364d94;
+  --modal-row: #2b3f7d;
+  --modal-shadow: #213063;
   --font-game: "Baloo 2", "Nunito", -apple-system, "SF Pro Rounded", "Segoe UI", sans-serif;
 }
 
@@ -376,12 +379,13 @@ button {
 
 .modal-card {
   width: 100%;
-  max-width: 360px;
-  background: #3a529c;
-  border-radius: 16px;
+  max-width: 375px;
+  background: var(--modal-bg);
+  border-radius: 20px;
   padding: 20px;
   color: #fff;
-  box-shadow: 0 8px 0 #2a3d78;
+  box-shadow: 0 10px 0 var(--modal-shadow), 0 18px 40px rgba(0, 0, 0, 0.45);
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
   animation: popIn 0.18s ease-out;
   max-height: 90dvh;
   overflow-y: auto;
@@ -396,59 +400,200 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .modal-header h2 {
   font-family: var(--font-game);
-  font-size: 1.6rem;
+  font-size: 1.55rem;
   font-weight: 800;
 }
 
 .close-btn {
   width: 34px;
   height: 34px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: none;
-  background: #2a3d78;
+  background: var(--modal-row);
   color: #fff;
   font-size: 1rem;
   font-weight: 800;
   cursor: pointer;
 }
 
-.settings-list {
+.settings-section-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.58);
+  margin: 10px 4px 6px;
+}
+
+.settings-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  background: var(--modal-row);
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .settings-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   width: 100%;
-  padding: 15px 16px;
+  padding: 12px 14px;
   border: none;
-  border-radius: 10px;
-  background: #2f4588;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: transparent;
   color: #fff;
-  font-size: 1.08rem;
-  font-weight: 800;
   cursor: pointer;
   text-align: left;
+  transition: background 0.12s ease;
+}
+
+.settings-row:last-child {
+  border-bottom: none;
 }
 
 .settings-row:active {
-  background: #263a75;
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.row-value {
+.settings-row.disabled-hint {
+  opacity: 0.65;
+}
+
+.settings-row-left {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  flex: 1;
+}
+
+.settings-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.settings-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.settings-title {
+  font-size: 0.98rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.settings-desc {
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.68);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-chevron {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--text-accent);
+  line-height: 1;
+}
+
+.settings-pill {
+  background: rgba(255, 212, 59, 0.18);
+  color: var(--text-accent);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+/* iOS-style animated toggle switch */
+.toggle-switch {
+  width: 46px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.toggle-switch.on {
+  background: #20c997;
+  border-color: #63e6be;
+}
+
+.toggle-switch.on::after {
+  transform: translateX(20px);
+}
+
+.settings-footer {
+  margin-top: 14px;
+}
+
+.settings-reload-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.16);
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.settings-reload-btn:active {
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.version-pill {
   color: var(--text-accent);
   font-weight: 900;
 }
 
 /* Theme list */
+.theme-modal-tip {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.72);
+  margin: -6px 0 12px;
+  line-height: 1.35;
+}
+
 .theme-list {
   display: flex;
   flex-direction: column;
@@ -459,31 +604,74 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 13px 15px;
-  border-radius: 10px;
-  background: #2f4588;
-  border: 3px solid transparent;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--modal-row);
+  border: 2.5px solid rgba(255, 255, 255, 0.08);
   cursor: pointer;
+  transition: transform 0.1s ease, border-color 0.15s ease;
+}
+
+.theme-item:active {
+  transform: scale(0.985);
 }
 
 .theme-item.active {
   border-color: var(--text-accent);
+  box-shadow: 0 0 16px rgba(255, 212, 59, 0.2);
+}
+
+.theme-preview-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.theme-preview-board {
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+  padding: 3px;
+}
+
+.theme-preview-dot {
+  border-radius: 2px;
 }
 
 .theme-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 
 .theme-title {
   font-weight: 900;
-  font-size: 1rem;
+  font-size: 0.98rem;
 }
 
 .theme-sub {
-  font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.25;
+}
+
+.theme-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
 }
 
 .theme-swatches {
@@ -492,9 +680,16 @@ button {
 }
 
 .theme-swatch {
-  width: 16px;
-  height: 16px;
-  border-radius: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.theme-active-tag {
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: var(--text-accent);
 }
 
 /* iPhone modal */
@@ -1064,29 +1259,101 @@ button {
 
   <!-- Settings Modal -->
   <div id="settingsModal" class="modal-backdrop hidden">
-    <div class="modal-card">
+    <div class="modal-card settings-modal-card">
       <div class="modal-header">
         <h2>Настройки</h2>
         <button class="close-btn" data-close="settingsModal">✕</button>
       </div>
-      <div class="settings-list">
-        <button id="btnSound" class="settings-row"><span>Звук</span><span id="soundLabel" class="row-value">Вкл</span></button>
-        <button id="btnSettingsQuests" class="settings-row"><span>Квесты и награды</span><span class="row-value">🏆</span></button>
-        <button id="btnTheme" class="settings-row"><span>Тема</span><span class="row-value">›</span></button>
-        <button id="btnRestart" class="settings-row"><span>Начать заново</span><span class="row-value">›</span></button>
-        <button id="btnHome" class="settings-row"><span>Главное меню</span><span class="row-value">›</span></button>
-        <button id="btnReloadApp" class="settings-row" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.12);"><span>Очистить кэш / Обновить</span><span class="row-value">v40 🔄</span></button>
+
+      <div class="settings-section-label">ЗВУК И ВИД</div>
+      <div class="settings-group">
+        <button id="btnSound" class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-icon">🔊</span>
+            <div class="settings-text">
+              <span class="settings-title">Звуки и эффекты</span>
+              <span class="settings-desc" id="soundDesc">Приятные щелчки и комбо</span>
+            </div>
+          </div>
+          <span id="soundSwitch" class="toggle-switch on" aria-hidden="true"></span>
+        </button>
+
+        <button id="btnTheme" class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-icon">🎨</span>
+            <div class="settings-text">
+              <span class="settings-title">Оформление (Тема)</span>
+              <span class="settings-desc" id="currentThemeLabel">Классика (Хамелеон)</span>
+            </div>
+          </div>
+          <span class="settings-chevron">›</span>
+        </button>
+
+        <button id="btnAutoPalette" class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-icon">🌈</span>
+            <div class="settings-text">
+              <span class="settings-title">Смена цветов в «Классике»</span>
+              <span class="settings-desc" id="autoPaletteDesc">Сдвиг оттенков каждые 800 оч.</span>
+            </div>
+          </div>
+          <span id="autoPaletteSwitch" class="toggle-switch on" aria-hidden="true"></span>
+        </button>
+      </div>
+
+      <div class="settings-section-label">ПАРТИЯ И НАГРАДЫ</div>
+      <div class="settings-group">
+        <button id="btnSettingsQuests" class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-icon">🏆</span>
+            <div class="settings-text">
+              <span class="settings-title">Квесты и кубки</span>
+              <span class="settings-desc">Трофеи для «Второго шанса»</span>
+            </div>
+          </div>
+          <span id="settingsTrophyPill" class="settings-pill">0 🏆</span>
+        </button>
+
+        <button id="btnRestart" class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-icon">🔄</span>
+            <div class="settings-text">
+              <span class="settings-title">Начать заново</span>
+              <span class="settings-desc">Сбросить поле и начать новую</span>
+            </div>
+          </div>
+          <span class="settings-chevron">›</span>
+        </button>
+
+        <button id="btnHome" class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-icon">🏠</span>
+            <div class="settings-text">
+              <span class="settings-title">Главное меню</span>
+              <span class="settings-desc">Вернуться на стартовый экран</span>
+            </div>
+          </div>
+          <span class="settings-chevron">›</span>
+        </button>
+      </div>
+
+      <div class="settings-footer">
+        <button id="btnReloadApp" class="settings-reload-btn">
+          <span>Обновить игру / очистить кэш</span>
+          <span class="version-pill">v41 🔄</span>
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Theme Picker Modal -->
   <div id="themeModal" class="modal-backdrop hidden">
-    <div class="modal-card">
+    <div class="modal-card theme-modal-card">
       <div class="modal-header">
-        <h2>Тема</h2>
+        <h2>Оформление</h2>
         <button class="close-btn" data-close="themeModal">✕</button>
       </div>
+      <p class="theme-modal-tip">Выберите стиль поля и блоков. В теме «Классика» цвета могут плавно меняться во время игры.</p>
       <div id="themeList" class="theme-list"></div>
     </div>
   </div>
@@ -1624,8 +1891,9 @@ window.DYNAMIC_PALETTES = DYNAMIC_PALETTES;
 const THEMES = {
   classic: {
     id: 'classic',
-    name: 'Классика',
-    subtitle: 'Как в оригинальном Block Blast',
+    name: 'Классика (Хамелеон)',
+    subtitle: 'Сочный оригинал • поддержка авто-смены цветов',
+    supportsAutoPalette: true,
     bgGradient: 'linear-gradient(180deg, #4766b4 0%, #3f5aa5 100%)',
     themeColor: '#4766b4',
     boardBg: '#1b2447',
@@ -1634,6 +1902,9 @@ const THEMES = {
     cellEmpty: '#222d56',
     cellEmptyBorder: '#18203f',
     cellHighlight: 'rgba(255, 255, 255, 0.14)',
+    modalBg: '#364d94',
+    modalRow: '#2b3f7d',
+    modalShadow: '#213063',
     dockBg: 'transparent',
     dockBorder: 'transparent',
     textPrimary: '#ffffff',
@@ -1652,8 +1923,8 @@ const THEMES = {
 
   sage: {
     id: 'sage',
-    name: 'Шалфей (Оригинал)',
-    subtitle: 'Аутентичный зелёный стиль',
+    name: 'Шалфей (Дзен)',
+    subtitle: 'Спокойный зелёный минимализм',
     bgGradient: 'linear-gradient(180deg, #98baa0 0%, #8bb194 100%)',
     themeColor: '#98baa0',
     boardBg: '#526e57',
@@ -1662,6 +1933,9 @@ const THEMES = {
     cellEmpty: '#3f5644',
     cellEmptyBorder: '#344738',
     cellHighlight: 'rgba(255, 255, 255, 0.16)',
+    modalBg: '#46614b',
+    modalRow: '#384f3c',
+    modalShadow: '#2a3d2d',
     dockBg: 'transparent',
     dockBorder: 'transparent',
     textPrimary: '#ffffff',
@@ -1680,15 +1954,18 @@ const THEMES = {
   neon: {
     id: 'neon',
     name: 'Неоновый Киберпанк',
-    subtitle: 'Светящиеся лазерные блоки',
-    bgGradient: 'linear-gradient(180deg, #0d081d 0%, #070610 60%, #05040a 100%)',
-    themeColor: '#0b0719',
-    boardBg: '#080711',
-    boardBorder: '#2e1f5e',
-    boardShadow: '0 0 34px rgba(121, 80, 242, 0.28), inset 0 0 18px rgba(0, 0, 0, 0.8)',
-    cellEmpty: '#121024',
-    cellEmptyBorder: '#1b1736',
-    cellHighlight: 'rgba(0, 245, 212, 0.16)',
+    subtitle: 'Тёмный ультрафиолет и лазерное свечение',
+    bgGradient: 'linear-gradient(180deg, #110924 0%, #070512 60%, #040309 100%)',
+    themeColor: '#0e0720',
+    boardBg: '#090714',
+    boardBorder: '#3f277a',
+    boardShadow: '0 0 34px rgba(121, 80, 242, 0.35), inset 0 0 18px rgba(0, 0, 0, 0.85)',
+    cellEmpty: '#141129',
+    cellEmptyBorder: '#201b40',
+    cellHighlight: 'rgba(0, 245, 212, 0.18)',
+    modalBg: '#191333',
+    modalRow: '#241c47',
+    modalShadow: '#0a0718',
     dockBg: 'rgba(14, 12, 30, 0.72)',
     dockBorder: 'rgba(132, 94, 247, 0.35)',
     textPrimary: '#f8f9fa',
@@ -1707,15 +1984,18 @@ const THEMES = {
   wood: {
     id: 'wood',
     name: 'Деревянная Классика',
-    subtitle: 'Тёплое резное дерево и уют',
-    bgGradient: 'linear-gradient(180deg, #4a3020 0%, #332014 60%, #24160d 100%)',
-    themeColor: '#422a1b',
+    subtitle: 'Тёплое резное дерево с фактурой',
+    bgGradient: 'linear-gradient(180deg, #523421 0%, #382315 60%, #24160d 100%)',
+    themeColor: '#482d1c',
     boardBg: '#23150c',
-    boardBorder: '#6e472b',
+    boardBorder: '#754c2e',
     boardShadow: '0 14px 36px rgba(0, 0, 0, 0.65), inset 0 3px 8px rgba(0, 0, 0, 0.7)',
-    cellEmpty: '#311e12',
+    cellEmpty: '#331f13',
     cellEmptyBorder: '#24150c',
     cellHighlight: 'rgba(255, 216, 168, 0.16)',
+    modalBg: '#3e2718',
+    modalRow: '#2e1c10',
+    modalShadow: '#1c1008',
     dockBg: 'rgba(35, 21, 12, 0.7)',
     dockBorder: 'rgba(138, 90, 54, 0.45)',
     textPrimary: '#fff4e6',
@@ -1734,15 +2014,18 @@ const THEMES = {
   pastel: {
     id: 'pastel',
     name: 'Карамель (Пастель)',
-    subtitle: 'Мягкие конфетные 3D-кубики',
-    bgGradient: 'linear-gradient(180deg, #322c56 0%, #231e42 60%, #191530 100%)',
-    themeColor: '#2c264c',
-    boardBg: '#18142c',
-    boardBorder: '#4c437a',
+    subtitle: 'Мягкие глянцевые 3D-кубики',
+    bgGradient: 'linear-gradient(180deg, #433970 0%, #2c2452 60%, #1c1638 100%)',
+    themeColor: '#372e60',
+    boardBg: '#1c1736',
+    boardBorder: '#574c8c',
     boardShadow: '0 14px 34px rgba(10, 8, 22, 0.55), inset 0 2px 6px rgba(0, 0, 0, 0.4)',
-    cellEmpty: '#241f3e',
-    cellEmptyBorder: '#1b1730',
+    cellEmpty: '#28224a',
+    cellEmptyBorder: '#1d1838',
     cellHighlight: 'rgba(255, 255, 255, 0.14)',
+    modalBg: '#2d2654',
+    modalRow: '#393066',
+    modalShadow: '#191433',
     dockBg: 'rgba(26, 22, 48, 0.65)',
     dockBorder: 'rgba(116, 102, 184, 0.35)',
     textPrimary: '#ffffff',
@@ -1755,6 +2038,36 @@ const THEMES = {
       { id: 'mint',     base: '#63e6be', top: '#c3fae8', left: '#96f2d7', right: '#20c997', bottom: '#0ca678', inner: '#63e6be', glow: '#96f2d7' },
       { id: 'sky',      base: '#74c0fc', top: '#d0ebff', left: '#a5d8ff', right: '#339af0', bottom: '#1c7ed6', inner: '#74c0fc', glow: '#a5d8ff' },
       { id: 'lavender', base: '#b197fc', top: '#e5dbff', left: '#d0bfff', right: '#845ef7', bottom: '#6741d9', inner: '#b197fc', glow: '#d0bfff' }
+    ]
+  },
+
+  ocean: {
+    id: 'ocean',
+    name: 'Морской Кристалл',
+    subtitle: 'Глубокий бирюзовый океан и блеск граней',
+    bgGradient: 'linear-gradient(180deg, #136f82 0%, #0b4a59 60%, #07303b 100%)',
+    themeColor: '#105c6d',
+    boardBg: '#082c36',
+    boardBorder: '#1f7a8c',
+    boardShadow: '0 14px 36px rgba(0, 20, 30, 0.6)',
+    cellEmpty: '#0d3b47',
+    cellEmptyBorder: '#07242c',
+    cellHighlight: 'rgba(102, 217, 232, 0.18)',
+    modalBg: '#0f4754',
+    modalRow: '#155c6d',
+    modalShadow: '#07242b',
+    dockBg: 'transparent',
+    dockBorder: 'transparent',
+    textPrimary: '#f0fbff',
+    textAccent: '#66d9e8',
+    styleType: 'crystal',
+    palette: [
+      { id: 'aqua',    base: '#06b6d4', top: '#a5f3fc', left: '#22d3ee', right: '#0891b2', bottom: '#155e75', inner: '#06b6d4', glow: '#67e8f9' },
+      { id: 'emerald', base: '#10b981', top: '#a7f3d0', left: '#34d399', right: '#059669', bottom: '#065f46', inner: '#10b981', glow: '#6ee7b7' },
+      { id: 'amber',   base: '#f59f00', top: '#fef08a', left: '#fcc419', right: '#d97706', bottom: '#92400e', inner: '#f59f00', glow: '#fde68a' },
+      { id: 'coral',   base: '#fb7185', top: '#fecdd3', left: '#fda4af', right: '#e11d48', bottom: '#9f1239', inner: '#fb7185', glow: '#ffe4e6' },
+      { id: 'indigo',  base: '#6366f1', top: '#c7d2fe', left: '#818cf8', right: '#4338ca', bottom: '#312e81', inner: '#6366f1', glow: '#a5b4fc' },
+      { id: 'teal',    base: '#14b8a6', top: '#99f6e4', left: '#2dd4bf', right: '#0d9488', bottom: '#115e59', inner: '#14b8a6', glow: '#5eead4' }
     ]
   }
 };
@@ -1940,6 +2253,23 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
     const innerS = bs - bevel * 2;
     ctx.fillStyle = color.base;
     ctx.fillRect(innerX, innerY, innerS, innerS);
+
+    if (theme.styleType === 'pastel') {
+      // Candy glossy pillow highlight
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.34)';
+      roundRectPath(ctx, innerX + 2, innerY + 2, innerS * 0.62, innerS * 0.24, Math.max(2, innerS * 0.1));
+      ctx.fill();
+    } else if (theme.styleType === 'crystal') {
+      // Crystal diagonal specular band
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+      ctx.beginPath();
+      ctx.moveTo(innerX, innerY + innerS * 0.45);
+      ctx.lineTo(innerX + innerS * 0.45, innerY);
+      ctx.lineTo(innerX + innerS * 0.78, innerY);
+      ctx.lineTo(innerX, innerY + innerS * 0.78);
+      ctx.closePath();
+      ctx.fill();
+    }
 
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.22)';
     ctx.lineWidth = 1;
@@ -4039,6 +4369,8 @@ class BlockBlastGame {
     // Persistent Preferences
     this.themeId = localStorage.getItem('bb_theme') || 'classic';
     if (!window.THEMES[this.themeId]) this.themeId = 'classic';
+    this.autoPalette = localStorage.getItem('bb_auto_palette') !== '0';
+    this.activeThemeState = null;
 
     this.bestScore = parseInt(localStorage.getItem('bb_best_score') || '0', 10) || 0;
     this.initialBestScore = this.bestScore;
@@ -4109,7 +4441,7 @@ class BlockBlastGame {
 
     this.lastTime = performance.now();
 
-    this.applyTheme(this.themeId);
+    this.applyTheme(this.themeId, true);
     this.bindEvents();
     this.resize();
 
@@ -4123,20 +4455,66 @@ class BlockBlastGame {
   }
 
   get theme() {
-    return window.THEMES[this.themeId] || window.THEMES.classic;
+    return this.activeThemeState || window.THEMES[this.themeId] || window.THEMES.classic;
   }
 
-  applyTheme(themeId) {
-    if (!window.THEMES[themeId]) return;
+  /**
+   * Applies background gradients, CSS modal/surface variables, and meta theme color smoothly or instantly.
+   */
+  applyVisualSurface(surface, instant = false) {
+    const crossfadeEl = document.getElementById('bgCrossfade');
+    if (crossfadeEl && !instant) {
+      crossfadeEl.style.background = surface.bgGradient;
+      crossfadeEl.style.opacity = '1';
+      clearTimeout(this._crossfadeTimeout);
+      this._crossfadeTimeout = setTimeout(() => {
+        document.documentElement.style.setProperty('--bg-gradient', surface.bgGradient);
+        document.documentElement.style.background = surface.themeColor;
+        document.body.style.background = surface.bgGradient;
+        crossfadeEl.style.opacity = '0';
+      }, 650);
+    } else {
+      if (crossfadeEl) crossfadeEl.style.opacity = '0';
+      document.documentElement.style.setProperty('--bg-gradient', surface.bgGradient);
+      document.documentElement.style.background = surface.themeColor;
+      document.body.style.background = surface.bgGradient;
+    }
+
+    document.documentElement.style.setProperty('--board-bg', surface.boardBg);
+    document.documentElement.style.setProperty('--board-border', surface.boardBorder);
+    document.documentElement.style.setProperty('--text-accent', surface.textAccent || '#ffc633');
+    if (surface.modalBg) document.documentElement.style.setProperty('--modal-bg', surface.modalBg);
+    if (surface.modalRow) document.documentElement.style.setProperty('--modal-row', surface.modalRow);
+    if (surface.modalShadow) document.documentElement.style.setProperty('--modal-shadow', surface.modalShadow);
+
+    const metaTheme = document.getElementById('metaThemeColor');
+    if (metaTheme) metaTheme.setAttribute('content', surface.themeColor);
+  }
+
+  applyTheme(themeId, instant = false) {
+    const base = window.THEMES[themeId];
+    if (!base) return;
+
     this.themeId = themeId;
     localStorage.setItem('bb_theme', themeId);
 
-    // Apply the persistent dynamic palette index so colors never reset
-    this.applyPaletteIndex(this.paletteIndex);
+    // Clone base theme so window.THEMES stays uncorrupted and spotless
+    this.activeThemeState = {
+      ...base,
+      palette: base.palette.map((c) => ({ ...c }))
+    };
+
+    if (base.supportsAutoPalette && this.autoPalette) {
+      this.applyPaletteIndex(this.paletteIndex, instant);
+    } else {
+      this.applyVisualSurface(this.activeThemeState, instant);
+    }
+
     this.renderThemeModalList();
+    this.updateHUD();
   }
 
-  applyPaletteIndex(index) {
+  applyPaletteIndex(index, instant = false) {
     if (!window.DYNAMIC_PALETTES || window.DYNAMIC_PALETTES.length === 0) return;
     const len = window.DYNAMIC_PALETTES.length;
     this.paletteIndex = ((index % len) + len) % len;
@@ -4145,39 +4523,27 @@ class BlockBlastGame {
     const dyn = window.DYNAMIC_PALETTES[this.paletteIndex];
     if (!dyn) return;
 
+    const base = window.THEMES[this.themeId] || window.THEMES.classic;
+    if (!base.supportsAutoPalette || !this.autoPalette) return;
+
     this.currentDynPalette = dyn.name;
 
-    // Smooth background crossfade
-    const crossfadeEl = document.getElementById('bgCrossfade');
-    if (crossfadeEl) {
-      crossfadeEl.style.background = dyn.bgGradient;
-      crossfadeEl.style.opacity = '1';
-      clearTimeout(this._crossfadeTimeout);
-      this._crossfadeTimeout = setTimeout(() => {
-        document.documentElement.style.setProperty('--bg-gradient', dyn.bgGradient);
-        document.documentElement.style.background = dyn.themeColor;
-        document.body.style.background = dyn.bgGradient;
-        crossfadeEl.style.opacity = '0';
-      }, 850);
-    } else {
-      document.documentElement.style.setProperty('--bg-gradient', dyn.bgGradient);
-      document.documentElement.style.background = dyn.themeColor;
-      document.body.style.background = dyn.bgGradient;
+    if (!this.activeThemeState) {
+      this.activeThemeState = { ...base, palette: base.palette.map((c) => ({ ...c })) };
     }
 
-    document.documentElement.style.setProperty('--board-bg', dyn.boardBg);
-    document.documentElement.style.setProperty('--board-border', dyn.boardBorder);
-    const metaTheme = document.getElementById('metaThemeColor');
-    if (metaTheme) metaTheme.setAttribute('content', dyn.themeColor);
+    this.activeThemeState.bgGradient = dyn.bgGradient;
+    this.activeThemeState.themeColor = dyn.themeColor;
+    this.activeThemeState.boardBg = dyn.boardBg;
+    this.activeThemeState.boardBorder = dyn.boardBorder;
+    this.activeThemeState.cellEmpty = dyn.cellEmpty;
+    this.activeThemeState.cellEmptyBorder = dyn.cellEmptyBorder;
+    this.activeThemeState.palette = dyn.palette;
+    this.activeThemeState.modalBg = dyn.boardBg;
+    this.activeThemeState.modalRow = dyn.cellEmpty;
+    this.activeThemeState.modalShadow = dyn.boardBorder;
 
-    const activeTheme = this.theme;
-    activeTheme.bgGradient = dyn.bgGradient;
-    activeTheme.themeColor = dyn.themeColor;
-    activeTheme.boardBg = dyn.boardBg;
-    activeTheme.boardBorder = dyn.boardBorder;
-    activeTheme.cellEmpty = dyn.cellEmpty;
-    activeTheme.cellEmptyBorder = dyn.cellEmptyBorder;
-    activeTheme.palette = dyn.palette;
+    this.applyVisualSurface(this.activeThemeState, instant);
   }
 
   startNewGame(runIntro = false) {
@@ -4196,8 +4562,7 @@ class BlockBlastGame {
     this.drag.active = false;
     this.hasCountedGamePlayed = false;
 
-    // DO NOT reset paletteIndex! Keep current color in continuous circle!
-    this.applyPaletteIndex(this.paletteIndex);
+    this.applyTheme(this.themeId, true);
 
     this.saveGameState();
     this.updateHUD(true);
@@ -4473,7 +4838,7 @@ class BlockBlastGame {
         if (!anyFits) return false;
       }
       this.hasCountedGamePlayed = true;
-      this.applyPaletteIndex(this.paletteIndex);
+      this.applyTheme(this.themeId, true);
       if (window.questManager) {
         window.questManager.onEvent('single_score', this.score);
         window.questManager.onEvent('max_combo', this.maxCombo || 1);
@@ -4504,9 +4869,45 @@ class BlockBlastGame {
       }
     }
 
+    const soundEnabled = Boolean(window.soundEngine && window.soundEngine.enabled);
     const soundLabel = document.getElementById('soundLabel');
     if (soundLabel) {
-      soundLabel.textContent = window.soundEngine.enabled ? 'Вкл' : 'Выкл';
+      soundLabel.textContent = soundEnabled ? 'Вкл' : 'Выкл';
+    }
+    const soundSwitch = document.getElementById('soundSwitch');
+    if (soundSwitch) {
+      soundSwitch.classList.toggle('on', soundEnabled);
+    }
+    const soundDesc = document.getElementById('soundDesc');
+    if (soundDesc) {
+      soundDesc.textContent = soundEnabled ? 'Приятные щелчки и комбо' : 'Звуковые эффекты выключены';
+    }
+
+    const baseTheme = (window.THEMES && (window.THEMES[this.themeId] || window.THEMES.classic)) || this.theme;
+    const currentThemeLabel = document.getElementById('currentThemeLabel');
+    if (currentThemeLabel && baseTheme) {
+      currentThemeLabel.textContent = baseTheme.name;
+    }
+
+    const autoSwitch = document.getElementById('autoPaletteSwitch');
+    const autoDesc = document.getElementById('autoPaletteDesc');
+    const autoBtn = document.getElementById('btnAutoPalette');
+    const supportsAuto = Boolean(baseTheme && baseTheme.supportsAutoPalette);
+    if (autoSwitch) {
+      autoSwitch.classList.toggle('on', Boolean(this.autoPalette && supportsAuto));
+    }
+    if (autoDesc) {
+      autoDesc.textContent = supportsAuto
+        ? (this.autoPalette ? 'Сдвиг оттенков каждые 800 оч.' : 'Фиксированная классическая палитра')
+        : 'Сейчас фиксирована выбранная тема';
+    }
+    if (autoBtn) {
+      autoBtn.style.opacity = supportsAuto ? '' : '0.78';
+    }
+
+    const trophyPill = document.getElementById('settingsTrophyPill');
+    if (trophyPill && window.questManager) {
+      trophyPill.textContent = `${window.questManager.trophies || 0} 🏆`;
     }
   }
 
@@ -4655,6 +5056,24 @@ class BlockBlastGame {
       window.soundEngine.toggle();
       this.updateHUD();
     });
+
+    const btnAutoPalette = document.getElementById('btnAutoPalette');
+    if (btnAutoPalette) {
+      btnAutoPalette.addEventListener('click', () => {
+        window.soundEngine.playPickup();
+        const baseTheme = (window.THEMES && (window.THEMES[this.themeId] || window.THEMES.classic)) || this.theme;
+        if (!baseTheme || !baseTheme.supportsAutoPalette) {
+          this.autoPalette = true;
+          localStorage.setItem('bb_auto_palette', '1');
+          this.applyTheme('classic');
+        } else {
+          this.autoPalette = !this.autoPalette;
+          localStorage.setItem('bb_auto_palette', this.autoPalette ? '1' : '0');
+          this.applyTheme(this.themeId);
+        }
+        this.updateHUD();
+      });
+    }
 
     document.getElementById('btnRestart').addEventListener('click', () => {
       window.soundEngine.playPickup();
@@ -5158,14 +5577,17 @@ class BlockBlastGame {
       window.questManager.onEvent('single_score', this.score);
     }
 
-    // Rotate color palette less frequently (every 800 pts), smoothly during line clears/combo screen shake!
-    this.paletteProgress += movePoints;
-    if (totalLines >= 1 && this.paletteProgress >= 800) {
-      const steps = Math.floor(this.paletteProgress / 800);
-      this.paletteProgress = this.paletteProgress % 800;
-      this.applyPaletteIndex(this.paletteIndex + steps);
+    // Rotate color palette less frequently (every 800 pts), only when active theme supports dynamic palettes!
+    const baseTheme = (window.THEMES && (window.THEMES[this.themeId] || window.THEMES.classic)) || this.theme;
+    if (baseTheme && baseTheme.supportsAutoPalette && this.autoPalette) {
+      this.paletteProgress += movePoints;
+      if (totalLines >= 1 && this.paletteProgress >= 800) {
+        const steps = Math.floor(this.paletteProgress / 800);
+        this.paletteProgress = this.paletteProgress % 800;
+        this.applyPaletteIndex(this.paletteIndex + steps);
+      }
+      localStorage.setItem('bb_palette_pts', String(this.paletteProgress));
     }
-    localStorage.setItem('bb_palette_pts', String(this.paletteProgress));
 
     // Bump score animation
     this.scoreEl.classList.remove('bump');
@@ -5789,25 +6211,40 @@ class BlockBlastGame {
     listEl.innerHTML = '';
 
     Object.values(window.THEMES).forEach((t) => {
+      const isActive = t.id === this.themeId;
       const card = document.createElement('div');
-      card.className = `theme-item ${t.id === this.themeId ? 'active' : ''}`;
+      card.className = `theme-item ${isActive ? 'active' : ''}`;
 
       const swatchesHtml = t.palette
         .slice(0, 5)
         .map((c) => `<span class="theme-swatch" style="background:${c.base}"></span>`)
         .join('');
 
+      const dotsHtml = t.palette
+        .slice(0, 4)
+        .map((c) => `<span class="theme-preview-dot" style="background:${c.base}"></span>`)
+        .join('');
+
       card.innerHTML = `
+        <div class="theme-preview-box" style="background:${t.bgGradient}">
+          <div class="theme-preview-board" style="background:${t.boardBg}">
+            ${dotsHtml}
+          </div>
+        </div>
         <div class="theme-info">
           <div class="theme-title">${t.name}</div>
           <div class="theme-sub">${t.subtitle}</div>
         </div>
-        <div class="theme-swatches">${swatchesHtml}</div>
+        <div class="theme-right">
+          <div class="theme-swatches">${swatchesHtml}</div>
+          ${isActive ? '<span class="theme-active-tag">✓ Выбрана</span>' : ''}
+        </div>
       `;
 
       card.addEventListener('click', () => {
         window.soundEngine.playPickup();
         this.applyTheme(t.id);
+        this.updateHUD();
       });
 
       listEl.appendChild(card);

@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=40" />
+  <link rel="stylesheet" href="style.css?v=41" />
 </head>
 <body>
   <div id="bgCrossfade" class="bg-crossfade"></div>
@@ -92,29 +92,101 @@
 
   <!-- Settings Modal -->
   <div id="settingsModal" class="modal-backdrop hidden">
-    <div class="modal-card">
+    <div class="modal-card settings-modal-card">
       <div class="modal-header">
         <h2>Настройки</h2>
         <button class="close-btn" data-close="settingsModal">✕</button>
       </div>
-      <div class="settings-list">
-        <button id="btnSound" class="settings-row"><span>Звук</span><span id="soundLabel" class="row-value">Вкл</span></button>
-        <button id="btnSettingsQuests" class="settings-row"><span>Квесты и награды</span><span class="row-value">🏆</span></button>
-        <button id="btnTheme" class="settings-row"><span>Тема</span><span class="row-value">›</span></button>
-        <button id="btnRestart" class="settings-row"><span>Начать заново</span><span class="row-value">›</span></button>
-        <button id="btnHome" class="settings-row"><span>Главное меню</span><span class="row-value">›</span></button>
-        <button id="btnReloadApp" class="settings-row" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.12);"><span>Очистить кэш / Обновить</span><span class="row-value">v40 🔄</span></button>
+
+      <div class="settings-section-label">ЗВУК И ВИД</div>
+      <div class="settings-group">
+        <button id="btnSound" class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-icon">🔊</span>
+            <div class="settings-text">
+              <span class="settings-title">Звуки и эффекты</span>
+              <span class="settings-desc" id="soundDesc">Приятные щелчки и комбо</span>
+            </div>
+          </div>
+          <span id="soundSwitch" class="toggle-switch on" aria-hidden="true"></span>
+        </button>
+
+        <button id="btnTheme" class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-icon">🎨</span>
+            <div class="settings-text">
+              <span class="settings-title">Оформление (Тема)</span>
+              <span class="settings-desc" id="currentThemeLabel">Классика (Хамелеон)</span>
+            </div>
+          </div>
+          <span class="settings-chevron">›</span>
+        </button>
+
+        <button id="btnAutoPalette" class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-icon">🌈</span>
+            <div class="settings-text">
+              <span class="settings-title">Смена цветов в «Классике»</span>
+              <span class="settings-desc" id="autoPaletteDesc">Сдвиг оттенков каждые 800 оч.</span>
+            </div>
+          </div>
+          <span id="autoPaletteSwitch" class="toggle-switch on" aria-hidden="true"></span>
+        </button>
+      </div>
+
+      <div class="settings-section-label">ПАРТИЯ И НАГРАДЫ</div>
+      <div class="settings-group">
+        <button id="btnSettingsQuests" class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-icon">🏆</span>
+            <div class="settings-text">
+              <span class="settings-title">Квесты и кубки</span>
+              <span class="settings-desc">Трофеи для «Второго шанса»</span>
+            </div>
+          </div>
+          <span id="settingsTrophyPill" class="settings-pill">0 🏆</span>
+        </button>
+
+        <button id="btnRestart" class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-icon">🔄</span>
+            <div class="settings-text">
+              <span class="settings-title">Начать заново</span>
+              <span class="settings-desc">Сбросить поле и начать новую</span>
+            </div>
+          </div>
+          <span class="settings-chevron">›</span>
+        </button>
+
+        <button id="btnHome" class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-icon">🏠</span>
+            <div class="settings-text">
+              <span class="settings-title">Главное меню</span>
+              <span class="settings-desc">Вернуться на стартовый экран</span>
+            </div>
+          </div>
+          <span class="settings-chevron">›</span>
+        </button>
+      </div>
+
+      <div class="settings-footer">
+        <button id="btnReloadApp" class="settings-reload-btn">
+          <span>Обновить игру / очистить кэш</span>
+          <span class="version-pill">v41 🔄</span>
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Theme Picker Modal -->
   <div id="themeModal" class="modal-backdrop hidden">
-    <div class="modal-card">
+    <div class="modal-card theme-modal-card">
       <div class="modal-header">
-        <h2>Тема</h2>
+        <h2>Оформление</h2>
         <button class="close-btn" data-close="themeModal">✕</button>
       </div>
+      <p class="theme-modal-tip">Выберите стиль поля и блоков. В теме «Классика» цвета могут плавно меняться во время игры.</p>
       <div id="themeList" class="theme-list"></div>
     </div>
   </div>
@@ -212,11 +284,11 @@
     </div>
   </div>
 
-  <script src="quests.js?v=40"></script>
-  <script src="themes.js?v=40"></script>
-  <script src="audio.js?v=40"></script>
-  <script src="shapes.js?v=40"></script>
-  <script src="particles.js?v=40"></script>
-  <script src="game.js?v=40"></script>
+  <script src="quests.js?v=41"></script>
+  <script src="themes.js?v=41"></script>
+  <script src="audio.js?v=41"></script>
+  <script src="shapes.js?v=41"></script>
+  <script src="particles.js?v=41"></script>
+  <script src="game.js?v=41"></script>
 </body>
 </html>

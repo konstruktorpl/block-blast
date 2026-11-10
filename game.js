@@ -15,6 +15,8 @@ class BlockBlastGame {
     // Persistent Preferences
     this.themeId = localStorage.getItem('bb_theme') || 'classic';
     if (!window.THEMES[this.themeId]) this.themeId = 'classic';
+    this.autoPalette = localStorage.getItem('bb_auto_palette') !== '0';
+    this.activeThemeState = null;
 
     this.bestScore = parseInt(localStorage.getItem('bb_best_score') || '0', 10) || 0;
     this.initialBestScore = this.bestScore;
@@ -85,7 +87,7 @@ class BlockBlastGame {
 
     this.lastTime = performance.now();
 
-    this.applyTheme(this.themeId);
+    this.applyTheme(this.themeId, true);
     this.bindEvents();
     this.resize();
 
@@ -99,20 +101,66 @@ class BlockBlastGame {
   }
 
   get theme() {
-    return window.THEMES[this.themeId] || window.THEMES.classic;
+    return this.activeThemeState || window.THEMES[this.themeId] || window.THEMES.classic;
   }
 
-  applyTheme(themeId) {
-    if (!window.THEMES[themeId]) return;
+  /**
+   * Applies background gradients, CSS modal/surface variables, and meta theme color smoothly or instantly.
+   */
+  applyVisualSurface(surface, instant = false) {
+    const crossfadeEl = document.getElementById('bgCrossfade');
+    if (crossfadeEl && !instant) {
+      crossfadeEl.style.background = surface.bgGradient;
+      crossfadeEl.style.opacity = '1';
+      clearTimeout(this._crossfadeTimeout);
+      this._crossfadeTimeout = setTimeout(() => {
+        document.documentElement.style.setProperty('--bg-gradient', surface.bgGradient);
+        document.documentElement.style.background = surface.themeColor;
+        document.body.style.background = surface.bgGradient;
+        crossfadeEl.style.opacity = '0';
+      }, 650);
+    } else {
+      if (crossfadeEl) crossfadeEl.style.opacity = '0';
+      document.documentElement.style.setProperty('--bg-gradient', surface.bgGradient);
+      document.documentElement.style.background = surface.themeColor;
+      document.body.style.background = surface.bgGradient;
+    }
+
+    document.documentElement.style.setProperty('--board-bg', surface.boardBg);
+    document.documentElement.style.setProperty('--board-border', surface.boardBorder);
+    document.documentElement.style.setProperty('--text-accent', surface.textAccent || '#ffc633');
+    if (surface.modalBg) document.documentElement.style.setProperty('--modal-bg', surface.modalBg);
+    if (surface.modalRow) document.documentElement.style.setProperty('--modal-row', surface.modalRow);
+    if (surface.modalShadow) document.documentElement.style.setProperty('--modal-shadow', surface.modalShadow);
+
+    const metaTheme = document.getElementById('metaThemeColor');
+    if (metaTheme) metaTheme.setAttribute('content', surface.themeColor);
+  }
+
+  applyTheme(themeId, instant = false) {
+    const base = window.THEMES[themeId];
+    if (!base) return;
+
     this.themeId = themeId;
     localStorage.setItem('bb_theme', themeId);
 
-    // Apply the persistent dynamic palette index so colors never reset
-    this.applyPaletteIndex(this.paletteIndex);
+    // Clone base theme so window.THEMES stays uncorrupted and spotless
+    this.activeThemeState = {
+      ...base,
+      palette: base.palette.map((c) => ({ ...c }))
+    };
+
+    if (base.supportsAutoPalette && this.autoPalette) {
+      this.applyPaletteIndex(this.paletteIndex, instant);
+    } else {
+      this.applyVisualSurface(this.activeThemeState, instant);
+    }
+
     this.renderThemeModalList();
+    this.updateHUD();
   }
 
-  applyPaletteIndex(index) {
+  applyPaletteIndex(index, instant = false) {
     if (!window.DYNAMIC_PALETTES || window.DYNAMIC_PALETTES.length === 0) return;
     const len = window.DYNAMIC_PALETTES.length;
     this.paletteIndex = ((index % len) + len) % len;
@@ -121,39 +169,27 @@ class BlockBlastGame {
     const dyn = window.DYNAMIC_PALETTES[this.paletteIndex];
     if (!dyn) return;
 
+    const base = window.THEMES[this.themeId] || window.THEMES.classic;
+    if (!base.supportsAutoPalette || !this.autoPalette) return;
+
     this.currentDynPalette = dyn.name;
 
-    // Smooth background crossfade
-    const crossfadeEl = document.getElementById('bgCrossfade');
-    if (crossfadeEl) {
-      crossfadeEl.style.background = dyn.bgGradient;
-      crossfadeEl.style.opacity = '1';
-      clearTimeout(this._crossfadeTimeout);
-      this._crossfadeTimeout = setTimeout(() => {
-        document.documentElement.style.setProperty('--bg-gradient', dyn.bgGradient);
-        document.documentElement.style.background = dyn.themeColor;
-        document.body.style.background = dyn.bgGradient;
-        crossfadeEl.style.opacity = '0';
-      }, 850);
-    } else {
-      document.documentElement.style.setProperty('--bg-gradient', dyn.bgGradient);
-      document.documentElement.style.background = dyn.themeColor;
-      document.body.style.background = dyn.bgGradient;
+    if (!this.activeThemeState) {
+      this.activeThemeState = { ...base, palette: base.palette.map((c) => ({ ...c })) };
     }
 
-    document.documentElement.style.setProperty('--board-bg', dyn.boardBg);
-    document.documentElement.style.setProperty('--board-border', dyn.boardBorder);
-    const metaTheme = document.getElementById('metaThemeColor');
-    if (metaTheme) metaTheme.setAttribute('content', dyn.themeColor);
+    this.activeThemeState.bgGradient = dyn.bgGradient;
+    this.activeThemeState.themeColor = dyn.themeColor;
+    this.activeThemeState.boardBg = dyn.boardBg;
+    this.activeThemeState.boardBorder = dyn.boardBorder;
+    this.activeThemeState.cellEmpty = dyn.cellEmpty;
+    this.activeThemeState.cellEmptyBorder = dyn.cellEmptyBorder;
+    this.activeThemeState.palette = dyn.palette;
+    this.activeThemeState.modalBg = dyn.boardBg;
+    this.activeThemeState.modalRow = dyn.cellEmpty;
+    this.activeThemeState.modalShadow = dyn.boardBorder;
 
-    const activeTheme = this.theme;
-    activeTheme.bgGradient = dyn.bgGradient;
-    activeTheme.themeColor = dyn.themeColor;
-    activeTheme.boardBg = dyn.boardBg;
-    activeTheme.boardBorder = dyn.boardBorder;
-    activeTheme.cellEmpty = dyn.cellEmpty;
-    activeTheme.cellEmptyBorder = dyn.cellEmptyBorder;
-    activeTheme.palette = dyn.palette;
+    this.applyVisualSurface(this.activeThemeState, instant);
   }
 
   startNewGame(runIntro = false) {
@@ -172,8 +208,7 @@ class BlockBlastGame {
     this.drag.active = false;
     this.hasCountedGamePlayed = false;
 
-    // DO NOT reset paletteIndex! Keep current color in continuous circle!
-    this.applyPaletteIndex(this.paletteIndex);
+    this.applyTheme(this.themeId, true);
 
     this.saveGameState();
     this.updateHUD(true);
@@ -449,7 +484,7 @@ class BlockBlastGame {
         if (!anyFits) return false;
       }
       this.hasCountedGamePlayed = true;
-      this.applyPaletteIndex(this.paletteIndex);
+      this.applyTheme(this.themeId, true);
       if (window.questManager) {
         window.questManager.onEvent('single_score', this.score);
         window.questManager.onEvent('max_combo', this.maxCombo || 1);
@@ -480,9 +515,45 @@ class BlockBlastGame {
       }
     }
 
+    const soundEnabled = Boolean(window.soundEngine && window.soundEngine.enabled);
     const soundLabel = document.getElementById('soundLabel');
     if (soundLabel) {
-      soundLabel.textContent = window.soundEngine.enabled ? 'Вкл' : 'Выкл';
+      soundLabel.textContent = soundEnabled ? 'Вкл' : 'Выкл';
+    }
+    const soundSwitch = document.getElementById('soundSwitch');
+    if (soundSwitch) {
+      soundSwitch.classList.toggle('on', soundEnabled);
+    }
+    const soundDesc = document.getElementById('soundDesc');
+    if (soundDesc) {
+      soundDesc.textContent = soundEnabled ? 'Приятные щелчки и комбо' : 'Звуковые эффекты выключены';
+    }
+
+    const baseTheme = (window.THEMES && (window.THEMES[this.themeId] || window.THEMES.classic)) || this.theme;
+    const currentThemeLabel = document.getElementById('currentThemeLabel');
+    if (currentThemeLabel && baseTheme) {
+      currentThemeLabel.textContent = baseTheme.name;
+    }
+
+    const autoSwitch = document.getElementById('autoPaletteSwitch');
+    const autoDesc = document.getElementById('autoPaletteDesc');
+    const autoBtn = document.getElementById('btnAutoPalette');
+    const supportsAuto = Boolean(baseTheme && baseTheme.supportsAutoPalette);
+    if (autoSwitch) {
+      autoSwitch.classList.toggle('on', Boolean(this.autoPalette && supportsAuto));
+    }
+    if (autoDesc) {
+      autoDesc.textContent = supportsAuto
+        ? (this.autoPalette ? 'Сдвиг оттенков каждые 800 оч.' : 'Фиксированная классическая палитра')
+        : 'Сейчас фиксирована выбранная тема';
+    }
+    if (autoBtn) {
+      autoBtn.style.opacity = supportsAuto ? '' : '0.78';
+    }
+
+    const trophyPill = document.getElementById('settingsTrophyPill');
+    if (trophyPill && window.questManager) {
+      trophyPill.textContent = `${window.questManager.trophies || 0} 🏆`;
     }
   }
 
@@ -631,6 +702,24 @@ class BlockBlastGame {
       window.soundEngine.toggle();
       this.updateHUD();
     });
+
+    const btnAutoPalette = document.getElementById('btnAutoPalette');
+    if (btnAutoPalette) {
+      btnAutoPalette.addEventListener('click', () => {
+        window.soundEngine.playPickup();
+        const baseTheme = (window.THEMES && (window.THEMES[this.themeId] || window.THEMES.classic)) || this.theme;
+        if (!baseTheme || !baseTheme.supportsAutoPalette) {
+          this.autoPalette = true;
+          localStorage.setItem('bb_auto_palette', '1');
+          this.applyTheme('classic');
+        } else {
+          this.autoPalette = !this.autoPalette;
+          localStorage.setItem('bb_auto_palette', this.autoPalette ? '1' : '0');
+          this.applyTheme(this.themeId);
+        }
+        this.updateHUD();
+      });
+    }
 
     document.getElementById('btnRestart').addEventListener('click', () => {
       window.soundEngine.playPickup();
@@ -1134,14 +1223,17 @@ class BlockBlastGame {
       window.questManager.onEvent('single_score', this.score);
     }
 
-    // Rotate color palette less frequently (every 800 pts), smoothly during line clears/combo screen shake!
-    this.paletteProgress += movePoints;
-    if (totalLines >= 1 && this.paletteProgress >= 800) {
-      const steps = Math.floor(this.paletteProgress / 800);
-      this.paletteProgress = this.paletteProgress % 800;
-      this.applyPaletteIndex(this.paletteIndex + steps);
+    // Rotate color palette less frequently (every 800 pts), only when active theme supports dynamic palettes!
+    const baseTheme = (window.THEMES && (window.THEMES[this.themeId] || window.THEMES.classic)) || this.theme;
+    if (baseTheme && baseTheme.supportsAutoPalette && this.autoPalette) {
+      this.paletteProgress += movePoints;
+      if (totalLines >= 1 && this.paletteProgress >= 800) {
+        const steps = Math.floor(this.paletteProgress / 800);
+        this.paletteProgress = this.paletteProgress % 800;
+        this.applyPaletteIndex(this.paletteIndex + steps);
+      }
+      localStorage.setItem('bb_palette_pts', String(this.paletteProgress));
     }
-    localStorage.setItem('bb_palette_pts', String(this.paletteProgress));
 
     // Bump score animation
     this.scoreEl.classList.remove('bump');
@@ -1765,25 +1857,40 @@ class BlockBlastGame {
     listEl.innerHTML = '';
 
     Object.values(window.THEMES).forEach((t) => {
+      const isActive = t.id === this.themeId;
       const card = document.createElement('div');
-      card.className = `theme-item ${t.id === this.themeId ? 'active' : ''}`;
+      card.className = `theme-item ${isActive ? 'active' : ''}`;
 
       const swatchesHtml = t.palette
         .slice(0, 5)
         .map((c) => `<span class="theme-swatch" style="background:${c.base}"></span>`)
         .join('');
 
+      const dotsHtml = t.palette
+        .slice(0, 4)
+        .map((c) => `<span class="theme-preview-dot" style="background:${c.base}"></span>`)
+        .join('');
+
       card.innerHTML = `
+        <div class="theme-preview-box" style="background:${t.bgGradient}">
+          <div class="theme-preview-board" style="background:${t.boardBg}">
+            ${dotsHtml}
+          </div>
+        </div>
         <div class="theme-info">
           <div class="theme-title">${t.name}</div>
           <div class="theme-sub">${t.subtitle}</div>
         </div>
-        <div class="theme-swatches">${swatchesHtml}</div>
+        <div class="theme-right">
+          <div class="theme-swatches">${swatchesHtml}</div>
+          ${isActive ? '<span class="theme-active-tag">✓ Выбрана</span>' : ''}
+        </div>
       `;
 
       card.addEventListener('click', () => {
         window.soundEngine.playPickup();
         this.applyTheme(t.id);
+        this.updateHUD();
       });
 
       listEl.appendChild(card);
