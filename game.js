@@ -85,7 +85,7 @@ class BlockBlastGame {
     this.resize();
 
     if (!this.loadSavedGame()) {
-      this.startNewGame();
+      this.startNewGame(true);
     } else {
       this.updateHUD(true);
     }
@@ -178,7 +178,11 @@ class BlockBlastGame {
   }
 
   startIntroAnimation(onComplete) {
-    const isHeart = Math.random() < 0.35; // 35% chance to roll a Heart ❤️!
+    // Guarantees heart on first run, then 45% chance
+    const sawHeart = localStorage.getItem('bb_saw_heart');
+    const isHeart = !sawHeart || Math.random() < 0.45;
+    localStorage.setItem('bb_saw_heart', '1');
+
     const cells = [];
 
     if (isHeart) {
@@ -201,8 +205,8 @@ class BlockBlastGame {
       ];
 
       for (const [r, c] of heartCoords) {
-        // Expand from bottom tip upward to top arches
-        const delay = (6 - r) * 0.05 + Math.abs(c - 3.5) * 0.035;
+        // Expand outward and upward
+        const delay = (6 - r) * 0.065 + Math.abs(c - 3.5) * 0.04;
         const colorObj = heartColors[(r + Math.floor(Math.abs(c - 3.5))) % heartColors.length];
         cells.push({
           r,
@@ -218,7 +222,7 @@ class BlockBlastGame {
       const palette = (this.theme && this.theme.palette) || window.THEMES.classic.palette;
       for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
-          const delay = (r + c) * 0.026;
+          const delay = (r + c) * 0.032;
           const colorObj = palette[(r * 2 + c) % palette.length];
           cells.push({
             r,
@@ -553,6 +557,17 @@ class BlockBlastGame {
       });
     }
 
+    const btnPlayIntro = document.getElementById('btnPlayIntro');
+    if (btnPlayIntro) {
+      btnPlayIntro.addEventListener('click', () => {
+        window.soundEngine.playPickup();
+        hide('settingsModal');
+        this.startIntroAnimation(() => {
+          this.spawnNewTray();
+        });
+      });
+    }
+
     const btnReloadApp = document.getElementById('btnReloadApp');
     if (btnReloadApp) {
       btnReloadApp.addEventListener('click', async () => {
@@ -599,7 +614,9 @@ class BlockBlastGame {
     e.preventDefault();
     window.soundEngine.init();
     if (this.introAnim && this.introAnim.active) {
-      this.skipIntroAnimation();
+      if (this.introAnim.elapsed > 0.75) {
+        this.skipIntroAnimation();
+      }
       return;
     }
     if (this.isGameOver || this.drag.active) return;
@@ -1054,8 +1071,8 @@ class BlockBlastGame {
         }
       }
 
-      // Shatter phase at 0.88s
-      if (t >= 0.88 && !this.introAnim.shattered) {
+      // Shatter phase at 1.15s (after generous 500ms view of the heart/pattern)
+      if (t >= 1.15 && !this.introAnim.shattered) {
         this.introAnim.shattered = true;
         const { boardX, boardY, boardPad, cellSize } = this.metrics;
         const gridOriginX = boardX + boardPad;
@@ -1074,8 +1091,8 @@ class BlockBlastGame {
         this.fx.triggerShake(this.introAnim.isHeart ? 8 : 6, 0.28);
       }
 
-      // End intro at 1.28s
-      if (t >= 1.28) {
+      // End intro at 1.55s
+      if (t >= 1.55) {
         this.introAnim.active = false;
         if (typeof this.introAnim.onComplete === 'function') {
           const cb = this.introAnim.onComplete;
