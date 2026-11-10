@@ -182,9 +182,20 @@ function countTrappedSingleHoles(grid) {
   return trapped;
 }
 
+function countOccupiedCells(grid) {
+  let count = 0;
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      if (grid[r][c] !== null) count++;
+    }
+  }
+  return count;
+}
+
 /**
  * Analyzes the grid to find all shapes that, if placed right now,
  * immediately complete and clear at least 1 line (or 2+ lines for combo/multi-clear).
+ * Prioritizes placements that leave the board maximally empty and free of trapped holes!
  */
 function findKeyClearingShapes(grid) {
   const clearingCandidates = [];
@@ -193,23 +204,35 @@ function findKeyClearingShapes(grid) {
     const placements = getAllValidPlacements(grid, shape);
     if (!placements.length) continue;
 
+    let bestScore = -Infinity;
     let bestCleared = 0;
     let bestPlacement = null;
+    let bestPostOccupied = 64;
 
     for (const p of placements) {
       const sim = simulatePlacement(grid, shape, p.r, p.c);
-      if (sim.cleared > bestCleared) {
+      if (sim.cleared < 1) continue;
+
+      const postOccupied = countOccupiedCells(sim.grid);
+      const postTrapped = countTrappedSingleHoles(sim.grid);
+      // Favor multi-line sweeps, All Clears, and leaving an open, empty board!
+      const score = sim.cleared * 100 - postOccupied * 2 - postTrapped * 40 + (postOccupied === 0 ? 300 : 0);
+      if (score > bestScore) {
+        bestScore = score;
         bestCleared = sim.cleared;
         bestPlacement = p;
+        bestPostOccupied = postOccupied;
       }
     }
 
     if (bestCleared >= 1) {
+      const cleanBonus = bestPostOccupied <= 12 ? 1.55 : 1.0;
       clearingCandidates.push({
         shape,
         cleared: bestCleared,
         placement: bestPlacement,
-        weight: shape.weight * (bestCleared >= 2 ? 4.5 : 2.6) // high bonus for multi-clears
+        postOccupied: bestPostOccupied,
+        weight: shape.weight * (bestCleared >= 2 ? 4.8 : 2.8) * cleanBonus
       });
     }
   }
@@ -334,51 +357,98 @@ function findHoleFillingShapes(grid) {
   return holeCandidates;
 }
 
+function pickWeightedItem(list) {
+  let total = 0;
+  for (const item of list) total += item.weight;
+  let r = Math.random() * total;
+  for (const item of list) {
+    r -= item.weight;
+    if (r <= 0) return item;
+  }
+  return list[list.length - 1];
+}
+
 /**
  * Generates a balanced, solvable tray of 3 pieces tailored to the current board state.
- * Includes authentic Dynamic Assisting: deals pieces that complete lines, sustain combos,
- * plug awkward holes/cavities, and provide clutch saves when crowded!
+ * Features authentic Dynamic Director:
+ * 1. Keep-Board-Clean Bias: Actively deals sweepable pieces & chain clears so the board stays open and airy.
+ * 2. Early-Game Shield: ~98% assist rate on first 30 moves to protect against frustrating abrupt early deaths.
+ * 3. Combo x4+ Extension Guarantee: 100% guarantee to deal a combo-extending piece during high streaks (reaching x8-x12).
+ * 4. Record-Adaptive Difficulty Curve: Smoothly assists up to Best Score + ~2,500 buffer, then gradually ramps challenge.
  */
-function generateSmartTray(grid, palette, score = 0, comboStreak = 0) {
-  let occupied = 0;
-  for (let r = 0; r < 8; r++) {
-    for (let c = 0; c < 8; c++) {
-      if (grid[r][c] !== null) occupied++;
-    }
-  }
+function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {}) {
+  const occupied = countOccupiedCells(grid);
   const fillRatio = occupied / 64;
 
-  // Dynamic weights based on crowding and open board space
+  const movesCount = meta.movesCount || 0;
+  const initialBestScore = meta.initialBestScore || 0;
+
+  // Record-Adaptive Rubber-Banding Curve:
+  // - Effective baseline target for new players with 0 record is 4500.
+  // - Below recordTarget -> easy ("до рекорда дойти очень легко")
+  // - recordTarget to recordTarget + 2500 -> generous sweet spot ("дать набрать пару лишних тысяч")
+  // - Above recordTarget + 2500 -> smooth tension ramp up to 1.0 over next 5500 points ("опять начинает усложнять")
+  const recordTarget = Math.max(initialBestScore, 4500);
+  const overrun = score - recordTarget;
+  let tension = 0;
+  if (overrun > 2500) {
+    tension = Math.min(1.0, (overrun - 2500) / 5500);
+  }
+
+  // Dynamic shape weights shaped by board density and Record Tension
   const weightedPool = SHAPES.map((s) => {
     let w = s.weight;
-    if (fillRatio > 0.62) {
-      if (s.tier === 'large') w *= 0.25;
-      if (s.tier === 'small') w *= 1.85;
+    const isAwkward = s.id.startsWith('z_') || s.id.startsWith('s_') || s.id.startsWith('diag');
+
+    if (fillRatio > 0.58) {
+      if (s.tier === 'large') w *= (0.18 + tension * 0.55);
+      if (s.tier === 'small') w *= (1.95 - tension * 0.70);
     } else if (fillRatio < 0.52) {
-      // Board is open: aggressively boost large, satisfying shapes (3x3, 2x3, 3x2, squares, long bars)
-      if (s.tier === 'large') w *= 1.85;
-      if (s.id === 'sq3' || s.id === 'rect_2x3' || s.id === 'rect_3x2') w *= 2.0;
-      if (s.id.startsWith('h4') || s.id.startsWith('v4') || s.id.startsWith('h5') || s.id.startsWith('v5') || s.id === 'sq2') w *= 1.5;
+      // Open board: big, satisfying shapes dominate below record
+      const boostScale = 1.0 - tension * 0.50;
+      if (s.tier === 'large') w *= (1.0 + 0.85 * boostScale);
+      if (s.id === 'sq3' || s.id === 'rect_2x3' || s.id === 'rect_3x2') w *= (1.0 + 1.0 * boostScale);
+      if (s.id.startsWith('h4') || s.id.startsWith('v4') || s.id.startsWith('h5') || s.id.startsWith('v5') || s.id === 'sq2') {
+        w *= (1.0 + 0.5 * boostScale);
+      }
     }
+
+    // Below record: suppress awkward Z/S & diagonals; high tension past record mixes them back in strongly
+    if (isAwkward) {
+      w *= (0.45 + tension * 1.65);
+    }
+    if (tension > 0.2 && (s.id.startsWith('bigL_') || s.id.startsWith('l_') || s.id.startsWith('t_'))) {
+      w *= (1.0 + tension * 0.85);
+    }
+
     return { ...s, weight: w };
   });
 
-  // Dynamic Assisting checks:
-  // 1. Line-clearing pieces ("ключи")
+  // Dynamic Assisting candidates:
   const keyClearingShapes = findKeyClearingShapes(grid);
-
-  // 2. Hole-filling pieces ("заполнители дыр")
   const holeFillingShapes = findHoleFillingShapes(grid);
 
-  // Dynamic luck probability:
-  // - High if player is on a combo streak (85% - 97%) to actively sustain the combo!
-  // - High if board is crowded (> 55% full, ~92%) for a clutch rescue
-  // - Regular play: ~72% chance to hand line-clearing or hole-filling assists
-  let assistChance = 0.72;
-  if (comboStreak >= 1) {
-    assistChance = Math.min(0.97, 0.85 + comboStreak * 0.04);
-  } else if (fillRatio > 0.55) {
-    assistChance = 0.92;
+  const isEarlyShield = movesCount < 30 && overrun <= 2500;
+  const isHighCombo = comboStreak >= 4;
+
+  // Dynamic Director Probability:
+  let assistChance;
+  if (isEarlyShield) {
+    // 100% protection against frustrating abrupt deaths in the first 30 moves
+    assistChance = 1.0;
+  } else if (isHighCombo) {
+    // Rewards reaching x4+ so players smoothly hit x8-x12 below record,
+    // gradually tapering on extreme streaks (x13+) or in post-record high tension!
+    const extremeTaper = comboStreak > 12 ? Math.min(0.30, (comboStreak - 12) * 0.04) : 0;
+    const baseComboAssist = 0.96 - extremeTaper;
+    assistChance = Math.max(0.30, baseComboAssist - tension * 0.62);
+  } else if (comboStreak >= 1) {
+    assistChance = Math.max(0.28, 0.90 - tension * 0.60);
+  } else if (fillRatio >= 0.28) {
+    // Proactive Keep-Board-Clean sweep when blocks accumulate >= 28%, dialing down as tension climbs
+    assistChance = Math.max(0.20, 0.88 - tension * 0.68);
+  } else {
+    assistChance = Math.max(0.18, 0.82 - tension * 0.64);
   }
 
   const hasAssists = keyClearingShapes.length > 0 || holeFillingShapes.length > 0;
@@ -391,105 +461,110 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0) {
     const candidate = [null, null, null];
     const availableSlots = [0, 1, 2];
 
-    // Decide what kind of assist to prioritize first:
+    // Prioritize line clearing when sustaining high combos OR keeping board empty (fillRatio >= 0.30)
     let primaryIsClearing = true;
     if (keyClearingShapes.length > 0 && holeFillingShapes.length > 0) {
-      if (comboStreak >= 1 || fillRatio > 0.65) {
-        primaryIsClearing = Math.random() < 0.65; // line clear priority during combo/crowd
+      if (isHighCombo) {
+        primaryIsClearing = true; // Guarantee immediate combo continuation!
+      } else if (comboStreak >= 1 || fillRatio >= 0.30) {
+        primaryIsClearing = Math.random() < (0.82 - tension * 0.15);
       } else {
-        primaryIsClearing = Math.random() < 0.45; // 55% hole-fill priority during regular play
+        primaryIsClearing = Math.random() < 0.55;
       }
     } else if (keyClearingShapes.length === 0) {
       primaryIsClearing = false;
     }
 
-    // Pick primary assist piece
+    // Pick Slot 1 (primary assist piece)
     let primaryObj = null;
     if (primaryIsClearing && keyClearingShapes.length > 0) {
-      const totalW = keyClearingShapes.reduce((s, k) => s + k.weight, 0);
-      let r = Math.random() * totalW;
-      for (const k of keyClearingShapes) {
-        r -= k.weight;
-        if (r <= 0) {
-          primaryObj = k;
-          break;
-        }
-      }
-      if (!primaryObj) primaryObj = keyClearingShapes[0];
+      primaryObj = pickWeightedItem(keyClearingShapes);
     } else if (holeFillingShapes.length > 0) {
-      const totalW = holeFillingShapes.reduce((s, k) => s + k.weight, 0);
-      let r = Math.random() * totalW;
-      for (const h of holeFillingShapes) {
-        r -= h.weight;
-        if (r <= 0) {
-          primaryObj = h;
-          break;
-        }
-      }
-      if (!primaryObj) primaryObj = holeFillingShapes[0];
+      primaryObj = pickWeightedItem(holeFillingShapes);
     }
 
     if (primaryObj) {
-      // Place primary assist in a random slot
       const slotIdx = Math.floor(Math.random() * availableSlots.length);
       const primarySlot = availableSlots.splice(slotIdx, 1)[0];
       candidate[primarySlot] = primaryObj.shape;
 
-      // Simulate placing the primary piece
       const postSim = simulatePlacement(grid, primaryObj.shape, primaryObj.placement.r, primaryObj.placement.c);
       const simGrid = postSim.grid;
 
-      // For the SECOND slot:
-      // If primary was a line-clearer, deliver a hole-filler to plug gaps on the board!
-      // If primary was a hole-filler, deliver a line-clearer if available!
+      // Pick Slot 2: Chain-Clear / Keep-Board-Clean builder on post-clear simGrid
       const secondSlotIdx = Math.floor(Math.random() * availableSlots.length);
       const secondSlot = availableSlots.splice(secondSlotIdx, 1)[0];
 
       const nextClearers = findKeyClearingShapes(simGrid);
       const nextHoleFillers = findHoleFillingShapes(simGrid);
 
-      let secondPiece = null;
-      if (primaryIsClearing && (nextHoleFillers.length > 0 || holeFillingShapes.length > 0) && Math.random() < 0.75) {
-        const poolH = nextHoleFillers.length > 0
-          ? nextHoleFillers
-          : holeFillingShapes.filter((h) => getAllValidPlacements(simGrid, h.shape).length > 0);
-        if (poolH.length > 0) {
-          secondPiece = poolH[Math.floor(Math.random() * poolH.length)].shape;
-        }
-      } else if (!primaryIsClearing && nextClearers.length > 0 && Math.random() < 0.75) {
-        secondPiece = nextClearers[Math.floor(Math.random() * nextClearers.length)].shape;
-      }
+      let secondObj = null;
+      const chainProbability = isHighCombo ? 0.85 : Math.max(0.35, 0.78 - tension * 0.35);
 
-      if (!secondPiece) {
-        if (nextClearers.length > 0 && Math.random() < 0.5) {
-          secondPiece = nextClearers[Math.floor(Math.random() * nextClearers.length)].shape;
-        } else if (nextHoleFillers.length > 0 && Math.random() < 0.6) {
-          secondPiece = nextHoleFillers[Math.floor(Math.random() * nextHoleFillers.length)].shape;
-        } else {
-          const fitting = weightedPool.filter((s) => getAllValidPlacements(simGrid, s).length > 0);
-          secondPiece = fitting.length > 0 ? pickWeightedShape(fitting) : pickWeightedShape(weightedPool);
+      if (nextClearers.length > 0 && Math.random() < chainProbability) {
+        secondObj = pickWeightedItem(nextClearers);
+      } else if (nextHoleFillers.length > 0 && Math.random() < 0.80) {
+        secondObj = pickWeightedItem(nextHoleFillers);
+      } else if (holeFillingShapes.length > 0 && Math.random() < 0.65) {
+        const fittingFillers = holeFillingShapes.filter((h) => getAllValidPlacements(simGrid, h.shape).length > 0);
+        if (fittingFillers.length > 0) {
+          const picked = fittingFillers[Math.floor(Math.random() * fittingFillers.length)];
+          const pl = getAllValidPlacements(simGrid, picked.shape)[0];
+          secondObj = { shape: picked.shape, placement: pl };
         }
       }
-      candidate[secondSlot] = secondPiece;
 
-      // For the THIRD slot:
-      const thirdSlot = availableSlots[0];
-      const secondPlacements = getAllValidPlacements(simGrid, secondPiece);
+      if (!secondObj) {
+        const fitting = weightedPool.filter((s) => getAllValidPlacements(simGrid, s).length > 0);
+        const picked = fitting.length > 0 ? pickWeightedShape(fitting) : pickWeightedShape(weightedPool);
+        const placements = getAllValidPlacements(simGrid, picked);
+        secondObj = {
+          shape: picked,
+          placement: placements.length > 0 ? placements[0] : null
+        };
+      }
+      candidate[secondSlot] = secondObj.shape;
+
+      // Simulate Slot 2 accurately using its planned placement
       let finalSimGrid = simGrid;
-      if (secondPlacements.length > 0) {
-        finalSimGrid = simulatePlacement(simGrid, secondPiece, secondPlacements[0].r, secondPlacements[0].c).grid;
+      if (secondObj.placement) {
+        finalSimGrid = simulatePlacement(simGrid, secondObj.shape, secondObj.placement.r, secondObj.placement.c).grid;
       }
 
+      // Pick Slot 3: Finish off the board sweep or complete a 3-piece combo chain
+      const thirdSlot = availableSlots[0];
       const thirdClearers = findKeyClearingShapes(finalSimGrid);
       const thirdHoleFillers = findHoleFillingShapes(finalSimGrid);
+      const thirdClearChance = isHighCombo
+        ? Math.max(0.30, 0.82 - tension * 0.50)
+        : Math.max(0.20, 0.65 - tension * 0.45);
 
-      if (thirdClearers.length > 0 && Math.random() < 0.4) {
-        candidate[thirdSlot] = thirdClearers[Math.floor(Math.random() * thirdClearers.length)].shape;
-      } else if (thirdHoleFillers.length > 0 && Math.random() < 0.5) {
-        candidate[thirdSlot] = thirdHoleFillers[Math.floor(Math.random() * thirdHoleFillers.length)].shape;
+      const safeThirdFilter = (s) => {
+        if (getAllValidPlacements(finalSimGrid, s).length === 0) return false;
+        // During Early-Game Shield, ensure Slot 3 also fits smoothly without rigid sequencing trap
+        if (isEarlyShield && s.tier === 'large' && getAllValidPlacements(simGrid, s).length === 0) {
+          return false;
+        }
+        return true;
+      };
+
+      const validThirdClearers = thirdClearers.filter((c) => safeThirdFilter(c.shape));
+      const validThirdFillers = thirdHoleFillers.filter((h) => safeThirdFilter(h.shape));
+
+      if (validThirdClearers.length > 0 && Math.random() < thirdClearChance) {
+        candidate[thirdSlot] = pickWeightedItem(validThirdClearers).shape;
+      } else if (validThirdFillers.length > 0 && Math.random() < 0.65) {
+        candidate[thirdSlot] = pickWeightedItem(validThirdFillers).shape;
       } else {
-        const fitting = weightedPool.filter((s) => getAllValidPlacements(finalSimGrid, s).length > 0);
-        candidate[thirdSlot] = fitting.length > 0 ? pickWeightedShape(fitting) : pickWeightedShape(weightedPool);
+        const fitting = weightedPool.filter(safeThirdFilter);
+        const fallback = weightedPool.filter((s) => getAllValidPlacements(finalSimGrid, s).length > 0);
+        if (fitting.length > 0) {
+          candidate[thirdSlot] = pickWeightedShape(fitting);
+        } else if (fallback.length > 0) {
+          candidate[thirdSlot] = pickWeightedShape(fallback);
+        } else {
+          candidate[thirdSlot] = pickWeightedShape(weightedPool);
+        }
       }
 
       bestCandidate = candidate;
@@ -497,14 +572,17 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0) {
   }
 
   if (!bestCandidate) {
-    // Standard smart solver: try up to 18 combinations and pick the most playable & rewarding hand
-    for (let attempt = 0; attempt < 18; attempt++) {
+    // Standard smart solver (scales candidate search & cleanliness bias with tension)
+    const searchAttempts = tension < 0.5 ? 24 : 16;
+    const maxLargePerHand = tension > 0.65 ? 2 : 1;
+
+    for (let attempt = 0; attempt < searchAttempts; attempt++) {
       const candidate = [];
       let largeCount = 0;
 
       for (let i = 0; i < 3; i++) {
         let pool = weightedPool;
-        if (largeCount >= 1) {
+        if (largeCount >= maxLargePerHand) {
           pool = weightedPool.filter((s) => s.tier !== 'large');
         }
         const picked = pickWeightedShape(pool);
@@ -547,15 +625,22 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0) {
         placedCount++;
       }
 
-      let candidateQuality = placedCount * 12 + Math.min(linesClearedInSim, 3) * 5 - createdTrappedHoles * 30;
-      if (placedCount === 3 && createdTrappedHoles === 0) {
-        candidateQuality += 15; // Clean puzzle fit bonus!
+      const finalOccupied = countOccupiedCells(simGrid);
+      const cleanlinessGain = Math.max(0, occupied - finalOccupied);
+
+      let candidateQuality = placedCount * 14 + linesClearedInSim * (14 - tension * 8) - createdTrappedHoles * 35;
+      if (tension < 0.6) {
+        candidateQuality += cleanlinessGain * 3.5; // Favor hands that leave board cleaner!
       }
+      if (placedCount === 3 && createdTrappedHoles === 0) {
+        candidateQuality += 20;
+      }
+
       if (candidateQuality > bestScore) {
         bestScore = candidateQuality;
         bestCandidate = candidate;
       }
-      if (placedCount === 3 && linesClearedInSim >= 1 && createdTrappedHoles === 0) {
+      if (tension < 0.3 && placedCount === 3 && linesClearedInSim >= 2 && createdTrappedHoles === 0) {
         break;
       }
     }

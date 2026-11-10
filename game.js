@@ -17,6 +17,7 @@ class BlockBlastGame {
     if (!window.THEMES[this.themeId]) this.themeId = 'classic';
 
     this.bestScore = parseInt(localStorage.getItem('bb_best_score') || '0', 10) || 0;
+    this.initialBestScore = this.bestScore;
 
     // Game State
     this.grid = Array.from({ length: 8 }, () => Array(8).fill(null));
@@ -25,6 +26,7 @@ class BlockBlastGame {
     this.displayedScore = 0;
     this.comboStreak = 0;
     this.maxCombo = 1;
+    this.movesCount = 0;
     this.movesSinceLastClear = 0; // In Block Blast, combo stays alive for up to 3 placements
     this.isGameOver = false;
     this.hasCountedGamePlayed = false;
@@ -157,6 +159,8 @@ class BlockBlastGame {
     this.displayedScore = 0;
     this.comboStreak = 0;
     this.maxCombo = 1;
+    this.movesCount = 0;
+    this.initialBestScore = this.bestScore;
     this.movesSinceLastClear = 0;
     this.isGameOver = false;
     this.drag.active = false;
@@ -431,7 +435,10 @@ class BlockBlastGame {
       this.tray = window.generateOpeningHand(this.grid, this.theme.palette);
       this.isStartingHand = false;
     } else {
-      this.tray = window.generateSmartTray(this.grid, this.theme.palette, this.score, this.comboStreak);
+      this.tray = window.generateSmartTray(this.grid, this.theme.palette, this.score, this.comboStreak, {
+        movesCount: this.movesCount,
+        initialBestScore: this.initialBestScore
+      });
     }
     this.checkPieceFitStates();
   }
@@ -458,6 +465,8 @@ class BlockBlastGame {
         score: this.score,
         comboStreak: this.comboStreak,
         maxCombo: this.maxCombo,
+        movesCount: this.movesCount,
+        initialBestScore: this.initialBestScore,
         movesSinceLastClear: this.movesSinceLastClear,
         tray: this.tray.map((t) => ({
           slotIndex: t.slotIndex,
@@ -482,6 +491,8 @@ class BlockBlastGame {
       this.displayedScore = this.score;
       this.comboStreak = data.comboStreak || 0;
       this.maxCombo = data.maxCombo || 1;
+      this.movesCount = data.movesCount || 0;
+      this.initialBestScore = typeof data.initialBestScore === 'number' ? data.initialBestScore : this.bestScore;
       this.movesSinceLastClear = data.movesSinceLastClear || 0;
 
       this.tray = (data.tray || []).map((t, idx) => {
@@ -969,6 +980,7 @@ class BlockBlastGame {
       this.grid[startR + cell.r][startC + cell.c] = colorIndex;
     }
     piece.placed = true;
+    this.movesCount = (this.movesCount || 0) + 1;
 
     // Quest: First block placed counts as a game played
     if (!this.hasCountedGamePlayed) {

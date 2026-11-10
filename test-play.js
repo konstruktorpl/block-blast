@@ -37,17 +37,20 @@ function renderGridAscii(grid) {
 }
 
 class PlaytestGame {
-  constructor(palette = [0, 1, 2, 3, 4, 5]) {
+  constructor(initialBestScore = 0, palette = [0, 1, 2, 3, 4, 5]) {
     this.palette = palette;
+    this.initialBestScore = initialBestScore;
     this.grid = Array.from({ length: 8 }, () => Array(8).fill(null));
     this.score = 0;
     this.comboStreak = 0;
+    this.movesSinceLastClear = 0;
     this.maxCombo = 0;
     this.totalLines = 0;
     this.totalBlocks = 0;
     this.traysPlayed = 0;
     this.movesCount = 0;
     this.isGameOver = false;
+    this.allClearsCount = 0;
 
     // Stats on shapes received
     this.shapeStats = {
@@ -303,17 +306,35 @@ class PlaytestGame {
       for (let gr = 0; gr < 8; gr++) this.grid[gr][fc] = null;
     }
 
+    const placementPoints = shape.blockCount * 3;
+    let movePoints = placementPoints;
+
     if (clearedCount > 0) {
       this.comboStreak++;
+      this.movesSinceLastClear = 0;
       if (this.comboStreak > this.maxCombo) {
         this.maxCombo = this.comboStreak;
       }
       this.totalLines += clearedCount;
-      const pts = shape.blockCount * 10 + clearedCount * 100 * this.comboStreak;
-      this.score += pts;
+
+      const isAllClear = this.grid.every(row => row.every(cell => cell === null));
+      if (isAllClear) this.allClearsCount++;
+
+      const baseLineScore = 30 * ((clearedCount * (clearedCount + 1)) / 2);
+      const comboMultiplier = Math.max(1, this.comboStreak);
+      const comboBonus = baseLineScore * comboMultiplier + (this.comboStreak >= 2 ? (this.comboStreak - 1) * 50 : 0);
+      const allClearBonus = isAllClear ? 500 : 0;
+      movePoints += comboBonus + allClearBonus;
+      this.score += movePoints;
     } else {
-      this.comboStreak = 0;
-      this.score += shape.blockCount * 10;
+      if (this.comboStreak > 0) {
+        this.movesSinceLastClear++;
+        if (this.movesSinceLastClear >= 3) {
+          this.comboStreak = 0;
+          this.movesSinceLastClear = 0;
+        }
+      }
+      this.score += movePoints;
     }
 
     // Quest notifications
@@ -327,13 +348,15 @@ class PlaytestGame {
     return { clearedCount, currentCombo: this.comboStreak };
   }
 
-  playFullGame(maxTrays = 100, onStepCallback = null) {
-    this.seedStartingBoard();
+  playFullGame(maxTrays = 150, onStepCallback = null, skipInitialSeed = false) {
+    if (!skipInitialSeed) {
+      this.seedStartingBoard();
+    }
     if (window.questManager) {
       window.questManager.onEvent('games_played', 1);
     }
 
-    let isFirstHand = true;
+    let isFirstHand = !skipInitialSeed;
 
     while (this.traysPlayed < maxTrays && !this.isGameOver) {
       let tray = null;
@@ -341,7 +364,10 @@ class PlaytestGame {
         tray = window.generateOpeningHand(this.grid, this.palette);
         isFirstHand = false;
       } else {
-        tray = window.generateSmartTray(this.grid, this.palette, this.score, this.comboStreak);
+        tray = window.generateSmartTray(this.grid, this.palette, this.score, this.comboStreak, {
+          movesCount: this.movesCount,
+          initialBestScore: this.initialBestScore
+        });
       }
 
       this.traysPlayed++;
@@ -377,6 +403,7 @@ class PlaytestGame {
       totalBlocks: this.totalBlocks,
       traysPlayed: this.traysPlayed,
       movesCount: this.movesCount,
+      allClearsCount: this.allClearsCount,
       shapeStats: this.shapeStats
     };
   }
@@ -428,19 +455,21 @@ openingStepsHistory.forEach(s => {
   console.log(`  Step ${s.step}: Shape ${s.shape.padEnd(8)} -> Cleared: ${s.cleared} lines | Combo: x${s.combo} | Score: ${s.score}`);
 });
 
-// Continue Game 1 to completion!
-console.log('\n--- PLAYING OUT GAME 1 TO COMPLETION ---');
+// Continue Game 1 to completion (chasing a Best Score of 15,000)!
+game1.initialBestScore = 15000;
+console.log('\n--- PLAYING OUT GAME 1 TO COMPLETION (Target Best Score: 15,000) ---');
 let comboMilestones = [];
 const game1Full = game1.playFullGame(150, (step) => {
   if (step.combo >= 4 && !comboMilestones.includes(step.combo)) {
     comboMilestones.push(step.combo);
     console.log(`🔥 [HIGH COMBO REACHED]: Combo x${step.combo} at move ${game1.movesCount} (Score: ${step.score})!`);
   }
-});
+}, true);
 
 console.log('\nGame 1 Complete Results:');
 console.log(`  Final Score:        ${game1Full.score.toLocaleString()}`);
 console.log(`  Max Combo:          x${game1Full.maxCombo}`);
+console.log(`  All Clears:         ${game1Full.allClearsCount}`);
 console.log(`  Total Lines Cleared: ${game1Full.totalLines}`);
 console.log(`  Total Moves:        ${game1Full.movesCount}`);
 console.log(`  Trays Played:       ${game1Full.traysPlayed}`);
@@ -453,26 +482,32 @@ console.log(`    - 4-block Bars (h4, v4):   ${game1Full.shapeStats.bars4}`);
 console.log(`    - 3-block Bars (h3, v3):   ${game1Full.shapeStats.bars3}`);
 console.log(`    - Other Polyominoes:       ${game1Full.shapeStats.others}`);
 
-// 2. Play 4 more full games to gather solid statistical benchmarks
-console.log('\n--- SIMULATING 4 MORE COMPLETE GAMES (STATISTICAL BENCHMARK) ---');
+// 2. Simulate 8 more games across target Best Score profiles
+console.log('\n--- SIMULATING 8 MORE GAMES (EARLY SHIELD + KEEP-CLEAN + RECORD TENSION ARC) ---');
 const allGames = [game1Full];
-for (let g = 2; g <= 5; g++) {
-  const gTest = new PlaytestGame();
+const testTargets = [0, 0, 8000, 12000, 15000, 20000, 25000, 30000];
+for (let g = 2; g <= 9; g++) {
+  const targetRec = testTargets[g - 2];
+  const gTest = new PlaytestGame(targetRec);
   const res = gTest.playFullGame(150);
   allGames.push(res);
-  console.log(`Game ${g}: Score = ${res.score.toLocaleString().padStart(6)} | Max Combo = x${res.maxCombo} | Lines = ${String(res.totalLines).padStart(2)} | Moves = ${String(res.movesCount).padStart(2)}`);
+  console.log(`Game ${g} (TargetRec: ${String(targetRec).padStart(5)}): Score = ${res.score.toLocaleString().padStart(7)} | Max Combo = x${String(res.maxCombo).padStart(2)} | AllClears = ${res.allClearsCount} | Lines = ${String(res.totalLines).padStart(3)} | Moves = ${String(res.movesCount).padStart(3)}`);
 }
 
 const avgScore = Math.round(allGames.reduce((acc, g) => acc + g.score, 0) / allGames.length);
 const maxScore = Math.max(...allGames.map(g => g.score));
 const maxEverCombo = Math.max(...allGames.map(g => g.maxCombo));
+const minMoves = Math.min(...allGames.map(g => g.movesCount));
 const avgLines = Math.round(allGames.reduce((acc, g) => acc + g.totalLines, 0) / allGames.length);
+const totalAllClears = allGames.reduce((acc, g) => acc + g.allClearsCount, 0);
 
-console.log('\n5-Game Aggregated Statistics:');
-console.log(`  Average Score: ${avgScore.toLocaleString()}`);
-console.log(`  Highest Score: ${maxScore.toLocaleString()}`);
-console.log(`  Highest Combo: x${maxEverCombo}`);
-console.log(`  Average Lines: ${avgLines}`);
+console.log('\n9-Game Aggregated Statistics:');
+console.log(`  Average Score:      ${avgScore.toLocaleString()}`);
+console.log(`  Highest Score:      ${maxScore.toLocaleString()}`);
+console.log(`  Highest Combo:      x${maxEverCombo}`);
+console.log(`  Minimum Moves:      ${minMoves} (Early-Game Shield Check: should be >= 30!)`);
+console.log(`  Total All Clears:   ${totalAllClears}`);
+console.log(`  Average Lines:      ${avgLines}`);
 
 // 3. Quest Expiration & Reset Verification
 console.log('\n--- TEST 3: QUESTS TRACKING & TIMEOUT RESET VERIFICATION ---');
