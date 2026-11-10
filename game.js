@@ -117,9 +117,25 @@ class BlockBlastGame {
     if (!dyn) return;
 
     this.currentDynPalette = dyn.name;
-    document.documentElement.style.setProperty('--bg-gradient', dyn.bgGradient);
-    document.documentElement.style.background = dyn.themeColor;
-    document.body.style.background = dyn.bgGradient;
+
+    // Smooth background crossfade
+    const crossfadeEl = document.getElementById('bgCrossfade');
+    if (crossfadeEl) {
+      crossfadeEl.style.background = dyn.bgGradient;
+      crossfadeEl.style.opacity = '1';
+      clearTimeout(this._crossfadeTimeout);
+      this._crossfadeTimeout = setTimeout(() => {
+        document.documentElement.style.setProperty('--bg-gradient', dyn.bgGradient);
+        document.documentElement.style.background = dyn.themeColor;
+        document.body.style.background = dyn.bgGradient;
+        crossfadeEl.style.opacity = '0';
+      }, 850);
+    } else {
+      document.documentElement.style.setProperty('--bg-gradient', dyn.bgGradient);
+      document.documentElement.style.background = dyn.themeColor;
+      document.body.style.background = dyn.bgGradient;
+    }
+
     document.documentElement.style.setProperty('--board-bg', dyn.boardBg);
     document.documentElement.style.setProperty('--board-border', dyn.boardBorder);
     const metaTheme = document.getElementById('metaThemeColor');
@@ -1040,11 +1056,11 @@ class BlockBlastGame {
       window.questManager.onEvent('single_score', this.score);
     }
 
-    // Rotate color palette every 250 points in an endless loop without resetting!
+    // Rotate color palette less frequently (every 800 pts), smoothly during line clears/combo screen shake!
     this.paletteProgress += movePoints;
-    if (this.paletteProgress >= 250) {
-      const steps = Math.floor(this.paletteProgress / 250);
-      this.paletteProgress = this.paletteProgress % 250;
+    if (totalLines >= 1 && this.paletteProgress >= 800) {
+      const steps = Math.floor(this.paletteProgress / 800);
+      this.paletteProgress = this.paletteProgress % 800;
       this.applyPaletteIndex(this.paletteIndex + steps);
     }
     localStorage.setItem('bb_palette_pts', String(this.paletteProgress));

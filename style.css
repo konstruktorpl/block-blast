@@ -39,6 +39,15 @@ body {
   inset: 0;
 }
 
+.bg-crossfade {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.85s ease-in-out;
+}
+
 button {
   font-family: inherit;
 }
