@@ -943,8 +943,10 @@ class BlockBlastGame {
       }
       this.movesSinceLastClear = 0;
 
-      // Clear cells & spawn staggered shatter FX
+      // Clear cells & spawn staggered shatter FX (periodically cycles: numbers, cubes, lightning, fireworks, bubbles, stars)
       const clearedSet = new Set();
+      const activeFXMode = this.fx.currentMode;
+      this.fx.advanceClearMode();
 
       for (const r of fullRows) {
         this.fx.spawnLineBeam(
@@ -954,6 +956,15 @@ class BlockBlastGame {
           cellSize,
           pieceColorObj.glow || pieceColorObj.base
         );
+        if (activeFXMode === 'lightning') {
+          this.fx.spawnLightning(
+            gridOriginX,
+            gridOriginY + (r + 0.5) * cellSize,
+            gridOriginX + cellSize * 8,
+            gridOriginY + (r + 0.5) * cellSize,
+            '#00f0ff'
+          );
+        }
         for (let c = 0; c < 8; c++) {
           const key = `${r},${c}`;
           if (!clearedSet.has(key)) {
@@ -964,7 +975,9 @@ class BlockBlastGame {
             const cy = gridOriginY + (r + 0.5) * cellSize;
             const delay = c * 0.016;
             this.fx.spawnCellShatter(cx, cy, cellSize, cObj, delay);
-            this.fx.spawnCellScore(cx, cy, 5 * Math.max(1, this.comboStreak), delay);
+            if (activeFXMode === 'numbers') {
+              this.fx.spawnCellScore(cx, cy, 5 * Math.max(1, this.comboStreak), delay);
+            }
             this.grid[r][c] = null;
           }
         }
@@ -978,6 +991,15 @@ class BlockBlastGame {
           cellSize * 8,
           pieceColorObj.glow || pieceColorObj.base
         );
+        if (activeFXMode === 'lightning') {
+          this.fx.spawnLightning(
+            gridOriginX + (c + 0.5) * cellSize,
+            gridOriginY,
+            gridOriginX + (c + 0.5) * cellSize,
+            gridOriginY + cellSize * 8,
+            '#00f0ff'
+          );
+        }
         for (let r = 0; r < 8; r++) {
           const key = `${r},${c}`;
           if (!clearedSet.has(key)) {
@@ -988,7 +1010,9 @@ class BlockBlastGame {
             const cy = gridOriginY + (r + 0.5) * cellSize;
             const delay = r * 0.016;
             this.fx.spawnCellShatter(cx, cy, cellSize, cObj, delay);
-            this.fx.spawnCellScore(cx, cy, 5 * Math.max(1, this.comboStreak), delay);
+            if (activeFXMode === 'numbers') {
+              this.fx.spawnCellScore(cx, cy, 5 * Math.max(1, this.comboStreak), delay);
+            }
             this.grid[r][c] = null;
           }
         }

@@ -4,12 +4,31 @@ class FXManager {
   constructor() {
     this.particles = [];
     this.lineBeams = [];
+    this.lightningBolts = [];
     this.poppingCells = [];
     this.floatingTexts = [];
     this.cellScores = [];
     this.banners = [];
     this.shakeTime = 0;
     this.shakeMagnitude = 0;
+
+    // Periodically cycling effect modes (numbers, cubes, lightning, fireworks, bubbles, stars)
+    this.effectModes = ['numbers', 'cubes', 'lightning', 'fireworks', 'bubbles', 'stars'];
+    this.modeIndex = 0;
+    this.clearsInCurrentMode = 0;
+    this.clearsPerMode = 3; // Rotates every 3 line clear events
+  }
+
+  get currentMode() {
+    return this.effectModes[this.modeIndex % this.effectModes.length];
+  }
+
+  advanceClearMode() {
+    this.clearsInCurrentMode++;
+    if (this.clearsInCurrentMode >= this.clearsPerMode) {
+      this.clearsInCurrentMode = 0;
+      this.modeIndex = (this.modeIndex + 1) % this.effectModes.length;
+    }
   }
 
   triggerShake(magnitude = 6, duration = 0.22) {
@@ -30,13 +49,113 @@ class FXManager {
     });
   }
 
-  spawnDebrisBurst(cx, cy, cellSize, colorObj) {
-    // Choose particle style based on the current active combo / level
-    const currentCombo = (window.game && window.game.comboStreak) || 0;
-    const styles = ['cubes', 'stars', 'fireworks', 'bubbles'];
-    const chosenStyle = styles[currentCombo % styles.length];
+  spawnLightning(x1, y1, x2, y2, color = '#00f0ff') {
+    const steps = 7;
+    const segments = [];
+    let curX = x1;
+    let curY = y1;
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len;
+    const ny = dx / len;
 
-    if (chosenStyle === 'fireworks') {
+    for (let i = 1; i <= steps; i++) {
+      const progress = i / steps;
+      const targetX = x1 + dx * progress;
+      const targetY = y1 + dy * progress;
+      const jitter = (i < steps) ? (Math.random() - 0.5) * 20 : 0;
+      const jx = targetX + nx * jitter;
+      const jy = targetY + ny * jitter;
+      segments.push({ x1: curX, y1: curY, x2: jx, y2: jy });
+      curX = jx;
+      curY = jy;
+    }
+    this.lightningBolts.push({
+      segments,
+      color,
+      age: 0,
+      life: 0.32
+    });
+  }
+
+  spawnDebrisBurst(cx, cy, cellSize, colorObj) {
+    const mode = this.currentMode;
+
+    if (mode === 'numbers') {
+      // Numbers mode: subtle golden pop burst
+      const count = 6;
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.3;
+        const speed = (cellSize * 1.5) + Math.random() * (cellSize * 2.2);
+        this.particles.push({
+          x: cx,
+          y: cy,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          gravity: cellSize * 3.0,
+          size: cellSize * (0.10 + Math.random() * 0.10),
+          rotation: angle,
+          vRot: 0,
+          color: i % 2 === 0 ? '#ffd43b' : '#ffffff',
+          glow: '#ffd43b',
+          age: 0,
+          life: 0.4 + Math.random() * 0.2,
+          shape: 'spark'
+        });
+      }
+      return;
+    }
+
+    if (mode === 'cubes') {
+      // Digital dissolve: pixel cubes smoothly drifting straight up like video frame 13
+      const count = 7;
+      for (let i = 0; i < count; i++) {
+        this.particles.push({
+          x: cx + (Math.random() - 0.5) * (cellSize * 0.8),
+          y: cy + (Math.random() - 0.5) * (cellSize * 0.8),
+          vx: (Math.random() - 0.5) * (cellSize * 0.35),
+          vy: -cellSize * (1.2 + Math.random() * 2.2),
+          gravity: 0,
+          size: cellSize * (0.16 + Math.random() * 0.18),
+          rotation: 0,
+          vRot: 0,
+          color: i % 2 === 0 ? (colorObj.top || colorObj.base) : colorObj.base,
+          glow: colorObj.glow || colorObj.base,
+          age: 0,
+          life: 0.55 + Math.random() * 0.25,
+          shape: 'pixelCube'
+        });
+      }
+      return;
+    }
+
+    if (mode === 'lightning') {
+      // Electric lightning mode: crackling zaps and high-speed sparks
+      const count = 10;
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = (cellSize * 3.0) + Math.random() * (cellSize * 4.0);
+        this.particles.push({
+          x: cx,
+          y: cy,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          gravity: 0,
+          size: cellSize * (0.14 + Math.random() * 0.16),
+          rotation: angle,
+          vRot: (Math.random() - 0.5) * 15,
+          color: i % 3 === 0 ? '#ffffff' : (i % 2 === 0 ? '#00f0ff' : '#d946ef'),
+          glow: '#00f0ff',
+          age: 0,
+          life: 0.35 + Math.random() * 0.2,
+          shape: 'electricZap'
+        });
+      }
+      return;
+    }
+
+    if (mode === 'fireworks') {
       const count = 16;
       for (let i = 0; i < count; i++) {
         const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.2;
@@ -60,7 +179,7 @@ class FXManager {
       return;
     }
 
-    if (chosenStyle === 'stars') {
+    if (mode === 'stars') {
       const count = 12;
       for (let i = 0; i < count; i++) {
         const angle = Math.random() * Math.PI * 2;
@@ -84,7 +203,7 @@ class FXManager {
       return;
     }
 
-    if (chosenStyle === 'bubbles') {
+    if (mode === 'bubbles') {
       const count = 10;
       for (let i = 0; i < count; i++) {
         const angle = Math.random() * Math.PI * 2;
@@ -210,6 +329,14 @@ class FXManager {
       }
     }
 
+    for (let i = this.lightningBolts.length - 1; i >= 0; i--) {
+      const lb = this.lightningBolts[i];
+      lb.age += dt;
+      if (lb.age >= lb.life) {
+        this.lightningBolts.splice(i, 1);
+      }
+    }
+
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
       p.age += dt;
@@ -297,6 +424,30 @@ class FXManager {
       ctx.restore();
     }
 
+    for (const lb of this.lightningBolts) {
+      const t = lb.age / lb.life;
+      const alpha = Math.max(0, 1 - t);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = lb.color;
+      ctx.shadowColor = lb.color;
+      ctx.shadowBlur = 14;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let i = 0; i < lb.segments.length; i++) {
+        const seg = lb.segments[i];
+        if (i === 0) ctx.moveTo(seg.x1, seg.y1);
+        ctx.lineTo(seg.x2, seg.y2);
+      }
+      ctx.stroke();
+
+      // White-hot core
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.3;
+      ctx.stroke();
+      ctx.restore();
+    }
+
     for (const pc of this.poppingCells) {
       const t = Math.max(0, pc.age / pc.duration);
       const scale = pc.delay > 0 ? 1 : (1 + Math.sin(t * Math.PI) * 0.32);
@@ -357,6 +508,22 @@ class FXManager {
         ctx.beginPath();
         ctx.arc(0, 0, s * 0.55, 0, Math.PI * 2);
         ctx.fill();
+      } else if (p.shape === 'pixelCube') {
+        window.roundRectPath(ctx, -s / 2, -s / 2, s, s, 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.fillRect(-s * 0.35, -s * 0.35, s * 0.35, s * 0.35);
+      } else if (p.shape === 'electricZap') {
+        ctx.beginPath();
+        ctx.moveTo(-s * 0.8, -s * 0.2);
+        ctx.lineTo(0, -s * 0.4);
+        ctx.lineTo(-s * 0.2, s * 0.3);
+        ctx.lineTo(s * 0.8, 0);
+        ctx.lineWidth = 2.4;
+        ctx.strokeStyle = p.color;
+        ctx.shadowColor = p.glow;
+        ctx.shadowBlur = 8;
+        ctx.stroke();
       } else {
         window.roundRectPath(ctx, -s / 2, -s / 2, s, s, Math.max(2, s * 0.22));
         ctx.fill();
