@@ -421,6 +421,142 @@ function pickWeightedItem(list) {
   return list[list.length - 1];
 }
 
+// ============================================================================
+// LOOKAHEAD ENGINE & DDA DIRECTOR (6-Permutation Search + Board Fitness)
+// ============================================================================
+const TRAY_PERMUTATIONS = [
+  [0, 1, 2], [0, 2, 1],
+  [1, 0, 2], [1, 2, 0],
+  [2, 0, 1], [2, 1, 0]
+];
+
+/**
+ * Counts how many clean 3x3 open zones remain on the board (measures spatial cohesion/connectedness).
+ */
+function countOpen3x3Regions(grid) {
+  let openCount = 0;
+  for (let r = 0; r <= 5; r++) {
+    for (let c = 0; c <= 5; c++) {
+      let ok = true;
+      for (let dr = 0; dr < 3 && ok; dr++) {
+        for (let dc = 0; dc < 3; dc++) {
+          if (grid[r + dr][c + dc] !== null) {
+            ok = false;
+            break;
+          }
+        }
+      }
+      if (ok) openCount++;
+    }
+  }
+  return openCount;
+}
+
+/**
+ * Scores a board state across:
+ * 1) Empty cells (keep board open)
+ * 2) Spatial cohesion (open 3x3 pockets vs isolated 1x1 voids)
+ * 3) Line clears achieved during tray placement
+ * 4) Combo buffer (rewarding at least 1 clear when sustaining a combo)
+ */
+function computeBoardFitness(grid, totalLinesCleared, comboStreak = 0) {
+  const emptyCells = 64 - countOccupiedCells(grid);
+  const open3x3 = countOpen3x3Regions(grid);
+  const trapped = countTrappedSingleHoles(grid);
+  const comboBuffer = totalLinesCleared >= 1 ? (comboStreak >= 1 ? 75 : 35) : 0;
+  const allClearBonus = emptyCells === 64 ? 250 : 0;
+
+  const raw = emptyCells * 4 + open3x3 * 14 - trapped * 65 + totalLinesCleared * 55 + comboBuffer + allClearBonus;
+  // Clamp solvable fitness >= 1 so any solvable 3-piece path stays strictly positive vs -1 deadlock
+  return Math.max(1, raw);
+}
+
+/**
+ * Fast heuristic top-K placement picker for lookahead depth branching.
+ */
+function pickTopStepPlacements(grid, shape, maxSamples = 2) {
+  const placements = getAllValidPlacements(grid, shape);
+  if (!placements.length) return [];
+
+  const scored = [];
+  const step = placements.length > 12 ? placements.length / 12 : 1;
+  for (let i = 0; i < placements.length; i += step) {
+    const p = placements[Math.floor(i)];
+    const sim = simulatePlacement(grid, shape, p.r, p.c);
+    const score = sim.cleared * 400 + p.r * 2;
+    scored.push({ grid: sim.grid, cleared: sim.cleared, score });
+  }
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, maxSamples);
+}
+
+/**
+ * Full 6-Permutation Lookahead Evaluator (checks A-B-C, A-C-B, B-A-C, B-C-A, C-A-B, C-B-A).
+ * Returns { solvable: true, fitness >= 1 } if ANY order allows placing all 3 pieces cleanly,
+ * or { solvable: false, fitness: -1 } if NO valid 3-move path exists (Deadlock!).
+ */
+function evaluateTrayAllPermutations(grid, tray, comboStreak = 0) {
+  let bestFitness = -1;
+  let bestLines = 0;
+
+  for (let pIdx = 0; pIdx < TRAY_PERMUTATIONS.length; pIdx++) {
+    const [i0, i1, i2] = TRAY_PERMUTATIONS[pIdx];
+    const branches0 = pickTopStepPlacements(grid, tray[i0], 2);
+    if (!branches0.length) continue;
+
+    for (let b0 = 0; b0 < branches0.length; b0++) {
+      const s0 = branches0[b0];
+      const branches1 = pickTopStepPlacements(s0.grid, tray[i1], 2);
+      if (!branches1.length) continue;
+
+      for (let b1 = 0; b1 < branches1.length; b1++) {
+        const s1 = branches1[b1];
+        const branches2 = pickTopStepPlacements(s1.grid, tray[i2], 1);
+        if (!branches2.length) continue;
+
+        const s2 = branches2[0];
+        const totalLines = s0.cleared + s1.cleared + s2.cleared;
+        const fitness = computeBoardFitness(s2.grid, totalLines, comboStreak);
+        if (fitness > bestFitness) {
+          bestFitness = fitness;
+          bestLines = totalLines;
+        }
+      }
+    }
+  }
+
+  return {
+    solvable: bestFitness !== -1,
+    fitness: bestFitness,
+    linesCleared: bestLines
+  };
+}
+
+/**
+ * Determines DDA Target Mode based on game phase, record progression & revive shield:
+ * - 'EASY': Early-Game Shield (<30 moves), post-revive grace (<6 moves), or chasing Record + 2,500 runway.
+ * - 'HARD': Past Record + 2,500 — tightens spaces while keeping solvable paths for skilled players.
+ * - 'KILL_PLAYER': Deep post-record exhaustion (>= 65% tension on crowded boards) to trigger dramatic Revive.
+ */
+function determineDDAMode(grid, score, meta, tension, overrun) {
+  const movesCount = meta.movesCount || 0;
+  const postReviveMoves = meta.postReviveMoves ?? 99;
+
+  if (movesCount < 30 || postReviveMoves < 6 || overrun <= 2500) {
+    return 'EASY';
+  }
+
+  const occupied = countOccupiedCells(grid);
+  if (tension >= 0.65 && occupied >= 24) {
+    const killProb = 0.10 + (tension - 0.65) * 0.85;
+    if (Math.random() < killProb) {
+      return 'KILL_PLAYER';
+    }
+  }
+
+  return 'HARD';
+}
+
 /**
  * Generates a balanced, solvable tray of 3 pieces tailored to the current board state.
  * Features authentic Dynamic Director:
@@ -482,31 +618,30 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
   const keyClearingShapes = findKeyClearingShapes(grid);
   const holeFillingShapes = findHoleFillingShapes(grid);
 
+  const ddaMode = determineDDAMode(grid, score, meta, tension, overrun);
   const isEarlyShield = movesCount < 30 && overrun <= 2500;
   const isHighCombo = comboStreak >= 4;
 
   // Dynamic Director Probability:
   let assistChance;
-  if (isEarlyShield) {
-    // 100% protection against frustrating abrupt deaths in the first 30 moves
+  if (ddaMode === 'KILL_PLAYER') {
+    assistChance = 0; // Lookahead Deadlock Hunter handles KILL_PLAYER cleanly
+  } else if (isEarlyShield) {
     assistChance = 1.0;
   } else if (isHighCombo) {
-    // Helps reach exciting x4-x8 combos below record, then gently softens boost on x8+ supercombos
-    // so ultra-long streaks require genuine skill instead of infinite autopilot!
     const superComboTaper = comboStreak >= 8 ? Math.min(0.55, (comboStreak - 7) * 0.08) : 0;
     const baseComboAssist = 0.90 - superComboTaper;
     assistChance = Math.max(0.20, baseComboAssist - tension * 0.58);
   } else if (comboStreak >= 1) {
     assistChance = Math.max(0.24, 0.88 - tension * 0.62);
   } else if (fillRatio >= 0.28) {
-    // Proactive Keep-Board-Clean sweep when blocks accumulate >= 28%, dialing down sharply as tension climbs
     assistChance = Math.max(0.18, 0.86 - tension * 0.68);
   } else {
     assistChance = Math.max(0.15, 0.78 - tension * 0.62);
   }
 
   const hasAssists = keyClearingShapes.length > 0 || holeFillingShapes.length > 0;
-  const shouldAssist = hasAssists && Math.random() < assistChance;
+  const shouldAssist = ddaMode !== 'KILL_PLAYER' && hasAssists && Math.random() < assistChance;
 
   let bestCandidate = null;
   let bestScore = -1;
@@ -629,81 +764,75 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
   }
 
   if (!bestCandidate) {
-    // Standard smart solver (scales candidate search & cleanliness bias with tension)
-    const searchAttempts = tension < 0.5 ? 24 : 16;
-    const maxLargePerHand = tension > 0.65 ? 2 : 1;
+    // 6-Permutation Lookahead Pool (checks ALL 6 move orderings A-B-C..C-B-A)
+    const poolSize = ddaMode === 'EASY' ? 14 : 16;
+    const maxLargePerHand = ddaMode === 'KILL_PLAYER' ? 3 : (tension > 0.55 ? 2 : 1);
+    const evaluatedCandidates = [];
+    let solvableCount = 0;
 
-    for (let attempt = 0; attempt < searchAttempts; attempt++) {
-      const candidate = [];
+    for (let attempt = 0; attempt < poolSize; attempt++) {
+      const cand = [];
       let largeCount = 0;
 
       for (let i = 0; i < 3; i++) {
         let pool = weightedPool;
-        if (largeCount >= maxLargePerHand) {
+        if (ddaMode === 'KILL_PLAYER') {
+          const unplayable = weightedPool.filter((s) => getAllValidPlacements(grid, s).length === 0);
+          if (unplayable.length > 0 && Math.random() < 0.65) {
+            pool = unplayable;
+          }
+        } else if (largeCount >= maxLargePerHand) {
           pool = weightedPool.filter((s) => s.tier !== 'large');
         }
         const picked = pickWeightedShape(pool);
         if (picked.tier === 'large') largeCount++;
-        candidate.push(picked);
+        cand.push(picked);
       }
 
-      let simGrid = grid.map((row) => row.slice());
-      let placedCount = 0;
-      let linesClearedInSim = 0;
-      let createdTrappedHoles = 0;
+      const evalRes = evaluateTrayAllPermutations(grid, cand, comboStreak);
+      evaluatedCandidates.push({ tray: cand, fitness: evalRes.fitness, solvable: evalRes.solvable });
+      if (evalRes.solvable) solvableCount++;
 
-      for (let i = 0; i < 3; i++) {
-        const shape = candidate[i];
-        const placements = getAllValidPlacements(simGrid, shape);
-        if (placements.length === 0) break;
-
-        let chosen = placements[Math.floor(Math.random() * placements.length)];
-        let bestSim = null;
-
-        const sampleCount = Math.min(placements.length, 10);
-        for (let k = 0; k < sampleCount; k++) {
-          const p = placements[Math.floor((k / sampleCount) * placements.length)];
-          const res = simulatePlacement(simGrid, shape, p.r, p.c);
-          if (!bestSim || res.cleared > bestSim.cleared) {
-            bestSim = res;
-            chosen = p;
-          }
-        }
-
-        const baseTrapped = countTrappedSingleHoles(simGrid);
-        const finalSim = bestSim || simulatePlacement(simGrid, shape, chosen.r, chosen.c);
-        const postTrapped = countTrappedSingleHoles(finalSim.grid);
-        if (postTrapped > baseTrapped) {
-          createdTrappedHoles += (postTrapped - baseTrapped);
-        }
-
-        simGrid = finalSim.grid;
-        linesClearedInSim += finalSim.cleared;
-        placedCount++;
+      // Fast-path exit in EASY if we found a healthy clean sequence
+      if (ddaMode === 'EASY' && evalRes.solvable && (evalRes.linesCleared >= 1 || evalRes.fitness >= 260) && attempt >= 4) {
+        break;
       }
-
-      const finalOccupied = countOccupiedCells(simGrid);
-      const cleanlinessGain = Math.max(0, occupied - finalOccupied);
-
-      let candidateQuality = placedCount * 14 + linesClearedInSim * (14 - tension * 8) - createdTrappedHoles * 35;
-      if (tension < 0.6) {
-        candidateQuality += cleanlinessGain * 3.5; // Favor hands that leave board cleaner!
+      // Fast-path exit in HARD once we have enough diverse solvable puzzles
+      if (ddaMode === 'HARD' && solvableCount >= 7) {
+        break;
       }
-      if (placedCount === 3 && createdTrappedHoles === 0) {
-        candidateQuality += 20;
-      }
-
-      if (candidateQuality > bestScore) {
-        bestScore = candidateQuality;
-        bestCandidate = candidate;
-      }
-      if (tension < 0.3 && placedCount === 3 && linesClearedInSim >= 2 && createdTrappedHoles === 0) {
+      // Fast-path exit in KILL_PLAYER as soon as a verified deadlock across all 6 permutations is found
+      if (ddaMode === 'KILL_PLAYER' && !evalRes.solvable) {
         break;
       }
     }
+
+    if (ddaMode === 'KILL_PLAYER') {
+      // Pick deadlocking tray (-1) if found; else sort ascending for maximum pressure
+      evaluatedCandidates.sort((a, b) => {
+        if (a.fitness === -1 && b.fitness !== -1) return -1;
+        if (b.fitness === -1 && a.fitness !== -1) return 1;
+        return a.fitness - b.fitness;
+      });
+      bestCandidate = evaluatedCandidates[0].tray;
+    } else if (ddaMode === 'HARD') {
+      // Always leave an escape path for skilled players if possible (`solvable === true`)!
+      const solvablePool = evaluatedCandidates.filter((c) => c.solvable);
+      if (solvablePool.length > 0) {
+        solvablePool.sort((a, b) => a.fitness - b.fitness); // Tightest solvable puzzle
+        const pickIdx = Math.floor(Math.random() * Math.min(3, solvablePool.length));
+        bestCandidate = solvablePool[pickIdx].tray;
+      } else {
+        bestCandidate = evaluatedCandidates[0].tray;
+      }
+    } else {
+      // EASY mode: Sort descending by Board Fitness Score (keep board clean, connected & combo-ready!)
+      evaluatedCandidates.sort((a, b) => b.fitness - a.fitness);
+      bestCandidate = evaluatedCandidates[0].tray;
+    }
   }
 
-  // Safety fallback: ensure bestCandidate is always a valid 3-piece array with at least one playable move
+  // Safety fallback (active for EASY and HARD; intentionally skipped in KILL_PLAYER)
   const normalFitting = weightedPool.filter((s) => getAllValidPlacements(grid, s).length > 0);
   const dotRescue = findClutchSingleDotRescue(grid);
   if (!bestCandidate) {
@@ -714,16 +843,18 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
     } else {
       bestCandidate = [pickWeightedShape(weightedPool), pickWeightedShape(weightedPool), pickWeightedShape(weightedPool)];
     }
-  } else if (getAllValidPlacements(grid, bestCandidate[0]).length === 0 && !bestCandidate.some((s) => getAllValidPlacements(grid, s).length > 0)) {
+  } else if (
+    ddaMode !== 'KILL_PLAYER' &&
+    !bestCandidate.some((s) => getAllValidPlacements(grid, s).length > 0)
+  ) {
     if (normalFitting.length > 0) {
       bestCandidate[0] = pickWeightedShape(normalFitting);
     }
   }
 
-  // Ultra-rare authentic 1x1 Rescue Dot (`dot1`) — NEVER spawns casually!
-  // Appears only on cooldown (movesSinceDot >= 12) when truly needed to rescue or plug a trapped 1x1 hole.
+  // Ultra-rare authentic 1x1 Rescue Dot (`dot1`) — NEVER spawns casually or during KILL_PLAYER!
   const movesSinceDot = meta.movesSinceDot ?? 99;
-  if (!bestCandidate.some((s) => s.id === 'dot1') && dotRescue) {
+  if (ddaMode !== 'KILL_PLAYER' && !bestCandidate.some((s) => s.id === 'dot1') && dotRescue) {
     const noNormalFits = normalFitting.length === 0;
     const isEmergencyClear = fillRatio >= 0.54 && keyClearingShapes.length === 0 && dotRescue.cleared >= 1;
     let dotChance = 0;
@@ -878,5 +1009,8 @@ window.countTrappedSingleHoles = countTrappedSingleHoles;
 window.findKeyClearingShapes = findKeyClearingShapes;
 window.findHoleFillingShapes = findHoleFillingShapes;
 window.findClutchSingleDotRescue = findClutchSingleDotRescue;
+window.computeBoardFitness = computeBoardFitness;
+window.evaluateTrayAllPermutations = evaluateTrayAllPermutations;
+window.determineDDAMode = determineDDAMode;
 window.generateSmartTray = generateSmartTray;
 window.generateOpeningHand = generateOpeningHand;
