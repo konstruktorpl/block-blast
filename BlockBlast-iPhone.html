@@ -943,7 +943,7 @@ button {
         <button id="btnTheme" class="settings-row"><span>Тема</span><span class="row-value">›</span></button>
         <button id="btnRestart" class="settings-row"><span>Начать заново</span><span class="row-value">›</span></button>
         <button id="btnHome" class="settings-row"><span>Главное меню</span><span class="row-value">›</span></button>
-        <button id="btnReloadApp" class="settings-row" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.12);"><span>Очистить кэш / Обновить</span><span class="row-value">v12 🔄</span></button>
+        <button id="btnReloadApp" class="settings-row" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.12);"><span>Очистить кэш / Обновить</span><span class="row-value">v13 🔄</span></button>
       </div>
     </div>
   </div>
@@ -2497,6 +2497,18 @@ class BlockBlastGame {
     this.paletteIndex = parseInt(localStorage.getItem('bb_palette_idx') || '0', 10) || 0;
     this.paletteProgress = parseInt(localStorage.getItem('bb_palette_pts') || '0', 10) || 0;
 
+    // Intro Board Fill & Disassemble Animation State
+    this.introAnim = {
+      active: false,
+      elapsed: 0,
+      isHeart: false,
+      cells: [],
+      shattered: false,
+      bannerSpawned: false,
+      lastSoundTime: 0,
+      onComplete: null
+    };
+
     // Drag State
     this.drag = {
       active: false,
@@ -2587,7 +2599,7 @@ class BlockBlastGame {
     activeTheme.palette = dyn.palette;
   }
 
-  startNewGame() {
+  startNewGame(runIntro = false) {
     this.grid = Array.from({ length: 8 }, () => Array(8).fill(null));
     this.score = 0;
     this.displayedScore = 0;
@@ -2601,18 +2613,109 @@ class BlockBlastGame {
     // DO NOT reset paletteIndex! Keep current color in continuous circle!
     this.applyPaletteIndex(this.paletteIndex);
 
-    // In original Block Blast: roughly 50% of new games start with a few random pre-seeded blocks!
-    if (Math.random() < 0.5) {
-      this.seedRandomStartingBlocks();
-    }
-
-    this.spawnNewTray();
-    if (window.questManager) {
-      window.questManager.updateUIBadge();
-    }
     this.saveGameState();
     this.updateHUD(true);
     document.getElementById('gameOverModal').classList.add('hidden');
+
+    if (runIntro) {
+      this.tray = []; // dock stays empty while intro fills and disassembles
+      this.startIntroAnimation(() => {
+        // After intro finishes:
+        if (Math.random() < 0.5) {
+          this.seedRandomStartingBlocks();
+        }
+        this.spawnNewTray();
+        this.saveGameState();
+      });
+    } else {
+      // Direct start without intro
+      if (Math.random() < 0.5) {
+        this.seedRandomStartingBlocks();
+      }
+      this.spawnNewTray();
+      this.saveGameState();
+    }
+
+    if (window.questManager) {
+      window.questManager.updateUIBadge();
+    }
+  }
+
+  startIntroAnimation(onComplete) {
+    const isHeart = Math.random() < 0.35; // 35% chance to roll a Heart ❤️!
+    const cells = [];
+
+    if (isHeart) {
+      // 8x8 Heart coordinates
+      const heartCoords = [
+        [1, 1], [1, 2], [1, 5], [1, 6],
+        [2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7],
+        [3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [3, 7],
+        [4, 1], [4, 2], [4, 3], [4, 4], [4, 5], [4, 6],
+        [5, 2], [5, 3], [5, 4], [5, 5],
+        [6, 3], [6, 4]
+      ];
+
+      const heartColors = [
+        { id: 'rose', base: '#ff6b8b', top: '#ffa3b5', left: '#ff859f', right: '#e0486a', bottom: '#bf284c', inner: '#ff6b8b', glow: '#ffb3c1' },
+        { id: 'ruby', base: '#e11d48', top: '#fb7185', left: '#f43f5e', right: '#be123c', bottom: '#9f1239', inner: '#e11d48', glow: '#ffe4e6' },
+        { id: 'pink', base: '#f43f5e', top: '#fda4af', left: '#fb7185', right: '#e11d48', bottom: '#be123c', inner: '#f43f5e', glow: '#fecdd3' },
+        { id: 'magenta', base: '#d63384', top: '#f06595', left: '#e64980', right: '#a61e4d', bottom: '#86153d', inner: '#d63384', glow: '#fcc2d7' },
+        { id: 'gold', base: '#ffd43b', top: '#ffe066', left: '#fcc419', right: '#e67700', bottom: '#b85d00', inner: '#ffd43b', glow: '#fff3bf' }
+      ];
+
+      for (const [r, c] of heartCoords) {
+        // Expand from bottom tip upward to top arches
+        const delay = (6 - r) * 0.05 + Math.abs(c - 3.5) * 0.035;
+        const colorObj = heartColors[(r + Math.floor(Math.abs(c - 3.5))) % heartColors.length];
+        cells.push({
+          r,
+          c,
+          colorObj,
+          delay,
+          scale: 0,
+          soundPlayed: false
+        });
+      }
+    } else {
+      // Full grid diagonal wave fill
+      const palette = (this.theme && this.theme.palette) || window.THEMES.classic.palette;
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const delay = (r + c) * 0.026;
+          const colorObj = palette[(r * 2 + c) % palette.length];
+          cells.push({
+            r,
+            c,
+            colorObj,
+            delay,
+            scale: 0,
+            soundPlayed: false
+          });
+        }
+      }
+    }
+
+    this.introAnim = {
+      active: true,
+      elapsed: 0,
+      isHeart,
+      cells,
+      shattered: false,
+      bannerSpawned: false,
+      lastSoundTime: 0,
+      onComplete
+    };
+  }
+
+  skipIntroAnimation() {
+    if (!this.introAnim || !this.introAnim.active) return;
+    this.introAnim.active = false;
+    if (typeof this.introAnim.onComplete === 'function') {
+      const cb = this.introAnim.onComplete;
+      this.introAnim.onComplete = null;
+      cb();
+    }
   }
 
   seedRandomStartingBlocks() {
@@ -2867,6 +2970,7 @@ class BlockBlastGame {
       window.soundEngine.init();
       window.soundEngine.playPickup();
       hide('startScreen');
+      this.startNewGame(true);
     });
 
     // Settings (gear)
@@ -2884,7 +2988,7 @@ class BlockBlastGame {
     document.getElementById('btnRestart').addEventListener('click', () => {
       window.soundEngine.playPickup();
       hide('settingsModal');
-      this.startNewGame();
+      this.startNewGame(true);
     });
 
     document.getElementById('btnHome').addEventListener('click', () => {
@@ -2895,7 +2999,7 @@ class BlockBlastGame {
 
     document.getElementById('btnPlayAgain').addEventListener('click', () => {
       window.soundEngine.playPickup();
-      this.startNewGame();
+      this.startNewGame(true);
     });
 
     document.getElementById('btnTheme').addEventListener('click', () => {
@@ -2959,6 +3063,10 @@ class BlockBlastGame {
   onPointerDown(e) {
     e.preventDefault();
     window.soundEngine.init();
+    if (this.introAnim && this.introAnim.active) {
+      this.skipIntroAnimation();
+      return;
+    }
     if (this.isGameOver || this.drag.active) return;
 
     const pt = this.getCanvasCoords(e);
@@ -3393,6 +3501,65 @@ class BlockBlastGame {
   }
 
   update(dt) {
+    // Intro board fill and disassemble animation
+    if (this.introAnim && this.introAnim.active) {
+      this.introAnim.elapsed += dt;
+      const t = this.introAnim.elapsed;
+
+      for (const cell of this.introAnim.cells) {
+        if (t >= cell.delay) {
+          if (!cell.soundPlayed) {
+            cell.soundPlayed = true;
+            if (t - this.introAnim.lastSoundTime > 0.04) {
+              this.introAnim.lastSoundTime = t;
+              window.soundEngine.playHoverTick();
+            }
+          }
+          cell.scale = Math.min(1.0, cell.scale + dt * 10);
+        }
+      }
+
+      // Spawn banner during hold
+      if (t >= 0.55 && !this.introAnim.bannerSpawned) {
+        this.introAnim.bannerSpawned = true;
+        if (this.introAnim.isHeart) {
+          this.fx.spawnBanner('❤️ С ЛЮБОВЬЮ! ❤️', 'УДАЧИ В ИГРЕ!', '#ff6b8b');
+        } else {
+          this.fx.spawnBanner('BLOCK BLAST!', 'ПОЕХАЛИ!', '#66d9e8');
+        }
+      }
+
+      // Shatter phase at 0.88s
+      if (t >= 0.88 && !this.introAnim.shattered) {
+        this.introAnim.shattered = true;
+        const { boardX, boardY, boardPad, cellSize } = this.metrics;
+        const gridOriginX = boardX + boardPad;
+        const gridOriginY = boardY + boardPad;
+
+        for (const cell of this.introAnim.cells) {
+          const cx = gridOriginX + (cell.c + 0.5) * cellSize;
+          const cy = gridOriginY + (cell.r + 0.5) * cellSize;
+          const stagger = this.introAnim.isHeart
+            ? ((cell.r + Math.abs(cell.c - 3.5)) * 0.02)
+            : ((cell.r + cell.c) * 0.012);
+          this.fx.spawnCellShatter(cx, cy, cellSize, cell.colorObj, stagger);
+        }
+
+        window.soundEngine.playLineClear(this.introAnim.isHeart ? 3 : 2, 2, false);
+        this.fx.triggerShake(this.introAnim.isHeart ? 8 : 6, 0.28);
+      }
+
+      // End intro at 1.28s
+      if (t >= 1.28) {
+        this.introAnim.active = false;
+        if (typeof this.introAnim.onComplete === 'function') {
+          const cb = this.introAnim.onComplete;
+          this.introAnim.onComplete = null;
+          cb();
+        }
+      }
+    }
+
     // Smoothly animate displayed score rollup
     if (this.displayedScore < this.score) {
       const diff = this.score - this.displayedScore;
@@ -3521,6 +3688,24 @@ class BlockBlastGame {
         window.drawStyledBlock(ctx, cx, cy, cellSize, colorObj, this.themeId, {
           alpha: this.isGameOver ? 0.55 : 1,
           pulse: willClear ? previewPulse : 0
+        });
+      }
+    }
+
+    // 4.5. Draw Intro Animated Cells (Fill & Disassemble)
+    if (this.introAnim && this.introAnim.active && !this.introAnim.shattered) {
+      const isHeart = this.introAnim.isHeart;
+      const pulse = isHeart ? (1.0 + 0.04 * Math.sin(now * 0.015)) : 1.0;
+
+      for (const cell of this.introAnim.cells) {
+        if (cell.scale <= 0.01) continue;
+        const cx = gridOriginX + (cell.c + 0.5) * cellSize;
+        const cy = gridOriginY + (cell.r + 0.5) * cellSize;
+        const s = cellSize * cell.scale * pulse;
+        const bx = cx - s / 2;
+        const by = cy - s / 2;
+        window.drawStyledBlock(ctx, bx, by, s, cell.colorObj, this.themeId, {
+          alpha: Math.min(1, cell.scale * 1.15)
         });
       }
     }
@@ -3949,11 +4134,13 @@ if ('serviceWorker' in navigator) {
   });
 
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=12').then((reg) => {
+    navigator.serviceWorker.register('./sw.js?v=13').then((reg) => {
       reg.update().catch(() => {});
     }).catch(() => {});
   });
 }
+
+window.BlockBlastGame = BlockBlastGame;
 
 window.addEventListener('DOMContentLoaded', () => {
   if (/[?&]play\b/.test(window.location.search)) {
