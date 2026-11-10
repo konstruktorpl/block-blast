@@ -620,6 +620,7 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
 
   const ddaMode = determineDDAMode(grid, score, meta, tension, overrun);
   const isEarlyShield = movesCount < 30 && overrun <= 2500;
+  const isEarlyHoneymoon = movesCount < 6;
   const isHighCombo = comboStreak >= 4;
 
   // Dynamic Director Probability:
@@ -653,7 +654,7 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
     // Prioritize line clearing when sustaining high combos OR keeping board empty (fillRatio >= 0.30)
     let primaryIsClearing = true;
     if (keyClearingShapes.length > 0 && holeFillingShapes.length > 0) {
-      if (isHighCombo) {
+      if (isHighCombo || isEarlyHoneymoon) {
         primaryIsClearing = true; // Guarantee immediate combo continuation!
       } else if (comboStreak >= 1 || fillRatio >= 0.30) {
         primaryIsClearing = Math.random() < (0.82 - tension * 0.15);
@@ -667,7 +668,12 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
     // Pick Slot 1 (primary assist piece)
     let primaryObj = null;
     if (primaryIsClearing && keyClearingShapes.length > 0) {
-      primaryObj = pickWeightedItem(keyClearingShapes);
+      if (isEarlyHoneymoon) {
+        const bigClearers = keyClearingShapes.filter((k) => k.shape.blockCount >= 4);
+        primaryObj = bigClearers.length > 0 ? pickWeightedItem(bigClearers) : pickWeightedItem(keyClearingShapes);
+      } else {
+        primaryObj = pickWeightedItem(keyClearingShapes);
+      }
     } else if (holeFillingShapes.length > 0) {
       primaryObj = pickWeightedItem(holeFillingShapes);
     }
@@ -895,98 +901,311 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
 }
 
 /**
- * Generates a pre-calculated opening hand (first 3 pieces) specifically tailored to the
- * starting layout on the board. Guarantees that piece 1 clears a line (Combo 1),
- * piece 2 can clear another line (Combo 2), and piece 3 continues the streak (Combo 3)!
- * This provides the authentic Block Blast instant-gratification dopamine kickoff.
+ * StartGameController — Generates pre-seeded architectural Puzzle Boards ("Загадки")
+ * using geometric base patterns (Cross, Frame, Twin Pillars, Diagonals, Checker Terrace)
+ * combined with 30–40% structural noise erosion and Reverse-Carved Giant Lock Sockets
+ * sized specifically for massive key shapes (3x3 sq3, 2x3/3x2 rect, 1x5 bars, Big L).
+ * Strictly guarantees 12–21 cells, ZERO 8/8 pre-cleared lines, and ZERO trapped 1x1 holes.
+ */
+function generateStartingBoard(paletteLen = 6) {
+  const safePalette = Math.max(1, paletteLen);
+
+  function hasFullLine(grid) {
+    for (let r = 0; r < 8; r++) {
+      if (grid[r].every((v) => v !== null)) return true;
+    }
+    for (let c = 0; c < 8; c++) {
+      let full = true;
+      for (let r = 0; r < 8; r++) {
+        if (grid[r][c] === null) {
+          full = false;
+          break;
+        }
+      }
+      if (full) return true;
+    }
+    return false;
+  }
+
+  function applySafeNoiseErosion(grid, keepMin, erosionRate) {
+    const filled = [];
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        if (grid[r][c] !== null) filled.push([r, c]);
+      }
+    }
+    // Randomly remove ~erosionRate fraction without creating isolated trapped 1x1 voids
+    for (let i = filled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [filled[i], filled[j]] = [filled[j], filled[i]];
+    }
+    const targetDrops = Math.floor(filled.length * erosionRate);
+    let dropped = 0;
+    for (const [r, c] of filled) {
+      if (filled.length - dropped <= keepMin || dropped >= targetDrops) break;
+      const saved = grid[r][c];
+      grid[r][c] = null;
+      if (countTrappedSingleHoles(grid) > 0) {
+        grid[r][c] = saved;
+      } else {
+        dropped++;
+      }
+    }
+  }
+
+  const giantIds = ['sq3', 'rect_2x3', 'rect_3x2', 'h5', 'v5', 'bigL_tl', 'bigL_tr', 'bigL_bl', 'bigL_br', 'h4', 'v4', 'sq2'];
+
+  for (let trial = 0; trial < 35; trial++) {
+    const grid = Array.from({ length: 8 }, () => Array(8).fill(null));
+    const mode = Math.floor(Math.random() * 5);
+
+    if (mode === 0) {
+      // Pattern 0: Cross Mask with Reverse-Carved 3x3 Center Lock
+      const r0 = 2 + Math.floor(Math.random() * 2); // 2 or 3
+      const c0 = 2 + Math.floor(Math.random() * 2); // 2 or 3
+      const wingsColor = Math.floor(Math.random() * safePalette);
+      const topColor = (wingsColor + 1) % safePalette;
+      const botColor = (wingsColor + 2) % safePalette;
+
+      // Fill rows crossing the 3x3 socket outside c0..c0+2 (each row becomes 5/8!)
+      for (let dr = 0; dr < 3; dr++) {
+        if (dr === 2 && Math.random() < 0.45) continue; // vary 2 vs 3 trigger rows
+        const r = r0 + dr;
+        for (let c = 0; c < 8; c++) {
+          if (c < c0 || c >= c0 + 3) {
+            grid[r][c] = c < c0 ? wingsColor : topColor;
+          }
+        }
+      }
+      // Vertical cross pillar extensions above/below socket
+      for (let dc = 0; dc < 3; dc++) {
+        const c = c0 + dc;
+        for (let r = 0; r < 8; r++) {
+          if ((r < r0 || r >= r0 + 3) && Math.random() < 0.6) {
+            grid[r][c] = botColor;
+          }
+        }
+      }
+    } else if (mode === 1) {
+      // Pattern 1: Arena Frame Mask with Reverse-Carved 2x3 / 3x2 Rectangle Socket
+      const isHorizontal = Math.random() < 0.5;
+      const keyRows = isHorizontal ? 2 : 3;
+      const keyCols = isHorizontal ? 3 : 2;
+      const r0 = 3 + Math.floor(Math.random() * (6 - keyRows));
+      const c0 = 2 + Math.floor(Math.random() * (6 - keyCols));
+      const colA = Math.floor(Math.random() * safePalette);
+      const colB = (colA + 2) % safePalette;
+      const colC = (colA + 4) % safePalette;
+
+      // Prime all rows intersecting the rectangle
+      for (let dr = 0; dr < keyRows; dr++) {
+        const r = r0 + dr;
+        for (let c = 0; c < 8; c++) {
+          if (c < c0 || c >= c0 + keyCols) {
+            grid[r][c] = c < c0 ? colA : colB;
+          }
+        }
+      }
+      // Frame columns with 35% noise openings
+      for (let r = 1; r <= 6; r++) {
+        if (r < r0 || r >= r0 + keyRows) {
+          if (Math.random() < 0.65) grid[r][0] = colC;
+          if (Math.random() < 0.65) grid[r][7] = colC;
+        }
+      }
+    } else if (mode === 2) {
+      // Pattern 2: Twin Pillars Mask with Open 5-Cell Corridor (1x5 Bar Lock)
+      const isHorizGap = Math.random() < 0.6;
+      const gapStart = 1 + Math.floor(Math.random() * 2); // 1 or 2 -> span 5 cells
+      const colA = Math.floor(Math.random() * safePalette);
+      const colB = (colA + 1) % safePalette;
+      const colC = (colA + 3) % safePalette;
+
+      if (isHorizGap) {
+        const targetRow = 4 + Math.floor(Math.random() * 3); // 4, 5, 6
+        for (let r = targetRow - 1; r <= Math.min(7, targetRow + 1); r++) {
+          for (let c = 0; c < 8; c++) {
+            if (c < gapStart || c >= gapStart + 5) {
+              grid[r][c] = c < gapStart ? colA : colB;
+            } else if (r !== targetRow && Math.random() < 0.5) {
+              grid[r][c] = colC;
+            }
+          }
+        }
+      } else {
+        const targetCol = 3 + Math.floor(Math.random() * 3); // 3, 4, 5
+        for (let c = targetCol - 1; c <= Math.min(7, targetCol + 1); c++) {
+          for (let r = 0; r < 8; r++) {
+            if (r < gapStart || r >= gapStart + 5) {
+              grid[r][c] = r < gapStart ? colA : colB;
+            } else if (c !== targetCol && Math.random() < 0.5) {
+              grid[r][c] = colC;
+            }
+          }
+        }
+      }
+    } else if (mode === 3) {
+      // Pattern 3: Diagonal Chevron / Cross-Cut with Corner Lock (Big-L or 4-bar)
+      const colA = Math.floor(Math.random() * safePalette);
+      const colB = (colA + 2) % safePalette;
+      const colC = (colA + 4) % safePalette;
+      // Full diagonal mask with 30-40% noise erosion + strong base rows
+      for (let r = 2; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          if (r === c || r + c === 7 || (r >= 6 && c !== 3 && c !== 4)) {
+            grid[r][c] = (r + c) % 2 === 0 ? colA : colB;
+          }
+        }
+      }
+      grid[5][2] = colC;
+      grid[5][5] = colC;
+      applySafeNoiseErosion(grid, 14, 0.30);
+    } else {
+      // Pattern 4: Checkered Geometric Arena with Reverse-Eroded 35% Gaps
+      const colA = Math.floor(Math.random() * safePalette);
+      const colB = (colA + 3) % safePalette;
+      for (let r = 3; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          if ((r >= 6 && c !== 2 && c !== 3) || ((r + c) % 2 === 0 && r < 6)) {
+            grid[r][c] = (r + c) % 2 === 0 ? colA : colB;
+          }
+        }
+      }
+      applySafeNoiseErosion(grid, 13, 0.35);
+    }
+
+    const total = countOccupiedCells(grid);
+    if (total < 11 || total > 22) continue;
+    if (hasFullLine(grid)) continue;
+    if (countTrappedSingleHoles(grid) > 0) continue;
+
+    // Ensure at least one Giant/Medium Key clears >= 1 line right away!
+    const clearers = findKeyClearingShapes(grid).filter((k) => giantIds.includes(k.shape.id));
+    if (clearers.length >= 1) {
+      return grid;
+    }
+  }
+
+  // Deterministic fail-safe: Clean 3x3 Cross Socket (always 16 cells, double clear for sq3!)
+  const fallback = Array.from({ length: 8 }, () => Array(8).fill(null));
+  const c0 = 2;
+  for (let r = 3; r <= 4; r++) {
+    for (let c = 0; c < 8; c++) {
+      if (c < c0 || c >= c0 + 3) fallback[r][c] = c % safePalette;
+    }
+  }
+  for (let c = c0; c < c0 + 3; c++) {
+    fallback[6][c] = (c + 2) % safePalette;
+    fallback[7][c] = (c + 4) % safePalette;
+  }
+  return fallback;
+}
+
+/**
+ * Generates the scripted Opening Starter Tray using the "Puzzle & Key" principle:
+ * - Forces a heavy Giant Key Pool (sq3, rect_2x3, rect_3x2, 1x5, Big-L, 1x4, 2x2)
+ *   so players clear 1-3 lines immediately AND offload bulky pieces safely at start!
+ * - Verifies via Lookahead that pieces 2 & 3 extend into Combo x2 -> Combo x3 cleanly.
  */
 function generateOpeningHand(grid, palette) {
+  const giantIds = ['sq3', 'rect_2x3', 'rect_3x2', 'h5', 'v5', 'bigL_tl', 'bigL_tr', 'bigL_bl', 'bigL_br', 'h4', 'v4', 'sq2'];
+  const giantPool = SHAPES.filter((s) => giantIds.includes(s.id));
+
   let bestSequence = null;
   let bestScore = -1;
 
-  // Try multiple sequence rollouts to find the best 3-piece combo chain
-  for (let attempt = 0; attempt < 80; attempt++) {
-    // 1. Pick a line clearer for Step 1
-    const clearers1 = findKeyClearingShapes(grid);
-    if (!clearers1.length) break;
+  // Step 1: Prefer Giant Keys from keyClearingShapes
+  const allClearers1 = findKeyClearingShapes(grid);
+  const giantClearers1 = allClearers1.filter((k) => giantIds.includes(k.shape.id));
+  const pool1 = giantClearers1.length > 0 ? giantClearers1 : allClearers1;
 
-    const p1Obj = clearers1[Math.floor(Math.random() * clearers1.length)];
+  for (let attempt = 0; attempt < 60; attempt++) {
+    if (!pool1.length) break;
+
+    // Rank heavily by multi-line blast + size of the Giant Key!
+    const p1Obj = pool1[Math.floor(Math.random() * pool1.length)];
     const sim1 = simulatePlacement(grid, p1Obj.shape, p1Obj.placement.r, p1Obj.placement.c);
 
-    // 2. Pick Piece 2 on sim1.grid
-    const clearers2 = findKeyClearingShapes(sim1.grid);
+    // Step 2: Try to find another large piece clearing or fitting nicely on sim1.grid
+    const allClearers2 = findKeyClearingShapes(sim1.grid);
+    const giantClearers2 = allClearers2.filter((k) => giantIds.includes(k.shape.id));
     let p2Obj = null;
     let sim2 = null;
 
-    if (clearers2.length > 0) {
-      p2Obj = clearers2[Math.floor(Math.random() * clearers2.length)];
+    if (giantClearers2.length > 0) {
+      p2Obj = giantClearers2[Math.floor(Math.random() * giantClearers2.length)];
+      sim2 = simulatePlacement(sim1.grid, p2Obj.shape, p2Obj.placement.r, p2Obj.placement.c);
+    } else if (allClearers2.length > 0) {
+      p2Obj = allClearers2[Math.floor(Math.random() * allClearers2.length)];
       sim2 = simulatePlacement(sim1.grid, p2Obj.shape, p2Obj.placement.r, p2Obj.placement.c);
     } else {
-      const fillers2 = findHoleFillingShapes(sim1.grid);
-      if (fillers2.length > 0) {
-        p2Obj = fillers2[Math.floor(Math.random() * fillers2.length)];
-        sim2 = simulatePlacement(sim1.grid, p2Obj.shape, p2Obj.placement.r, p2Obj.placement.c);
-      } else {
-        const fitting = SHAPES.filter((s) => getAllValidPlacements(sim1.grid, s).length > 0);
-        if (!fitting.length) continue;
-        const shp = pickWeightedShape(fitting);
-        const pl = getAllValidPlacements(sim1.grid, shp)[0];
-        p2Obj = { shape: shp, placement: pl, cleared: 0 };
-        sim2 = simulatePlacement(sim1.grid, shp, pl.r, pl.c);
-      }
+      const fittingLarge2 = giantPool.filter((s) => getAllValidPlacements(sim1.grid, s).length > 0);
+      const pool2 = fittingLarge2.length > 0
+        ? fittingLarge2
+        : SHAPES.filter((s) => !s.isRescueOnly && getAllValidPlacements(sim1.grid, s).length > 0);
+      if (!pool2.length) continue;
+      const shp = pickWeightedShape(pool2);
+      const pl = getAllValidPlacements(sim1.grid, shp)[0];
+      p2Obj = { shape: shp, placement: pl, cleared: 0 };
+      sim2 = simulatePlacement(sim1.grid, shp, pl.r, pl.c);
     }
 
-    // 3. Pick Piece 3 on sim2.grid
-    const clearers3 = findKeyClearingShapes(sim2.grid);
+    // Step 3: Pick piece 3 (prioritize giant shapes that clear lines or fit safely!)
+    const allClearers3 = findKeyClearingShapes(sim2.grid);
+    const giantClearers3 = allClearers3.filter((k) => giantIds.includes(k.shape.id));
     let p3Obj = null;
 
-    if (clearers3.length > 0) {
-      p3Obj = clearers3[Math.floor(Math.random() * clearers3.length)];
+    if (giantClearers3.length > 0) {
+      p3Obj = giantClearers3[Math.floor(Math.random() * giantClearers3.length)];
+    } else if (allClearers3.length > 0) {
+      p3Obj = allClearers3[Math.floor(Math.random() * allClearers3.length)];
     } else {
-      const fillers3 = findHoleFillingShapes(sim2.grid);
-      if (fillers3.length > 0) {
-        p3Obj = fillers3[Math.floor(Math.random() * fillers3.length)];
-      } else {
-        const fitting3 = SHAPES.filter((s) => getAllValidPlacements(sim2.grid, s).length > 0);
-        if (!fitting3.length) continue;
-        p3Obj = { shape: pickWeightedShape(fitting3), cleared: 0 };
-      }
+      const fittingLarge3 = giantPool.filter((s) => getAllValidPlacements(sim2.grid, s).length > 0);
+      const pool3 = fittingLarge3.length > 0
+        ? fittingLarge3
+        : SHAPES.filter((s) => !s.isRescueOnly && getAllValidPlacements(sim2.grid, s).length > 0);
+      if (!pool3.length) continue;
+      p3Obj = { shape: pickWeightedShape(pool3), cleared: 0 };
     }
 
     const hand = [p1Obj.shape, p2Obj.shape, p3Obj.shape];
-    let score = (p1Obj.cleared || 1) * 30;
+    let score = (p1Obj.cleared || 1) * 60 + p1Obj.shape.blockCount * 10;
     if (p2Obj.cleared > 0) score += 120 + p2Obj.cleared * 40;
-    if (p3Obj && p3Obj.cleared > 0) score += 200 + p3Obj.cleared * 50;
+    if (p3Obj && p3Obj.cleared > 0) score += 180 + p3Obj.cleared * 50;
 
-    // Variety bonus: prefer not having 3 identical pieces
-    const distinctIds = new Set(hand.map((s) => s.id));
-    score += distinctIds.size * 10;
-
-    // Favor larger / more satisfying pieces (squares, rectangles, 4-bars, 3-bars)
+    // Massive reward for authentic heavy starter pieces (3x3, rectangles, 1x5, Big-L)!
     for (const s of hand) {
-      if (s.tier === 'large') score += 15;
-      if (s.id === 'sq3' || s.id.startsWith('rect_')) score += 12;
-      if (s.id === 'sq2' || s.id.startsWith('h4') || s.id.startsWith('v4')) score += 8;
+      if (giantIds.includes(s.id)) score += 35;
+      if (s.id === 'sq3' || s.id.startsWith('rect_') || s.id === 'h5' || s.id === 'v5') score += 25;
     }
+
+    const distinctIds = new Set(hand.map((s) => s.id));
+    score += distinctIds.size * 15;
 
     if (score > bestScore) {
       bestScore = score;
       bestSequence = hand;
     }
 
-    // Found the holy grail: a triple-combo opening!
-    if (p2Obj.cleared > 0 && p3Obj && p3Obj.cleared > 0) {
+    if (
+      p1Obj.shape.blockCount >= 4 &&
+      p2Obj.cleared > 0 &&
+      p3Obj && p3Obj.cleared > 0 &&
+      hand.every((s) => giantIds.includes(s.id))
+    ) {
       break;
     }
   }
 
   if (!bestSequence) {
-    return generateSmartTray(grid, palette, 0, 0);
+    return generateSmartTray(grid, palette, 0, 0, { movesCount: 0 });
   }
 
-  // Shuffle slot positions slightly (or keep slot 0 as one of the immediate clearers)
-  // so the player can intuitively explore and place them
-  return bestSequence.map((shape, idx) => {
+  // Randomize slot positions smoothly while preserving the pre-solved combo sequence
+  const shuffledOrder = [0, 1, 2].sort(() => Math.random() - 0.5);
+  const arranged = shuffledOrder.map((idx) => bestSequence[idx]);
+
+  return arranged.map((shape, idx) => {
     const colorIndex = (Math.floor(Math.random() * palette.length) + idx) % palette.length;
     return {
       slotIndex: idx,
@@ -1012,5 +1231,6 @@ window.findClutchSingleDotRescue = findClutchSingleDotRescue;
 window.computeBoardFitness = computeBoardFitness;
 window.evaluateTrayAllPermutations = evaluateTrayAllPermutations;
 window.determineDDAMode = determineDDAMode;
+window.generateStartingBoard = generateStartingBoard;
 window.generateSmartTray = generateSmartTray;
 window.generateOpeningHand = generateOpeningHand;

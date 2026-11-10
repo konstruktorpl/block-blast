@@ -65,123 +65,16 @@ class PlaytestGame {
   }
 
   seedStartingBoard() {
-    const candidateIds = [
-      'rect_2x3', 'rect_3x2', 'sq2', 'h5', 'h4', 'v4', 'h3', 'v3',
-      'c3_tl', 'c3_tr', 'c3_bl', 'c3_br', 'bigL_tl', 'bigL_tr', 'bigL_bl', 'bigL_br'
-    ];
-    const candidateShapes = window.SHAPES.filter((s) => candidateIds.includes(s.id));
-
-    let seededSuccessfully = false;
-
-    for (let trial = 0; trial < 80; trial++) {
-      const trialGrid = Array.from({ length: 8 }, () => Array(8).fill(null));
-      let placedBlocks = 0;
-      let placedPieces = 0;
-      const anchorMode = Math.floor(Math.random() * 3);
-      const minR = 3;
-
-      while (placedBlocks < 16 && placedPieces < 7) {
-        const shape = candidateShapes[Math.floor(Math.random() * candidateShapes.length)];
-        const validPlacements = [];
-
-        for (let r = minR; r <= 8 - shape.rows; r++) {
-          for (let c = 0; c <= 8 - shape.cols; c++) {
-            if (anchorMode === 0 && c > 5) continue;
-            if (anchorMode === 1 && c < 2) continue;
-            if (!window.canMatrixFitAt(trialGrid, shape, r, c)) continue;
-
-            if (placedPieces > 0) {
-              let adjacent = false;
-              for (const cell of shape.cells) {
-                const gr = r + cell.r;
-                const gc = c + cell.c;
-                const nbrs = [[gr - 1, gc], [gr + 1, gc], [gr, gc - 1], [gr, gc + 1]];
-                for (const [nr, nc] of nbrs) {
-                  if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && trialGrid[nr][nc] !== null) {
-                    adjacent = true;
-                    break;
-                  }
-                }
-                if (adjacent) break;
-              }
-              if (!adjacent) continue;
-            }
-
-            const rowCounts = Array(8).fill(0);
-            const colCounts = Array(8).fill(0);
-            for (let gr = 0; gr < 8; gr++) {
-              for (let gc = 0; gc < 8; gc++) {
-                if (trialGrid[gr][gc] !== null) { rowCounts[gr]++; colCounts[gc]++; }
-              }
-            }
-
-            let causesClear = false;
-            for (const cell of shape.cells) {
-              const gr = r + cell.r;
-              const gc = c + cell.c;
-              rowCounts[gr]++;
-              colCounts[gc]++;
-              if (rowCounts[gr] >= 8 || colCounts[gc] >= 8) {
-                causesClear = true;
-                break;
-              }
-            }
-            if (causesClear) continue;
-
-            const testGrid = trialGrid.map((row) => row.slice());
-            for (const cell of shape.cells) {
-              testGrid[r + cell.r][c + cell.c] = 1;
-            }
-            if (window.countTrappedSingleHoles(testGrid) > 0) continue;
-
-            let affinity = (r - 2) * 2;
-            validPlacements.push({ r, c, affinity });
-          }
-        }
-
-        if (!validPlacements.length) break;
-
-        const chosen = validPlacements[Math.floor(Math.random() * validPlacements.length)];
-        const colorIndex = (placedPieces) % this.palette.length;
-        for (const cell of shape.cells) {
-          trialGrid[chosen.r + cell.r][chosen.c + cell.c] = colorIndex;
-          placedBlocks++;
-        }
-        placedPieces++;
-      }
-
-      if (placedBlocks >= 15 && placedBlocks <= 22) {
-        const clearers = window.findKeyClearingShapes(trialGrid);
-        if (clearers.length >= 3) {
-          for (let r = 0; r < 8; r++) {
-            for (let c = 0; c < 8; c++) {
-              this.grid[r][c] = trialGrid[r][c];
-            }
-          }
-          seededSuccessfully = true;
-          this.initialBlocksCount = placedBlocks;
-          this.initialPiecesCount = placedPieces;
-          this.initialClearersCount = clearers.length;
-          break;
-        }
+    this.grid = window.generateStartingBoard(this.palette.length);
+    let cnt = 0;
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        if (this.grid[r][c] !== null) cnt++;
       }
     }
-
-    if (!seededSuccessfully) {
-      // Fallback preset
-      const preset = [
-        { color: 0, cells: [[7, 0], [7, 1], [7, 2], [6, 0], [6, 1], [6, 2]] },
-        { color: 1, cells: [[7, 3], [7, 4], [7, 5], [6, 3], [6, 4], [6, 5]] },
-        { color: 2, cells: [[6, 6], [5, 6], [5, 5], [5, 4]] },
-        { color: 3, cells: [[5, 1], [5, 2], [4, 1]] }
-      ];
-      preset.forEach(piece => {
-        piece.cells.forEach(([r, c]) => { this.grid[r][c] = piece.color; });
-      });
-      this.initialBlocksCount = 19;
-      this.initialPiecesCount = 4;
-      this.initialClearersCount = window.findKeyClearingShapes(this.grid).length;
-    }
+    this.initialBlocksCount = cnt;
+    this.initialPiecesCount = 'pattern';
+    this.initialClearersCount = window.findKeyClearingShapes(this.grid).length;
   }
 
   evaluatePlacement(grid, shape, r, c) {
