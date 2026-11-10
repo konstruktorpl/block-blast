@@ -50,27 +50,29 @@ class QuestManager {
     return `${h}ч ${m}м`;
   }
 
-  // Flash 1-hour fast quests
+  // Express 1-hour fast quests (meaningful challenge for 1h window)
   getDefaultHourlyPool() {
     return [
-      { id: 'h_clear_5_lines', title: 'Очистить 5 линий', target: 5, reward: 8, type: 'lines_cleared' },
-      { id: 'h_combo_2', title: 'Достичь комбо x2', target: 2, reward: 8, type: 'max_combo' },
-      { id: 'h_score_400', title: 'Набрать 400 очков в игре', target: 400, reward: 10, type: 'single_score' },
-      { id: 'h_destroy_25_blocks', title: 'Уничтожить 25 блоков', target: 25, reward: 8, type: 'blocks_destroyed' },
-      { id: 'h_play_1_game', title: 'Сыграть 1 игру', target: 1, reward: 5, type: 'games_played' },
-      { id: 'h_clear_8_lines', title: 'Очистить 8 линий', target: 8, reward: 12, type: 'lines_cleared' },
-      { id: 'h_score_600', title: 'Набрать 600 очков в игре', target: 600, reward: 12, type: 'single_score' }
+      { id: 'exp_clear_20_lines', title: 'Очистить 20 линий', target: 20, reward: 20, type: 'lines_cleared' },
+      { id: 'exp_combo_4', title: 'Достичь комбо x4', target: 4, reward: 25, type: 'max_combo' },
+      { id: 'exp_score_2000', title: 'Набрать 2 000 очков в игре', target: 2000, reward: 25, type: 'single_score' },
+      { id: 'exp_destroy_90_blocks', title: 'Уничтожить 90 блоков', target: 90, reward: 20, type: 'blocks_destroyed' },
+      { id: 'exp_play_4_games', title: 'Сыграть 4 игры', target: 4, reward: 15, type: 'games_played' },
+      { id: 'exp_clear_30_lines', title: 'Очистить 30 линий', target: 30, reward: 30, type: 'lines_cleared' },
+      { id: 'exp_score_3000', title: 'Набрать 3 000 очков в игре', target: 3000, reward: 30, type: 'single_score' }
     ];
   }
 
+  // Daily 24-hour quests (solid milestones throughout the day)
   getDefaultDailyPool() {
     return [
-      { id: 'play_3_games', title: 'Сыграть 3 игры', target: 3, reward: 15, type: 'games_played' },
-      { id: 'score_1000', title: 'Набрать 1 000 очков в игре', target: 1000, reward: 25, type: 'single_score' },
-      { id: 'clear_20_lines', title: 'Очистить 20 линий', target: 20, reward: 20, type: 'lines_cleared' },
-      { id: 'combo_3', title: 'Достичь комбо x3', target: 3, reward: 20, type: 'max_combo' },
-      { id: 'destroy_60_blocks', title: 'Уничтожить 60 блоков', target: 60, reward: 20, type: 'blocks_destroyed' },
-      { id: 'all_clear_1', title: 'Сделать «Чистое поле»', target: 1, reward: 40, type: 'all_clear' }
+      { id: 'd_play_8_games', title: 'Сыграть 8 игр', target: 8, reward: 35, type: 'games_played' },
+      { id: 'd_score_5000', title: 'Набрать 5 000 очков в игре', target: 5000, reward: 50, type: 'single_score' },
+      { id: 'd_clear_60_lines', title: 'Очистить 60 линий', target: 60, reward: 45, type: 'lines_cleared' },
+      { id: 'd_combo_6', title: 'Достичь комбо x6', target: 6, reward: 50, type: 'max_combo' },
+      { id: 'd_destroy_250_blocks', title: 'Уничтожить 250 блоков', target: 250, reward: 45, type: 'blocks_destroyed' },
+      { id: 'd_all_clear_1', title: 'Сделать «Чистое поле»', target: 1, reward: 60, type: 'all_clear' },
+      { id: 'd_clear_90_lines', title: 'Очистить 90 линий', target: 90, reward: 60, type: 'lines_cleared' }
     ];
   }
 
@@ -95,8 +97,8 @@ class QuestManager {
 
   loadQuests() {
     // 1. Daily Quests
-    const savedDailyKey = localStorage.getItem('bb_daily_key');
-    const savedDailyData = localStorage.getItem('bb_daily_quests');
+    const savedDailyKey = localStorage.getItem('bb_daily_key_v2');
+    const savedDailyData = localStorage.getItem('bb_daily_quests_v2');
 
     if (savedDailyKey === this.dailyKey && savedDailyData) {
       try {
@@ -120,8 +122,8 @@ class QuestManager {
     }
 
     // 2. Hourly Quests
-    const savedHourlyKey = localStorage.getItem('bb_hourly_key');
-    const savedHourlyData = localStorage.getItem('bb_hourly_quests');
+    const savedHourlyKey = localStorage.getItem('bb_hourly_key_v2');
+    const savedHourlyData = localStorage.getItem('bb_hourly_quests_v2');
 
     if (savedHourlyKey === this.hourlyKey && savedHourlyData) {
       try {
@@ -153,7 +155,7 @@ class QuestManager {
       current: 0,
       claimed: false
     }));
-    localStorage.setItem('bb_daily_key', this.dailyKey);
+    localStorage.setItem('bb_daily_key_v2', this.dailyKey);
     this.saveQuests();
   }
 
@@ -165,13 +167,13 @@ class QuestManager {
       current: 0,
       claimed: false
     }));
-    localStorage.setItem('bb_hourly_key', this.hourlyKey);
+    localStorage.setItem('bb_hourly_key_v2', this.hourlyKey);
     this.saveQuests();
   }
 
   saveQuests() {
-    localStorage.setItem('bb_daily_quests', JSON.stringify(this.dailyQuests));
-    localStorage.setItem('bb_hourly_quests', JSON.stringify(this.hourlyQuests));
+    localStorage.setItem('bb_daily_quests_v2', JSON.stringify(this.dailyQuests));
+    localStorage.setItem('bb_hourly_quests_v2', JSON.stringify(this.hourlyQuests));
     localStorage.setItem('bb_trophies', String(this.trophies));
   }
 

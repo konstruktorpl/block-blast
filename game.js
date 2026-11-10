@@ -489,7 +489,7 @@ class BlockBlastGame {
 
     // Position board closer to vertical center of screen
     const remainingH = Math.max(0, h - (boardSize + gapBetweenBoardAndDock + dockTargetH));
-    const boardY = Math.max(16, Math.round(remainingH * 0.40));
+    const boardY = Math.max(10, Math.round(remainingH * 0.28));
     const dockY = boardY + boardSize + gapBetweenBoardAndDock;
     const dockHeight = Math.max(96, h - dockY - 6);
 
@@ -760,11 +760,11 @@ class BlockBlastGame {
     const shape = this.drag.piece.shape;
 
     // Responsive thumb drag: lift piece comfortably above finger and boost reach
-    const baseLift = this.drag.isTouch ? cellSize * 2.45 : cellSize * 0.7;
+    const baseLift = this.drag.isTouch ? cellSize * 2.5 : cellSize * 0.7;
     const deltaY = py - (this.drag.startY || py);
     const deltaX = px - (this.drag.startX || px);
-    const extraUpwardReach = deltaY < 0 ? Math.abs(deltaY) * 0.40 : 0;
-    const extraSidewaysReach = deltaX * 0.18;
+    const extraUpwardReach = deltaY < 0 ? Math.abs(deltaY) * 0.45 : 0;
+    const extraSidewaysReach = deltaX * 0.20;
 
     const centerX = px + extraSidewaysReach;
     const centerY = py - baseLift - extraUpwardReach;
@@ -1239,11 +1239,11 @@ class BlockBlastGame {
     // Ultra-snappy drag interpolation (instant follow, zero lag)
     if (this.drag.active) {
       const { cellSize } = this.metrics;
-      const baseLift = this.drag.isTouch ? cellSize * 2.45 : cellSize * 0.7;
+      const baseLift = this.drag.isTouch ? cellSize * 2.5 : cellSize * 0.7;
       const deltaY = this.drag.y - (this.drag.startY || this.drag.y);
       const deltaX = this.drag.x - (this.drag.startX || this.drag.x);
-      const extraUpwardReach = deltaY < 0 ? Math.abs(deltaY) * 0.40 : 0;
-      const extraSidewaysReach = deltaX * 0.18;
+      const extraUpwardReach = deltaY < 0 ? Math.abs(deltaY) * 0.45 : 0;
+      const extraSidewaysReach = deltaX * 0.20;
 
       const targetX = this.drag.x + extraSidewaysReach;
       const targetY = this.drag.y - baseLift - extraUpwardReach;
