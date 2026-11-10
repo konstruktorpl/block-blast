@@ -2648,7 +2648,7 @@ function generateOpeningHand(grid, palette) {
   let bestScore = -1;
 
   // Try multiple sequence rollouts to find the best 3-piece combo chain
-  for (let attempt = 0; attempt < 50; attempt++) {
+  for (let attempt = 0; attempt < 80; attempt++) {
     // 1. Pick a line clearer for Step 1
     const clearers1 = findKeyClearingShapes(grid);
     if (!clearers1.length) break;
@@ -2697,9 +2697,9 @@ function generateOpeningHand(grid, palette) {
     }
 
     const hand = [p1Obj.shape, p2Obj.shape, p3Obj.shape];
-    let score = (p1Obj.cleared || 1) * 15;
-    if (p2Obj.cleared > 0) score += 35;
-    if (p3Obj.cleared > 0) score += 45;
+    let score = (p1Obj.cleared || 1) * 30;
+    if (p2Obj.cleared > 0) score += 120 + p2Obj.cleared * 40;
+    if (p3Obj && p3Obj.cleared > 0) score += 200 + p3Obj.cleared * 50;
 
     // Variety bonus: prefer not having 3 identical pieces
     const distinctIds = new Set(hand.map((s) => s.id));
@@ -2707,9 +2707,9 @@ function generateOpeningHand(grid, palette) {
 
     // Favor larger / more satisfying pieces (squares, rectangles, 4-bars, 3-bars)
     for (const s of hand) {
-      if (s.tier === 'large') score += 12;
-      if (s.id === 'sq3' || s.id.startsWith('rect_')) score += 10;
-      if (s.id === 'sq2' || s.id.startsWith('h4') || s.id.startsWith('v4')) score += 6;
+      if (s.tier === 'large') score += 15;
+      if (s.id === 'sq3' || s.id.startsWith('rect_')) score += 12;
+      if (s.id === 'sq2' || s.id.startsWith('h4') || s.id.startsWith('v4')) score += 8;
     }
 
     if (score > bestScore) {
@@ -2718,7 +2718,7 @@ function generateOpeningHand(grid, palette) {
     }
 
     // Found the holy grail: a triple-combo opening!
-    if (p2Obj.cleared > 0 && p3Obj.cleared > 0) {
+    if (p2Obj.cleared > 0 && p3Obj && p3Obj.cleared > 0) {
       break;
     }
   }
@@ -2747,6 +2747,7 @@ function generateOpeningHand(grid, palette) {
 window.SHAPES = SHAPES;
 window.canMatrixFitAt = canMatrixFitAt;
 window.getAllValidPlacements = getAllValidPlacements;
+window.simulatePlacement = simulatePlacement;
 window.countTrappedSingleHoles = countTrappedSingleHoles;
 window.findKeyClearingShapes = findKeyClearingShapes;
 window.findHoleFillingShapes = findHoleFillingShapes;
