@@ -1,14 +1,15 @@
 // Quests & Trophies System for Block Blast!
+// Features Daily Quests (24h) and Flash Hourly Quests (1h) with live timers!
 
 class QuestManager {
   constructor() {
     this.trophies = parseInt(localStorage.getItem('bb_trophies') || '0', 10) || 0;
 
     this.dailyKey = this.getTodayKey();
-    this.weeklyKey = this.getCurrentWeekKey();
+    this.hourlyKey = this.getCurrentHourKey();
 
     this.dailyQuests = [];
-    this.weeklyQuests = [];
+    this.hourlyQuests = [];
 
     this.loadQuests();
   }
@@ -18,35 +19,82 @@ class QuestManager {
     return `d_${d.getFullYear()}_${d.getMonth() + 1}_${d.getDate()}`;
   }
 
-  getCurrentWeekKey() {
+  getCurrentHourKey() {
     const d = new Date();
-    const oneJan = new Date(d.getFullYear(), 0, 1);
-    const numberOfDays = Math.floor((d - oneJan) / (24 * 60 * 60 * 1000));
-    const week = Math.ceil((numberOfDays + oneJan.getDay() + 1) / 7);
-    return `w_${d.getFullYear()}_${week}`;
+    return `h_${d.getFullYear()}_${d.getMonth() + 1}_${d.getDate()}_${d.getHours()}`;
+  }
+
+  getRemainingHourSeconds() {
+    const now = new Date();
+    const nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0, 0);
+    return Math.max(0, Math.floor((nextHour - now) / 1000));
+  }
+
+  getRemainingDaySeconds() {
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+    return Math.max(0, Math.floor((tomorrow - now) / 1000));
+  }
+
+  getRemainingHourFormatted() {
+    const s = this.getRemainingHourSeconds();
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+  }
+
+  getRemainingDayFormatted() {
+    const s = this.getRemainingDaySeconds();
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    return `${h}ч ${m}м`;
+  }
+
+  // Flash 1-hour fast quests
+  getDefaultHourlyPool() {
+    return [
+      { id: 'h_clear_5_lines', title: 'Очистить 5 линий', target: 5, reward: 8, type: 'lines_cleared' },
+      { id: 'h_combo_2', title: 'Достичь комбо x2', target: 2, reward: 8, type: 'max_combo' },
+      { id: 'h_score_400', title: 'Набрать 400 очков в игре', target: 400, reward: 10, type: 'single_score' },
+      { id: 'h_destroy_25_blocks', title: 'Уничтожить 25 блоков', target: 25, reward: 8, type: 'blocks_destroyed' },
+      { id: 'h_play_1_game', title: 'Сыграть 1 игру', target: 1, reward: 5, type: 'games_played' },
+      { id: 'h_clear_8_lines', title: 'Очистить 8 линий', target: 8, reward: 12, type: 'lines_cleared' },
+      { id: 'h_score_600', title: 'Набрать 600 очков в игре', target: 600, reward: 12, type: 'single_score' }
+    ];
   }
 
   getDefaultDailyPool() {
     return [
-      { id: 'play_3_games', title: 'Сыграть 3 игры', target: 3, reward: 10, type: 'games_played' },
-      { id: 'score_1000', title: 'Набрать 1 000 очков в игре', target: 1000, reward: 20, type: 'single_score' },
-      { id: 'clear_15_lines', title: 'Очистить 15 линий', target: 15, reward: 15, type: 'lines_cleared' },
-      { id: 'combo_3', title: 'Достичь комбо x3', target: 3, reward: 15, type: 'max_combo' },
-      { id: 'destroy_40_blocks', title: 'Уничтожить 40 блоков', target: 40, reward: 15, type: 'blocks_destroyed' }
+      { id: 'play_3_games', title: 'Сыграть 3 игры', target: 3, reward: 15, type: 'games_played' },
+      { id: 'score_1000', title: 'Набрать 1 000 очков в игре', target: 1000, reward: 25, type: 'single_score' },
+      { id: 'clear_20_lines', title: 'Очистить 20 линий', target: 20, reward: 20, type: 'lines_cleared' },
+      { id: 'combo_3', title: 'Достичь комбо x3', target: 3, reward: 20, type: 'max_combo' },
+      { id: 'destroy_60_blocks', title: 'Уничтожить 60 блоков', target: 60, reward: 20, type: 'blocks_destroyed' },
+      { id: 'all_clear_1', title: 'Сделать «Чистое поле»', target: 1, reward: 40, type: 'all_clear' }
     ];
   }
 
-  getDefaultWeeklyPool() {
-    return [
-      { id: 'play_15_games', title: 'Сыграть 15 игр', target: 15, reward: 40, type: 'games_played' },
-      { id: 'score_3000', title: 'Набрать 3 000 очков в игре', target: 3000, reward: 50, type: 'single_score' },
-      { id: 'clear_60_lines', title: 'Очистить 60 линий', target: 60, reward: 60, type: 'lines_cleared' },
-      { id: 'combo_5', title: 'Достичь комбо x5', target: 5, reward: 50, type: 'max_combo' },
-      { id: 'all_clear_1', title: 'Сделать «Чистое поле»', target: 1, reward: 70, type: 'all_clear' }
-    ];
+  checkTimeExpiry() {
+    let changed = false;
+    const curHour = this.getCurrentHourKey();
+    if (curHour !== this.hourlyKey) {
+      this.hourlyKey = curHour;
+      this.initHourlyQuests();
+      changed = true;
+    }
+
+    const curDay = this.getTodayKey();
+    if (curDay !== this.dailyKey) {
+      this.dailyKey = curDay;
+      this.initDailyQuests();
+      changed = true;
+    }
+
+    return changed;
   }
 
   loadQuests() {
+    // 1. Daily Quests
     const savedDailyKey = localStorage.getItem('bb_daily_key');
     const savedDailyData = localStorage.getItem('bb_daily_quests');
 
@@ -71,28 +119,29 @@ class QuestManager {
       this.initDailyQuests();
     }
 
-    const savedWeeklyKey = localStorage.getItem('bb_weekly_key');
-    const savedWeeklyData = localStorage.getItem('bb_weekly_quests');
+    // 2. Hourly Quests
+    const savedHourlyKey = localStorage.getItem('bb_hourly_key');
+    const savedHourlyData = localStorage.getItem('bb_hourly_quests');
 
-    if (savedWeeklyKey === this.weeklyKey && savedWeeklyData) {
+    if (savedHourlyKey === this.hourlyKey && savedHourlyData) {
       try {
-        const parsed = JSON.parse(savedWeeklyData);
+        const parsed = JSON.parse(savedHourlyData);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          this.weeklyQuests = parsed.map(q => ({
+          this.hourlyQuests = parsed.map(q => ({
             ...q,
             current: Number(q.current) || 0,
             target: Number(q.target) || 1,
-            reward: Number(q.reward) || 40,
+            reward: Number(q.reward) || 8,
             claimed: Boolean(q.claimed)
           }));
         } else {
-          this.initWeeklyQuests();
+          this.initHourlyQuests();
         }
       } catch (e) {
-        this.initWeeklyQuests();
+        this.initHourlyQuests();
       }
     } else {
-      this.initWeeklyQuests();
+      this.initHourlyQuests();
     }
   }
 
@@ -108,25 +157,27 @@ class QuestManager {
     this.saveQuests();
   }
 
-  initWeeklyQuests() {
-    const pool = this.getDefaultWeeklyPool();
+  initHourlyQuests() {
+    const pool = this.getDefaultHourlyPool();
     const shuffled = pool.sort(() => 0.5 - Math.random());
-    this.weeklyQuests = shuffled.slice(0, 3).map(q => ({
+    this.hourlyQuests = shuffled.slice(0, 2).map(q => ({
       ...q,
       current: 0,
       claimed: false
     }));
-    localStorage.setItem('bb_weekly_key', this.weeklyKey);
+    localStorage.setItem('bb_hourly_key', this.hourlyKey);
     this.saveQuests();
   }
 
   saveQuests() {
     localStorage.setItem('bb_daily_quests', JSON.stringify(this.dailyQuests));
-    localStorage.setItem('bb_weekly_quests', JSON.stringify(this.weeklyQuests));
+    localStorage.setItem('bb_hourly_quests', JSON.stringify(this.hourlyQuests));
     localStorage.setItem('bb_trophies', String(this.trophies));
   }
 
   onEvent(type, value = 1) {
+    this.checkTimeExpiry();
+
     const numVal = Number(value) || 0;
     if (numVal <= 0 && type !== 'single_score') return;
 
@@ -154,8 +205,8 @@ class QuestManager {
       }
     };
 
+    processList(this.hourlyQuests);
     processList(this.dailyQuests);
-    processList(this.weeklyQuests);
 
     if (changed) {
       this.saveQuests();
@@ -169,13 +220,13 @@ class QuestManager {
 
   hasUnclaimed() {
     return (
-      this.dailyQuests.some(q => (Number(q.current) || 0) >= (Number(q.target) || 1) && !q.claimed) ||
-      this.weeklyQuests.some(q => (Number(q.current) || 0) >= (Number(q.target) || 1) && !q.claimed)
+      this.hourlyQuests.some(q => (Number(q.current) || 0) >= (Number(q.target) || 1) && !q.claimed) ||
+      this.dailyQuests.some(q => (Number(q.current) || 0) >= (Number(q.target) || 1) && !q.claimed)
     );
   }
 
-  claim(questId, isWeekly = false) {
-    const list = isWeekly ? this.weeklyQuests : this.dailyQuests;
+  claim(questId, category = 'daily') {
+    const list = category === 'hourly' ? this.hourlyQuests : this.dailyQuests;
     const q = list.find(item => item.id === questId);
     if (q && (Number(q.current) || 0) >= (Number(q.target) || 1) && !q.claimed) {
       q.claimed = true;

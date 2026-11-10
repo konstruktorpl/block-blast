@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=22" />
+  <link rel="stylesheet" href="style.css?v=23" />
 </head>
 <body>
   <div id="app" class="app-container">
@@ -101,7 +101,7 @@
         <button id="btnTheme" class="settings-row"><span>Тема</span><span class="row-value">›</span></button>
         <button id="btnRestart" class="settings-row"><span>Начать заново</span><span class="row-value">›</span></button>
         <button id="btnHome" class="settings-row"><span>Главное меню</span><span class="row-value">›</span></button>
-        <button id="btnReloadApp" class="settings-row" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.12);"><span>Очистить кэш / Обновить</span><span class="row-value">v22 🔄</span></button>
+        <button id="btnReloadApp" class="settings-row" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.12);"><span>Очистить кэш / Обновить</span><span class="row-value">v23 🔄</span></button>
       </div>
     </div>
   </div>
@@ -188,19 +188,25 @@
         <button class="close-btn" data-close="questsModal">✕</button>
       </div>
 
-      <div class="quest-section-label">ЕЖЕДНЕВНЫЕ КВЕСТЫ</div>
-      <div id="dailyQuestsList" class="quest-list"></div>
+      <div class="quest-section-header">
+        <span class="quest-section-label">ЧАСОВЫЕ ЭКСПРЕСС-КВЕСТЫ</span>
+        <span id="hourlyTimer" class="quest-timer-badge">⏱ 59:59</span>
+      </div>
+      <div id="hourlyQuestsList" class="quest-list"></div>
 
-      <div class="quest-section-label" style="margin-top: 18px;">ЕЖЕНЕДЕЛЬНЫЕ КВЕСТЫ</div>
-      <div id="weeklyQuestsList" class="quest-list"></div>
+      <div class="quest-section-header" style="margin-top: 18px;">
+        <span class="quest-section-label">ЕЖЕДНЕВНЫЕ КВЕСТЫ</span>
+        <span id="dailyTimer" class="quest-timer-badge">⏱ 24ч</span>
+      </div>
+      <div id="dailyQuestsList" class="quest-list"></div>
     </div>
   </div>
 
-  <script src="quests.js?v=22"></script>
-  <script src="themes.js?v=22"></script>
-  <script src="audio.js?v=22"></script>
-  <script src="shapes.js?v=22"></script>
-  <script src="particles.js?v=22"></script>
-  <script src="game.js?v=22"></script>
+  <script src="quests.js?v=23"></script>
+  <script src="themes.js?v=23"></script>
+  <script src="audio.js?v=23"></script>
+  <script src="shapes.js?v=23"></script>
+  <script src="particles.js?v=23"></script>
+  <script src="game.js?v=23"></script>
 </body>
 </html>

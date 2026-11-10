@@ -695,12 +695,29 @@ button {
   display: block;
 }
 
+.quest-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
 .quest-section-label {
   font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.quest-timer-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #ffd43b;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 212, 59, 0.3);
+  font-variant-numeric: tabular-nums;
 }
 
 .quest-list {

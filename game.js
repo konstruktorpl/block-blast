@@ -1439,9 +1439,37 @@ class BlockBlastGame {
   renderQuestsModal() {
     if (!window.questManager) return;
     const qm = window.questManager;
+    qm.checkTimeExpiry();
+
     document.getElementById('modalTrophyCount').textContent = qm.trophies;
 
-    const renderList = (elId, list, isWeekly) => {
+    // Update timer badges
+    const updateTimers = () => {
+      const hTimerEl = document.getElementById('hourlyTimer');
+      const dTimerEl = document.getElementById('dailyTimer');
+      if (hTimerEl) hTimerEl.textContent = `⏱ ${qm.getRemainingHourFormatted()}`;
+      if (dTimerEl) dTimerEl.textContent = `⏱ ${qm.getRemainingDayFormatted()}`;
+    };
+    updateTimers();
+
+    // Start live 1-second countdown while modal is open
+    if (this._questTimerInterval) clearInterval(this._questTimerInterval);
+    this._questTimerInterval = setInterval(() => {
+      const modal = document.getElementById('questsModal');
+      if (!modal || modal.classList.contains('hidden')) {
+        clearInterval(this._questTimerInterval);
+        this._questTimerInterval = null;
+        return;
+      }
+      const expired = qm.checkTimeExpiry();
+      if (expired) {
+        this.renderQuestsModal();
+      } else {
+        updateTimers();
+      }
+    }, 1000);
+
+    const renderList = (elId, list, category) => {
       const container = document.getElementById(elId);
       if (!container) return;
       container.innerHTML = '';
@@ -1456,7 +1484,7 @@ class BlockBlastGame {
         if (q.claimed) {
           btnHtml = '<button class="quest-action-btn done" disabled>Получено ✓</button>';
         } else if (canClaim) {
-          btnHtml = `<button class="quest-action-btn claim" data-claim="${q.id}" data-weekly="${isWeekly}">Забрать +${q.reward} 🏆</button>`;
+          btnHtml = `<button class="quest-action-btn claim" data-claim="${q.id}" data-cat="${category}">Забрать +${q.reward} 🏆</button>`;
         } else {
           btnHtml = `<div class="quest-action-btn done">${q.reward} 🏆</div>`;
         }
@@ -1476,8 +1504,8 @@ class BlockBlastGame {
       });
     };
 
-    renderList('dailyQuestsList', qm.dailyQuests, false);
-    renderList('weeklyQuestsList', qm.weeklyQuests, true);
+    renderList('hourlyQuestsList', qm.hourlyQuests, 'hourly');
+    renderList('dailyQuestsList', qm.dailyQuests, 'daily');
 
     // Bind claim buttons
     document.querySelectorAll('[data-claim]').forEach(btn => {
@@ -1490,8 +1518,8 @@ class BlockBlastGame {
         }
         claimedOnce = true;
         const qId = btn.getAttribute('data-claim');
-        const isWeekly = btn.getAttribute('data-weekly') === 'true';
-        const reward = qm.claim(qId, isWeekly);
+        const category = btn.getAttribute('data-cat') || 'daily';
+        const reward = qm.claim(qId, category);
         if (reward > 0) {
           window.soundEngine.playNewRecord();
           this.renderQuestsModal();
