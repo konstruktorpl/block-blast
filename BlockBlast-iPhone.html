@@ -1075,7 +1075,7 @@ button {
         <button id="btnTheme" class="settings-row"><span>Тема</span><span class="row-value">›</span></button>
         <button id="btnRestart" class="settings-row"><span>Начать заново</span><span class="row-value">›</span></button>
         <button id="btnHome" class="settings-row"><span>Главное меню</span><span class="row-value">›</span></button>
-        <button id="btnReloadApp" class="settings-row" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.12);"><span>Очистить кэш / Обновить</span><span class="row-value">v36 🔄</span></button>
+        <button id="btnReloadApp" class="settings-row" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.12);"><span>Очистить кэш / Обновить</span><span class="row-value">v37 🔄</span></button>
       </div>
     </div>
   </div>
@@ -3783,9 +3783,9 @@ class BlockBlastGame {
   }
 
   startIntroAnimation(onComplete) {
-    // Guarantees heart on first run, then 45% chance
+    // Guarantees heart on first run, then 60% chance so players regularly see varied heart styles
     const sawHeart = localStorage.getItem('bb_saw_heart');
-    const isHeart = !sawHeart || Math.random() < 0.45;
+    const isHeart = !sawHeart || Math.random() < 0.60;
     localStorage.setItem('bb_saw_heart', '1');
 
     const cells = [];
@@ -3801,18 +3801,81 @@ class BlockBlastGame {
         [6, 3], [6, 4]
       ];
 
-      const heartColors = [
-        { id: 'rose', base: '#ff6b8b', top: '#ffa3b5', left: '#ff859f', right: '#e0486a', bottom: '#bf284c', inner: '#ff6b8b', glow: '#ffb3c1' },
-        { id: 'ruby', base: '#e11d48', top: '#fb7185', left: '#f43f5e', right: '#be123c', bottom: '#9f1239', inner: '#e11d48', glow: '#ffe4e6' },
-        { id: 'pink', base: '#f43f5e', top: '#fda4af', left: '#fb7185', right: '#e11d48', bottom: '#be123c', inner: '#f43f5e', glow: '#fecdd3' },
-        { id: 'magenta', base: '#d63384', top: '#f06595', left: '#e64980', right: '#a61e4d', bottom: '#86153d', inner: '#d63384', glow: '#fcc2d7' },
-        { id: 'gold', base: '#ffd43b', top: '#ffe066', left: '#fcc419', right: '#e67700', bottom: '#b85d00', inner: '#ffd43b', glow: '#fff3bf' }
+      const heartThemes = [
+        // 1. Classic Passion (Crimson, Ruby & Rose)
+        [
+          { id: 'rose',    base: '#ff6b8b', top: '#ffa3b5', left: '#ff859f', right: '#e0486a', bottom: '#bf284c', inner: '#ff6b8b', glow: '#ffb3c1' },
+          { id: 'ruby',    base: '#e11d48', top: '#fb7185', left: '#f43f5e', right: '#be123c', bottom: '#9f1239', inner: '#e11d48', glow: '#ffe4e6' },
+          { id: 'pink',    base: '#f43f5e', top: '#fda4af', left: '#fb7185', right: '#e11d48', bottom: '#be123c', inner: '#f43f5e', glow: '#fecdd3' },
+          { id: 'magenta', base: '#d63384', top: '#f06595', left: '#e64980', right: '#a61e4d', bottom: '#86153d', inner: '#d63384', glow: '#fcc2d7' },
+          { id: 'gold',    base: '#ffd43b', top: '#ffe066', left: '#fcc419', right: '#e67700', bottom: '#b85d00', inner: '#ffd43b', glow: '#fff3bf' }
+        ],
+        // 2. Rainbow Prism (Яркая радуга)
+        [
+          { id: 'r_red',    base: '#ef4444', top: '#fca5a5', left: '#f87171', right: '#dc2626', bottom: '#991b1b', inner: '#ef4444', glow: '#fecaca' },
+          { id: 'r_orange', base: '#f97316', top: '#fdba74', left: '#fb923c', right: '#ea580c', bottom: '#9a3412', inner: '#f97316', glow: '#fed7aa' },
+          { id: 'r_yellow', base: '#eab308', top: '#fef08a', left: '#facc15', right: '#ca8a04', bottom: '#854d0e', inner: '#eab308', glow: '#fef9c3' },
+          { id: 'r_green',  base: '#22c55e', top: '#86efac', left: '#4ade80', right: '#16a34a', bottom: '#166534', inner: '#22c55e', glow: '#bbf7d0' },
+          { id: 'r_sky',    base: '#06b6d4', top: '#a5f3fc', left: '#22d3ee', right: '#0891b2', bottom: '#155e75', inner: '#06b6d4', glow: '#cffafe' },
+          { id: 'r_violet', base: '#8b5cf6', top: '#c4b5fd', left: '#a78bfa', right: '#7c3aed', bottom: '#5b21b6', inner: '#8b5cf6', glow: '#ddd6fe' }
+        ],
+        // 3. Icy Sapphire (Ледяной сапфир и бирюза)
+        [
+          { id: 'ice_deep', base: '#1d4ed8', top: '#60a5fa', left: '#3b82f6', right: '#1e40af', bottom: '#1e3a8a', inner: '#1d4ed8', glow: '#93c5fd' },
+          { id: 'ice_blue', base: '#0284c7', top: '#7dd3fc', left: '#38bdf8', right: '#0369a1', bottom: '#0c4a6e', inner: '#0284c7', glow: '#bae6fd' },
+          { id: 'ice_cyan', base: '#06b6d4', top: '#a5f3fc', left: '#22d3ee', right: '#0891b2', bottom: '#164e63', inner: '#06b6d4', glow: '#cffafe' },
+          { id: 'ice_mint', base: '#2dd4bf', top: '#99f6e4', left: '#5eead4', right: '#0d9488', bottom: '#115e59', inner: '#2dd4bf', glow: '#ccfbf1' },
+          { id: 'ice_glac', base: '#e0f2fe', top: '#ffffff', left: '#bae6fd', right: '#7dd3fc', bottom: '#38bdf8', inner: '#e0f2fe', glow: '#ffffff' }
+        ],
+        // 4. Neon Synthwave (Киберпанк неон)
+        [
+          { id: 'neo_vio',  base: '#7950f2', top: '#b197fc', left: '#845ef7', right: '#5f3dc4', bottom: '#3b2185', inner: '#7950f2', glow: '#d0bfff' },
+          { id: 'neo_mag',  base: '#e64980', top: '#faa2c1', left: '#f06595', right: '#c2255c', bottom: '#86153d', inner: '#e64980', glow: '#ffdeeb' },
+          { id: 'neo_pink', base: '#f03e3e', top: '#ffa8a8', left: '#ff6b6b', right: '#c92a2a', bottom: '#871616', inner: '#f03e3e', glow: '#ffc9c9' },
+          { id: 'neo_cyan', base: '#15aabf', top: '#99e9f2', left: '#22b8cf', right: '#0c8599', bottom: '#0b5361', inner: '#15aabf', glow: '#c5f6fa' }
+        ],
+        // 5. Royal Emerald & Gold (Золото и Изумруд)
+        [
+          { id: 'em_dark', base: '#059669', top: '#6ee7b7', left: '#10b981', right: '#047857', bottom: '#064e3b', inner: '#059669', glow: '#a7f3d0' },
+          { id: 'em_lime', base: '#65a30d', top: '#bef264', left: '#84cc16', right: '#4d7c0f', bottom: '#365314', inner: '#65a30d', glow: '#d9f99d' },
+          { id: 'em_gold', base: '#f59f00', top: '#ffe066', left: '#fcc419', right: '#d97706', bottom: '#92400e', inner: '#f59f00', glow: '#fef08a' },
+          { id: 'em_jade', base: '#14b8a6', top: '#99f6e4', left: '#2dd4bf', right: '#0f766e', bottom: '#134e4a', inner: '#14b8a6', glow: '#ccfbf1' }
+        ],
+        // 6. Sunset Citrus (Закатный градиент: алый -> оранж -> жёлтый -> пурпур)
+        [
+          { id: 'sun_purp', base: '#9333ea', top: '#d8b4fe', left: '#a855f7', right: '#7e22ce', bottom: '#581c87', inner: '#9333ea', glow: '#e9d5ff' },
+          { id: 'sun_rose', base: '#e11d48', top: '#fda4af', left: '#f43f5e', right: '#be123c', bottom: '#881337', inner: '#e11d48', glow: '#fecdd3' },
+          { id: 'sun_orng', base: '#ea580c', top: '#fdba74', left: '#fb923c', right: '#c2410c', bottom: '#7c2d12', inner: '#ea580c', glow: '#fed7aa' },
+          { id: 'sun_gold', base: '#f59e0b', top: '#fde68a', left: '#fbbf24', right: '#d97706', bottom: '#92400e', inner: '#f59e0b', glow: '#fef3c7' }
+        ]
       ];
+
+      // Pick a theme different from the previous run
+      let themeIdx = Math.floor(Math.random() * heartThemes.length);
+      if (this.lastHeartThemeIdx !== undefined && themeIdx === this.lastHeartThemeIdx) {
+        themeIdx = (themeIdx + 1 + Math.floor(Math.random() * (heartThemes.length - 1))) % heartThemes.length;
+      }
+      this.lastHeartThemeIdx = themeIdx;
+      const heartColors = heartThemes[themeIdx];
+
+      // Pick a geometric pattern style for coloring the heart pixels!
+      // 0: horizontal rows | 1: diagonal stripe | 2: concentric rings | 3: split vertical + mosaic
+      const patternMode = Math.floor(Math.random() * 4);
 
       for (const [r, c] of heartCoords) {
         // Expand outward and upward
         const delay = (6 - r) * 0.065 + Math.abs(c - 3.5) * 0.04;
-        const colorObj = heartColors[(r + Math.floor(Math.abs(c - 3.5))) % heartColors.length];
+        let colorIndex = 0;
+        if (patternMode === 0) {
+          colorIndex = r - 1;
+        } else if (patternMode === 1) {
+          colorIndex = r + c;
+        } else if (patternMode === 2) {
+          colorIndex = Math.floor(Math.hypot(r - 3.3, c - 3.5));
+        } else {
+          colorIndex = Math.floor(c / 2) + (r % 2);
+        }
+        const colorObj = heartColors[((colorIndex % heartColors.length) + heartColors.length) % heartColors.length];
         cells.push({
           r,
           c,
