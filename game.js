@@ -280,7 +280,8 @@ class BlockBlastGame {
     // Authentic Block Blast: spawn real game shapes (lines, angles, squares), often assembled/clustered together
     const candidateIds = [
       'h4', 'h3', 'h2', 'v3', 'v2', 'sq2',
-      'diag2a', 'diag2b',
+      'c3_tl', 'c3_tr', 'c3_bl', 'c3_br',
+      'diag2a', 'diag2b', 'diag3a', 'diag3b',
       'l_1', 'l_2', 'l_3', 'l_4', 'l_5', 'l_6', 't_up', 't_down'
     ];
     const candidateShapes = window.SHAPES.filter((s) => candidateIds.includes(s.id));

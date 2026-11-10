@@ -12,9 +12,19 @@ const SHAPES = [
   { id: 'diag2a', tier: 'small', weight: 5, matrix: [[1, 0], [0, 1]] },
   { id: 'diag2b', tier: 'small', weight: 5, matrix: [[0, 1], [1, 0]] },
 
+  // 3-block diagonals
+  { id: 'diag3a', tier: 'small', weight: 4, matrix: [[1, 0, 0], [0, 1, 0], [0, 0, 1]] },
+  { id: 'diag3b', tier: 'small', weight: 4, matrix: [[0, 0, 1], [0, 1, 0], [1, 0, 0]] },
+
   // 3-block bars
   { id: 'h3', tier: 'small', weight: 12, matrix: [[1, 1, 1]] },
   { id: 'v3', tier: 'small', weight: 12, matrix: [[1], [1], [1]] },
+
+  // 3-block small corners (2x2 with 3 blocks)
+  { id: 'c3_tl', tier: 'small', weight: 8, matrix: [[1, 1], [1, 0]] },
+  { id: 'c3_tr', tier: 'small', weight: 8, matrix: [[1, 1], [0, 1]] },
+  { id: 'c3_bl', tier: 'small', weight: 8, matrix: [[1, 0], [1, 1]] },
+  { id: 'c3_br', tier: 'small', weight: 8, matrix: [[0, 1], [1, 1]] },
 
   // 2x2 Square (4 blocks)
   { id: 'sq2', tier: 'medium', weight: 12, matrix: [[1, 1], [1, 1]] },
@@ -301,10 +311,12 @@ function findHoleFillingShapes(grid) {
 
     // Qualify if it has solid contact with existing blocks / pockets
     if (bestHoleScore >= 6.0 && bestPlacement) {
-      // 2-block bars and 3-block bars are the premier gap/slot fillers in authentic Block Blast
+      // 2-block bars, 3-block bars and corners are the premier gap/slot fillers in authentic Block Blast
       let typeBonus = 1.0;
       if (shape.id === 'h2' || shape.id === 'v2') typeBonus = 2.4;
+      else if (shape.id.startsWith('c3_')) typeBonus = 2.1;
       else if (shape.id === 'diag2a' || shape.id === 'diag2b') typeBonus = 1.7;
+      else if (shape.id === 'diag3a' || shape.id === 'diag3b') typeBonus = 1.5;
       else if (shape.id === 'h3' || shape.id === 'v3') typeBonus = 1.9;
       else if (shape.id === 'sq2') typeBonus = 1.6;
       else if (shape.id.startsWith('l_')) typeBonus = 1.3;
