@@ -1138,33 +1138,65 @@ class BlockBlastGame {
         }
       }
 
-      // Shatter phase at 1.15s (after generous 500ms view of the heart/pattern)
-      if (t >= 1.15 && !this.introAnim.shattered) {
-        this.introAnim.shattered = true;
-        const { boardX, boardY, boardPad, cellSize } = this.metrics;
-        const gridOriginX = boardX + boardPad;
-        const gridOriginY = boardY + boardPad;
+      // Disassemble / Melt / Shatter phase
+      if (this.introAnim.isHeart) {
+        // Heart: blocks gently shrink away without exploding into sparks
+        if (t >= 1.15) {
+          if (!this.introAnim.dissolveStarted) {
+            this.introAnim.dissolveStarted = true;
+            if (window.soundEngine && typeof window.soundEngine.playHeartDissolve === 'function') {
+              window.soundEngine.playHeartDissolve();
+            }
+          }
 
-        for (const cell of this.introAnim.cells) {
-          const cx = gridOriginX + (cell.c + 0.5) * cellSize;
-          const cy = gridOriginY + (cell.r + 0.5) * cellSize;
-          const stagger = this.introAnim.isHeart
-            ? ((cell.r + Math.abs(cell.c - 3.5)) * 0.02)
-            : ((cell.r + cell.c) * 0.012);
-          this.fx.spawnCellShatter(cx, cy, cellSize, cell.colorObj, stagger);
+          let anyVisible = false;
+          for (const cell of this.introAnim.cells) {
+            // Soft ripple shrink from top lobes down to the tip
+            const shrinkDelay = 1.15 + (cell.r * 0.045) + Math.abs(cell.c - 3.5) * 0.025;
+            if (t >= shrinkDelay && cell.scale > 0) {
+              cell.scale = Math.max(0, cell.scale - dt * 4.6);
+            }
+            if (cell.scale > 0.01) {
+              anyVisible = true;
+            }
+          }
+
+          if (t >= 1.68 && !anyVisible) {
+            this.introAnim.active = false;
+            if (typeof this.introAnim.onComplete === 'function') {
+              const cb = this.introAnim.onComplete;
+              this.introAnim.onComplete = null;
+              cb();
+            }
+          }
+        }
+      } else {
+        // Full grid pattern: explosive shatter into sparks & screen shake
+        if (t >= 1.15 && !this.introAnim.shattered) {
+          this.introAnim.shattered = true;
+          const { boardX, boardY, boardPad, cellSize } = this.metrics;
+          const gridOriginX = boardX + boardPad;
+          const gridOriginY = boardY + boardPad;
+
+          for (const cell of this.introAnim.cells) {
+            const cx = gridOriginX + (cell.c + 0.5) * cellSize;
+            const cy = gridOriginY + (cell.r + 0.5) * cellSize;
+            const stagger = (cell.r + cell.c) * 0.012;
+            this.fx.spawnCellShatter(cx, cy, cellSize, cell.colorObj, stagger);
+          }
+
+          window.soundEngine.playLineClear(2, 2, false);
+          this.fx.triggerShake(6, 0.28);
         }
 
-        window.soundEngine.playLineClear(this.introAnim.isHeart ? 3 : 2, 2, false);
-        this.fx.triggerShake(this.introAnim.isHeart ? 8 : 6, 0.28);
-      }
-
-      // End intro at 1.55s
-      if (t >= 1.55) {
-        this.introAnim.active = false;
-        if (typeof this.introAnim.onComplete === 'function') {
-          const cb = this.introAnim.onComplete;
-          this.introAnim.onComplete = null;
-          cb();
+        // End intro at 1.55s
+        if (t >= 1.55) {
+          this.introAnim.active = false;
+          if (typeof this.introAnim.onComplete === 'function') {
+            const cb = this.introAnim.onComplete;
+            this.introAnim.onComplete = null;
+            cb();
+          }
         }
       }
     }

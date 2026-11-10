@@ -98,6 +98,14 @@ class SoundEngine {
     this.tone(360, 'sine', 0.09, 0.12, 0, 210);
   }
 
+  playHeartDissolve() {
+    // Gentle soft sparkle chime when the intro heart smoothly melts away
+    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+    notes.forEach((freq, idx) => {
+      this.tone(freq, 'sine', 0.12, 0.09, idx * 0.07, freq * 1.04);
+    });
+  }
+
   playPlace(blockCount = 4) {
     // Satisfying thud + woody click when locking a piece onto the board
     const baseFreq = Math.max(140, 230 - blockCount * 8);
