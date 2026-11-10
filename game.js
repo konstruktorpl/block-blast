@@ -1134,7 +1134,9 @@ class BlockBlastGame {
               window.soundEngine.playHoverTick();
             }
           }
-          cell.scale = Math.min(1.0, cell.scale + dt * 10);
+          if (t < 1.15) {
+            cell.scale = Math.min(1.0, cell.scale + dt * 10);
+          }
         }
       }
 
@@ -1152,16 +1154,17 @@ class BlockBlastGame {
           let anyVisible = false;
           for (const cell of this.introAnim.cells) {
             // Soft ripple shrink from top lobes down to the tip
-            const shrinkDelay = 1.15 + (cell.r * 0.045) + Math.abs(cell.c - 3.5) * 0.025;
-            if (t >= shrinkDelay && cell.scale > 0) {
-              cell.scale = Math.max(0, cell.scale - dt * 4.6);
+            const shrinkDelay = 1.15 + (cell.r * 0.04) + Math.abs(cell.c - 3.5) * 0.02;
+            if (t >= shrinkDelay) {
+              cell.scale = Math.max(0, cell.scale - dt * 5.5);
             }
             if (cell.scale > 0.01) {
               anyVisible = true;
             }
           }
 
-          if (t >= 1.68 && !anyVisible) {
+          // Complete when all cells shrink to 0 or safety timeout at 1.72s
+          if ((t >= 1.55 && !anyVisible) || t >= 1.72) {
             this.introAnim.active = false;
             if (typeof this.introAnim.onComplete === 'function') {
               const cb = this.introAnim.onComplete;
