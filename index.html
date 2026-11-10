@@ -15,11 +15,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20" />
+  <link rel="stylesheet" href="style.css?v=21" />
 </head>
 <body>
   <div id="app" class="app-container">
-    <!-- Top HUD: crown + best (left), gear (right), score (center) -->
+    <!-- Top HUD: crown + best (left), trophy + gear (right) -->
     <header class="hud-header">
       <div class="hud-left">
         <div class="best-score" title="Рекорд">
@@ -33,8 +33,6 @@
           <span id="bestScoreValue">0</span>
         </div>
       </div>
-
-      <div id="currentScore" class="current-score">0</div>
 
       <div class="hud-right">
         <button id="btnQuests" class="hud-icon-btn quest-btn" aria-label="Квесты и кубки" title="Квесты">
@@ -52,6 +50,11 @@
         </button>
       </div>
     </header>
+
+    <!-- Large Centered Score Row between Top Bar and Board -->
+    <div class="score-display-row">
+      <div id="currentScore" class="current-score">0</div>
+    </div>
 
     <!-- Unified High-DPI Game Canvas (8x8 Board + 3-Piece Dock + Drag & FX) -->
     <main class="canvas-wrapper" id="canvasWrapper">
@@ -98,7 +101,7 @@
         <button id="btnTheme" class="settings-row"><span>Тема</span><span class="row-value">›</span></button>
         <button id="btnRestart" class="settings-row"><span>Начать заново</span><span class="row-value">›</span></button>
         <button id="btnHome" class="settings-row"><span>Главное меню</span><span class="row-value">›</span></button>
-        <button id="btnReloadApp" class="settings-row" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.12);"><span>Очистить кэш / Обновить</span><span class="row-value">v20 🔄</span></button>
+        <button id="btnReloadApp" class="settings-row" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.12);"><span>Очистить кэш / Обновить</span><span class="row-value">v21 🔄</span></button>
       </div>
     </div>
   </div>
@@ -193,11 +196,11 @@
     </div>
   </div>
 
-  <script src="quests.js?v=20"></script>
-  <script src="themes.js?v=20"></script>
-  <script src="audio.js?v=20"></script>
-  <script src="shapes.js?v=20"></script>
-  <script src="particles.js?v=20"></script>
-  <script src="game.js?v=20"></script>
+  <script src="quests.js?v=21"></script>
+  <script src="themes.js?v=21"></script>
+  <script src="audio.js?v=21"></script>
+  <script src="shapes.js?v=21"></script>
+  <script src="particles.js?v=21"></script>
+  <script src="game.js?v=21"></script>
 </body>
 </html>

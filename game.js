@@ -459,21 +459,21 @@ class BlockBlastGame {
     this.canvas.height = Math.round(h * dpr);
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Reserve ~25% of height for the 3-piece dock at bottom
-    const minDockH = Math.min(150, Math.max(110, h * 0.24));
-    // Comfortable top margin below HUD (neat ~16px breathing room, no giant gap)
-    const topMargin = Math.max(12, Math.min(22, Math.round(h * 0.025)));
-    const gapBetweenBoardAndDock = Math.max(14, Math.min(26, Math.round(h * 0.03)));
-
-    const maxBoardSpaceH = h - minDockH - topMargin - gapBetweenBoardAndDock;
-    const maxBoardSpaceW = w - 10;
+    // Reserve space for dock at bottom (~22% of canvas height)
+    const dockTargetH = Math.min(145, Math.max(105, Math.round(h * 0.22)));
+    const gapBetweenBoardAndDock = Math.max(16, Math.min(30, Math.round(h * 0.035)));
+    const maxBoardSpaceW = w - 12;
+    const maxBoardSpaceH = h - dockTargetH - gapBetweenBoardAndDock - 24;
 
     const boardSize = Math.floor(Math.min(maxBoardSpaceW, maxBoardSpaceH));
     const boardPad = Math.max(3, Math.round(boardSize * 0.012));
     const cellSize = (boardSize - boardPad * 2) / 8;
 
     const boardX = Math.round((w - boardSize) / 2);
-    const boardY = topMargin;
+
+    // Position board closer to vertical center of screen
+    const remainingH = Math.max(0, h - (boardSize + gapBetweenBoardAndDock + dockTargetH));
+    const boardY = Math.max(16, Math.round(remainingH * 0.40));
     const dockY = boardY + boardSize + gapBetweenBoardAndDock;
     const dockHeight = Math.max(96, h - dockY - 6);
 
@@ -743,12 +743,12 @@ class BlockBlastGame {
     const { cellSize, boardX, boardY, boardPad } = this.metrics;
     const shape = this.drag.piece.shape;
 
-    // Responsive thumb drag: lift piece comfortably above finger and boost upward reach
+    // Responsive thumb drag: lift piece comfortably above finger and boost reach
     const baseLift = this.drag.isTouch ? cellSize * 2.45 : cellSize * 0.7;
     const deltaY = py - (this.drag.startY || py);
     const deltaX = px - (this.drag.startX || px);
-    const extraUpwardReach = deltaY < 0 ? Math.abs(deltaY) * 0.22 : 0;
-    const extraSidewaysReach = deltaX * 0.1;
+    const extraUpwardReach = deltaY < 0 ? Math.abs(deltaY) * 0.40 : 0;
+    const extraSidewaysReach = deltaX * 0.18;
 
     const centerX = px + extraSidewaysReach;
     const centerY = py - baseLift - extraUpwardReach;
@@ -1226,15 +1226,15 @@ class BlockBlastGame {
       const baseLift = this.drag.isTouch ? cellSize * 2.45 : cellSize * 0.7;
       const deltaY = this.drag.y - (this.drag.startY || this.drag.y);
       const deltaX = this.drag.x - (this.drag.startX || this.drag.x);
-      const extraUpwardReach = deltaY < 0 ? Math.abs(deltaY) * 0.22 : 0;
-      const extraSidewaysReach = deltaX * 0.1;
+      const extraUpwardReach = deltaY < 0 ? Math.abs(deltaY) * 0.40 : 0;
+      const extraSidewaysReach = deltaX * 0.18;
 
       const targetX = this.drag.x + extraSidewaysReach;
       const targetY = this.drag.y - baseLift - extraUpwardReach;
-      const lerp = Math.min(1, dt * 75);
+      const lerp = Math.min(1, dt * 95);
       this.drag.visualX += (targetX - this.drag.visualX) * lerp;
       this.drag.visualY += (targetY - this.drag.visualY) * lerp;
-      this.drag.visualScale += (1.0 - this.drag.visualScale) * Math.min(1, dt * 24);
+      this.drag.visualScale += (1.0 - this.drag.visualScale) * Math.min(1, dt * 28);
     }
 
     this.fx.update(dt);

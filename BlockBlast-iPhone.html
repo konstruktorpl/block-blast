@@ -70,10 +70,10 @@ button {
   height: 100%;
   height: 100dvh;
   margin: 0 auto;
-  padding-top: max(16px, calc(env(safe-area-inset-top) + 8px));
-  padding-bottom: max(16px, env(safe-area-inset-bottom));
-  padding-left: max(12px, env(safe-area-inset-left));
-  padding-right: max(12px, env(safe-area-inset-right));
+  padding-top: max(10px, calc(env(safe-area-inset-top) + 4px));
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
+  padding-left: max(10px, env(safe-area-inset-left));
+  padding-right: max(10px, env(safe-area-inset-right));
 }
 
 /* ---------- HUD ---------- */
@@ -82,11 +82,11 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 6px 12px;
+  padding: 2px 6px 0;
   flex-shrink: 0;
   position: relative;
   z-index: 10;
-  min-height: 48px;
+  min-height: 38px;
   box-sizing: border-box;
 }
 
@@ -102,6 +102,16 @@ button {
   align-items: center;
   gap: 8px;
   z-index: 2;
+}
+
+.score-display-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0 8px;
+  flex-shrink: 0;
+  z-index: 10;
 }
 
 .best-score {
@@ -144,25 +154,19 @@ button {
 }
 
 .current-score {
-  z-index: 1;
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  text-align: center;
   font-family: var(--font-game);
   font-weight: 800;
-  font-size: clamp(2.3rem, 9.5vw, 3.2rem);
+  font-size: clamp(3.2rem, 13vw, 4.4rem);
   line-height: 1;
   color: #fff;
-  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
+  text-shadow: 0 4px 14px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.28);
   pointer-events: none;
   transition: transform 0.12s ease-out;
+  text-align: center;
 }
 
 .current-score.bump {
-  transform: translateY(-50%) scale(1.1);
+  transform: scale(1.1);
 }
 
 /* ---------- Canvas ---------- */
@@ -867,7 +871,7 @@ button {
 </head>
 <body>
   <div id="app" class="app-container">
-    <!-- Top HUD: crown + best (left), gear (right), score (center) -->
+    <!-- Top HUD: crown + best (left), trophy + gear (right) -->
     <header class="hud-header">
       <div class="hud-left">
         <div class="best-score" title="Рекорд">
@@ -881,8 +885,6 @@ button {
           <span id="bestScoreValue">0</span>
         </div>
       </div>
-
-      <div id="currentScore" class="current-score">0</div>
 
       <div class="hud-right">
         <button id="btnQuests" class="hud-icon-btn quest-btn" aria-label="Квесты и кубки" title="Квесты">
@@ -900,6 +902,11 @@ button {
         </button>
       </div>
     </header>
+
+    <!-- Large Centered Score Row between Top Bar and Board -->
+    <div class="score-display-row">
+      <div id="currentScore" class="current-score">0</div>
+    </div>
 
     <!-- Unified High-DPI Game Canvas (8x8 Board + 3-Piece Dock + Drag & FX) -->
     <main class="canvas-wrapper" id="canvasWrapper">
@@ -946,7 +953,7 @@ button {
         <button id="btnTheme" class="settings-row"><span>Тема</span><span class="row-value">›</span></button>
         <button id="btnRestart" class="settings-row"><span>Начать заново</span><span class="row-value">›</span></button>
         <button id="btnHome" class="settings-row"><span>Главное меню</span><span class="row-value">›</span></button>
-        <button id="btnReloadApp" class="settings-row" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.12);"><span>Очистить кэш / Обновить</span><span class="row-value">v20 🔄</span></button>
+        <button id="btnReloadApp" class="settings-row" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.12);"><span>Очистить кэш / Обновить</span><span class="row-value">v21 🔄</span></button>
       </div>
     </div>
   </div>
@@ -2977,21 +2984,21 @@ class BlockBlastGame {
     this.canvas.height = Math.round(h * dpr);
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Reserve ~25% of height for the 3-piece dock at bottom
-    const minDockH = Math.min(150, Math.max(110, h * 0.24));
-    // Comfortable top margin below HUD (neat ~16px breathing room, no giant gap)
-    const topMargin = Math.max(12, Math.min(22, Math.round(h * 0.025)));
-    const gapBetweenBoardAndDock = Math.max(14, Math.min(26, Math.round(h * 0.03)));
-
-    const maxBoardSpaceH = h - minDockH - topMargin - gapBetweenBoardAndDock;
-    const maxBoardSpaceW = w - 10;
+    // Reserve space for dock at bottom (~22% of canvas height)
+    const dockTargetH = Math.min(145, Math.max(105, Math.round(h * 0.22)));
+    const gapBetweenBoardAndDock = Math.max(16, Math.min(30, Math.round(h * 0.035)));
+    const maxBoardSpaceW = w - 12;
+    const maxBoardSpaceH = h - dockTargetH - gapBetweenBoardAndDock - 24;
 
     const boardSize = Math.floor(Math.min(maxBoardSpaceW, maxBoardSpaceH));
     const boardPad = Math.max(3, Math.round(boardSize * 0.012));
     const cellSize = (boardSize - boardPad * 2) / 8;
 
     const boardX = Math.round((w - boardSize) / 2);
-    const boardY = topMargin;
+
+    // Position board closer to vertical center of screen
+    const remainingH = Math.max(0, h - (boardSize + gapBetweenBoardAndDock + dockTargetH));
+    const boardY = Math.max(16, Math.round(remainingH * 0.40));
     const dockY = boardY + boardSize + gapBetweenBoardAndDock;
     const dockHeight = Math.max(96, h - dockY - 6);
 
@@ -3261,12 +3268,12 @@ class BlockBlastGame {
     const { cellSize, boardX, boardY, boardPad } = this.metrics;
     const shape = this.drag.piece.shape;
 
-    // Responsive thumb drag: lift piece comfortably above finger and boost upward reach
+    // Responsive thumb drag: lift piece comfortably above finger and boost reach
     const baseLift = this.drag.isTouch ? cellSize * 2.45 : cellSize * 0.7;
     const deltaY = py - (this.drag.startY || py);
     const deltaX = px - (this.drag.startX || px);
-    const extraUpwardReach = deltaY < 0 ? Math.abs(deltaY) * 0.22 : 0;
-    const extraSidewaysReach = deltaX * 0.1;
+    const extraUpwardReach = deltaY < 0 ? Math.abs(deltaY) * 0.40 : 0;
+    const extraSidewaysReach = deltaX * 0.18;
 
     const centerX = px + extraSidewaysReach;
     const centerY = py - baseLift - extraUpwardReach;
@@ -3744,15 +3751,15 @@ class BlockBlastGame {
       const baseLift = this.drag.isTouch ? cellSize * 2.45 : cellSize * 0.7;
       const deltaY = this.drag.y - (this.drag.startY || this.drag.y);
       const deltaX = this.drag.x - (this.drag.startX || this.drag.x);
-      const extraUpwardReach = deltaY < 0 ? Math.abs(deltaY) * 0.22 : 0;
-      const extraSidewaysReach = deltaX * 0.1;
+      const extraUpwardReach = deltaY < 0 ? Math.abs(deltaY) * 0.40 : 0;
+      const extraSidewaysReach = deltaX * 0.18;
 
       const targetX = this.drag.x + extraSidewaysReach;
       const targetY = this.drag.y - baseLift - extraUpwardReach;
-      const lerp = Math.min(1, dt * 75);
+      const lerp = Math.min(1, dt * 95);
       this.drag.visualX += (targetX - this.drag.visualX) * lerp;
       this.drag.visualY += (targetY - this.drag.visualY) * lerp;
-      this.drag.visualScale += (1.0 - this.drag.visualScale) * Math.min(1, dt * 24);
+      this.drag.visualScale += (1.0 - this.drag.visualScale) * Math.min(1, dt * 28);
     }
 
     this.fx.update(dt);
