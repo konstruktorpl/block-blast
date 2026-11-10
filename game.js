@@ -349,7 +349,7 @@ class BlockBlastGame {
   }
 
   spawnNewTray() {
-    this.tray = window.generateSmartTray(this.grid, this.theme.palette, this.score);
+    this.tray = window.generateSmartTray(this.grid, this.theme.palette, this.score, this.comboStreak);
     this.checkPieceFitStates();
   }
 

@@ -156,9 +156,46 @@ function pickWeightedShape(pool) {
 }
 
 /**
- * Generates a balanced, solvable tray of 3 pieces tailored to the current board state.
+ * Analyzes the grid to find all shapes that, if placed right now,
+ * immediately complete and clear at least 1 line (or 2+ lines for combo/multi-clear).
  */
-function generateSmartTray(grid, palette, score = 0) {
+function findKeyClearingShapes(grid) {
+  const clearingCandidates = [];
+
+  for (const shape of SHAPES) {
+    const placements = getAllValidPlacements(grid, shape);
+    if (!placements.length) continue;
+
+    let bestCleared = 0;
+    let bestPlacement = null;
+
+    for (const p of placements) {
+      const sim = simulatePlacement(grid, shape, p.r, p.c);
+      if (sim.cleared > bestCleared) {
+        bestCleared = sim.cleared;
+        bestPlacement = p;
+      }
+    }
+
+    if (bestCleared >= 1) {
+      clearingCandidates.push({
+        shape,
+        cleared: bestCleared,
+        placement: bestPlacement,
+        weight: shape.weight * (bestCleared >= 2 ? 4.5 : 2.6) // high bonus for multi-clears
+      });
+    }
+  }
+
+  return clearingCandidates;
+}
+
+/**
+ * Generates a balanced, solvable tray of 3 pieces tailored to the current board state.
+ * Includes authentic Dynamic Assisting: deals pieces that complete lines, sustain combos,
+ * and provide clutch saves when crowded!
+ */
+function generateSmartTray(grid, palette, score = 0, comboStreak = 0) {
   let occupied = 0;
   for (let r = 0; r < 8; r++) {
     for (let c = 0; c < 8; c++) {
@@ -167,94 +204,147 @@ function generateSmartTray(grid, palette, score = 0) {
   }
   const fillRatio = occupied / 64;
 
-  // Adjust pool weights dynamically based on board crowding & score
+  // Dynamic weights based on crowding
   const weightedPool = SHAPES.map((s) => {
     let w = s.weight;
     if (fillRatio > 0.62) {
       if (s.tier === 'large') w *= 0.35;
-      if (s.tier === 'small') w *= 1.65;
+      if (s.tier === 'small') w *= 1.75;
     } else if (fillRatio < 0.25 && score > 300) {
       if (s.tier === 'large') w *= 1.25;
     }
     return { ...s, weight: w };
   });
 
-  // Try up to 18 candidate sets of 3 pieces and pick one that has a valid sequential play path
+  // Dynamic Assisting check: find key shapes that complete lines right now
+  const keyClearingShapes = findKeyClearingShapes(grid);
+
+  // Dynamic luck probability:
+  // - High if player is on a combo streak (68% - 85%) to sustain the combo
+  // - High if board is crowded (> 60% full, ~88%) for a clutch save
+  // - Regular play: ~55% chance to hand at least one line-clearing piece
+  let assistChance = 0.55;
+  if (comboStreak >= 1) {
+    assistChance = Math.min(0.85, 0.68 + comboStreak * 0.05);
+  } else if (fillRatio > 0.58) {
+    assistChance = 0.88;
+  }
+
+  const shouldAssist = keyClearingShapes.length > 0 && Math.random() < assistChance;
+
   let bestCandidate = null;
   let bestScore = -1;
 
-  for (let attempt = 0; attempt < 18; attempt++) {
-    const candidate = [];
-    let largeCount = 0;
-
-    for (let i = 0; i < 3; i++) {
-      let pool = weightedPool;
-      // Avoid spawning more than 1 giant piece in the same hand of 3
-      if (largeCount >= 1) {
-        pool = weightedPool.filter((s) => s.tier !== 'large');
+  if (shouldAssist) {
+    // Pick a key clearing shape, favoring multi-clears
+    const totalKeyWeight = keyClearingShapes.reduce((sum, k) => sum + k.weight, 0);
+    let rand = Math.random() * totalKeyWeight;
+    let chosenKey = keyClearingShapes[0];
+    for (const k of keyClearingShapes) {
+      rand -= k.weight;
+      if (rand <= 0) {
+        chosenKey = k;
+        break;
       }
-      const picked = pickWeightedShape(pool);
-      if (picked.tier === 'large') largeCount++;
-      candidate.push(picked);
     }
 
-    // Evaluate playability of this 3-piece hand on a simulated board
-    let simGrid = grid.map((row) => row.slice());
-    let placedCount = 0;
-    let linesClearedInSim = 0;
+    // Place the key piece in a random slot (0, 1, or 2)
+    const keySlot = Math.floor(Math.random() * 3);
+    const candidate = [null, null, null];
+    candidate[keySlot] = chosenKey.shape;
 
+    // Simulate placing the key piece to open up space on the board
+    const postSim = simulatePlacement(grid, chosenKey.shape, chosenKey.placement.r, chosenKey.placement.c);
+    const simGrid = postSim.grid;
+
+    // Find pieces that fit on this cleared board for the remaining 2 slots
     for (let i = 0; i < 3; i++) {
-      const shape = candidate[i];
-      const placements = getAllValidPlacements(simGrid, shape);
-      if (placements.length === 0) break;
+      if (i === keySlot) continue;
 
-      // Pick a placement that maximizes line clears or keeps board compact
-      let chosen = placements[Math.floor(Math.random() * placements.length)];
-      let bestSim = null;
+      // Check if another line clear is possible on the simulated board
+      const nextClearers = findKeyClearingShapes(simGrid);
+      if (nextClearers.length > 0 && Math.random() < 0.5) {
+        candidate[i] = nextClearers[Math.floor(Math.random() * nextClearers.length)].shape;
+      } else {
+        const fitting = weightedPool.filter((s) => getAllValidPlacements(simGrid, s).length > 0);
+        candidate[i] = fitting.length > 0 ? pickWeightedShape(fitting) : pickWeightedShape(weightedPool);
+      }
+    }
 
-      const sampleCount = Math.min(placements.length, 10);
-      for (let k = 0; k < sampleCount; k++) {
-        const p = placements[Math.floor((k / sampleCount) * placements.length)];
-        const res = simulatePlacement(simGrid, shape, p.r, p.c);
-        if (!bestSim || res.cleared > bestSim.cleared) {
-          bestSim = res;
-          chosen = p;
+    bestCandidate = candidate;
+  } else {
+    // Standard smart solver: try up to 18 combinations and pick the most playable & rewarding hand
+    for (let attempt = 0; attempt < 18; attempt++) {
+      const candidate = [];
+      let largeCount = 0;
+
+      for (let i = 0; i < 3; i++) {
+        let pool = weightedPool;
+        if (largeCount >= 1) {
+          pool = weightedPool.filter((s) => s.tier !== 'large');
         }
+        const picked = pickWeightedShape(pool);
+        if (picked.tier === 'large') largeCount++;
+        candidate.push(picked);
       }
 
-      const finalSim = bestSim || simulatePlacement(simGrid, shape, chosen.r, chosen.c);
-      simGrid = finalSim.grid;
-      linesClearedInSim += finalSim.cleared;
-      placedCount++;
-    }
+      let simGrid = grid.map((row) => row.slice());
+      let placedCount = 0;
+      let linesClearedInSim = 0;
 
-    const candidateQuality = placedCount * 10 + Math.min(linesClearedInSim, 2) * 3;
-    if (candidateQuality > bestScore) {
-      bestScore = candidateQuality;
-      bestCandidate = candidate;
-    }
-    if (placedCount === 3 && linesClearedInSim >= 1) {
-      break;
+      for (let i = 0; i < 3; i++) {
+        const shape = candidate[i];
+        const placements = getAllValidPlacements(simGrid, shape);
+        if (placements.length === 0) break;
+
+        let chosen = placements[Math.floor(Math.random() * placements.length)];
+        let bestSim = null;
+
+        const sampleCount = Math.min(placements.length, 10);
+        for (let k = 0; k < sampleCount; k++) {
+          const p = placements[Math.floor((k / sampleCount) * placements.length)];
+          const res = simulatePlacement(simGrid, shape, p.r, p.c);
+          if (!bestSim || res.cleared > bestSim.cleared) {
+            bestSim = res;
+            chosen = p;
+          }
+        }
+
+        const finalSim = bestSim || simulatePlacement(simGrid, shape, chosen.r, chosen.c);
+        simGrid = finalSim.grid;
+        linesClearedInSim += finalSim.cleared;
+        placedCount++;
+      }
+
+      const candidateQuality = placedCount * 10 + Math.min(linesClearedInSim, 3) * 4;
+      if (candidateQuality > bestScore) {
+        bestScore = candidateQuality;
+        bestCandidate = candidate;
+      }
+      if (placedCount === 3 && linesClearedInSim >= 1) {
+        break;
+      }
     }
   }
 
-  // Fallback if board is super crowded: ensure at least the first piece fits if any shape fits at all
-  if (bestScore < 10) {
+  // Safety fallback: ensure at least the first piece can be placed
+  if (!bestCandidate || getAllValidPlacements(grid, bestCandidate[0]).length === 0) {
     const fittingShapes = weightedPool.filter((s) => getAllValidPlacements(grid, s).length > 0);
     if (fittingShapes.length > 0) {
+      if (!bestCandidate) bestCandidate = [fittingShapes[0], fittingShapes[0], fittingShapes[0]];
       bestCandidate[0] = pickWeightedShape(fittingShapes);
     }
   }
 
-  // Assign random vibrant colors from the current theme palette
+  // Assign distinct colors from the current theme palette
   return bestCandidate.map((shape, idx) => {
-    const colorIndex = Math.floor(Math.random() * palette.length);
+    const colorIndex = (Math.floor(Math.random() * palette.length) + idx) % palette.length;
     return {
       slotIndex: idx,
       shape,
       colorIndex,
       placed: false,
-      scale: 0.01,       // animates from 0.01 -> 1 on spawn
+      scale: 0.01,
       targetScale: 1,
       offsetX: 0,
       offsetY: 0
