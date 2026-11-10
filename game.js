@@ -1267,20 +1267,12 @@ class BlockBlastGame {
       ctx.translate(sx, sy);
     }
 
-    // 1. Board Frame: Authentic rounded outer border with soft ambient shadow
-    const frameRadius = Math.max(10, Math.round(boardSize * 0.038));
+    // 1. Board: clean dark panel
     ctx.save();
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.26)';
-    ctx.shadowBlur = 16;
-    ctx.shadowOffsetY = 6;
-    window.roundRectPath(ctx, boardX, boardY, boardSize, boardSize, frameRadius);
+    window.roundRectPath(ctx, boardX, boardY, boardSize, boardSize, 6);
     ctx.fillStyle = theme.boardBg;
     ctx.fill();
-    ctx.restore();
-
-    ctx.save();
-    window.roundRectPath(ctx, boardX, boardY, boardSize, boardSize, frameRadius);
-    ctx.lineWidth = Math.max(3, Math.round(boardSize * 0.012));
+    ctx.lineWidth = 2;
     ctx.strokeStyle = theme.boardBorder;
     ctx.stroke();
     ctx.restore();
@@ -1288,26 +1280,20 @@ class BlockBlastGame {
     const gridOriginX = boardX + boardPad;
     const gridOriginY = boardY + boardPad;
 
-    // 2. Sunken Empty Grid Cells (Authentic Waffle / Recessed Wells)
-    const cellGap = Math.max(1.5, Math.round(cellSize * 0.04));
-    const cellRadius = Math.max(2, Math.round(cellSize * 0.08));
+    // 2. Clean Grid lines (сеточка)
     ctx.save();
-    for (let r = 0; r < 8; r++) {
-      for (let c = 0; c < 8; c++) {
-        const cx = gridOriginX + c * cellSize + cellGap * 0.5;
-        const cy = gridOriginY + r * cellSize + cellGap * 0.5;
-        const cw = cellSize - cellGap;
-        const ch = cellSize - cellGap;
-
-        window.roundRectPath(ctx, cx, cy, cw, ch, cellRadius);
-        ctx.fillStyle = theme.cellEmpty;
-        ctx.fill();
-
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = theme.cellEmptyBorder;
-        ctx.stroke();
-      }
+    ctx.strokeStyle = theme.cellEmptyBorder;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 1; i < 8; i++) {
+      const gx = Math.round(gridOriginX + i * cellSize) + 0.5;
+      const gy = Math.round(gridOriginY + i * cellSize) + 0.5;
+      ctx.moveTo(gx, gridOriginY);
+      ctx.lineTo(gx, gridOriginY + cellSize * 8);
+      ctx.moveTo(gridOriginX, gy);
+      ctx.lineTo(gridOriginX + cellSize * 8, gy);
     }
+    ctx.stroke();
     ctx.restore();
 
     // Pulse factor for lines that are about to clear while holding a piece
