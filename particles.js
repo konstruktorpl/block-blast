@@ -1,4 +1,4 @@
-// Juicy Particle, Shatter & Combo Callout FX System for Block Blast!
+// Dynamic Particle & Shatter Effects for Block Blast!
 
 class FXManager {
   constructor() {
@@ -30,10 +30,12 @@ class FXManager {
   }
 
   spawnDebrisBurst(cx, cy, cellSize, colorObj) {
-    const effect = (window.questManager && window.questManager.selectedEffect) || 'cubes';
+    // Choose particle style based on the current active combo / level
+    const currentCombo = (window.game && window.game.comboStreak) || 0;
+    const styles = ['cubes', 'stars', 'fireworks', 'bubbles'];
+    const chosenStyle = styles[currentCombo % styles.length];
 
-    if (effect === 'fireworks') {
-      // Fireworks sparks & laser rings
+    if (chosenStyle === 'fireworks') {
       const count = 16;
       for (let i = 0; i < count; i++) {
         const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.2;
@@ -57,8 +59,7 @@ class FXManager {
       return;
     }
 
-    if (effect === 'stars') {
-      // Supernova Starburst
+    if (chosenStyle === 'stars') {
       const count = 12;
       for (let i = 0; i < count; i++) {
         const angle = Math.random() * Math.PI * 2;
@@ -82,8 +83,7 @@ class FXManager {
       return;
     }
 
-    if (effect === 'bubbles') {
-      // Candy Bubble Pop
+    if (chosenStyle === 'bubbles') {
       const count = 10;
       for (let i = 0; i < count; i++) {
         const angle = Math.random() * Math.PI * 2;
@@ -155,7 +155,6 @@ class FXManager {
   }
 
   spawnBanner(title, subtitle = '', color = '#ffd43b') {
-    // Replace older banner if too many
     if (this.banners.length > 1) {
       this.banners.shift();
     }
@@ -174,7 +173,6 @@ class FXManager {
       if (this.shakeTime === 0) this.shakeMagnitude = 0;
     }
 
-    // Update popping cells (delayed ripple along cleared rows/columns)
     for (let i = this.poppingCells.length - 1; i >= 0; i--) {
       const pc = this.poppingCells[i];
       if (pc.delay > 0) {
@@ -191,7 +189,6 @@ class FXManager {
       }
     }
 
-    // Update line beams
     for (let i = this.lineBeams.length - 1; i >= 0; i--) {
       const b = this.lineBeams[i];
       b.age += dt;
@@ -200,7 +197,6 @@ class FXManager {
       }
     }
 
-    // Update particles
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
       p.age += dt;
@@ -214,7 +210,6 @@ class FXManager {
       p.rotation += p.vRot * dt;
     }
 
-    // Update floating texts
     for (let i = this.floatingTexts.length - 1; i >= 0; i--) {
       const ft = this.floatingTexts[i];
       ft.age += dt;
@@ -224,7 +219,6 @@ class FXManager {
       }
     }
 
-    // Update banners
     for (let i = this.banners.length - 1; i >= 0; i--) {
       const bn = this.banners[i];
       bn.age += dt;
@@ -235,7 +229,6 @@ class FXManager {
   }
 
   draw(ctx, canvasWidth, boardCenterY, themeId) {
-    // 1. Line laser beams
     for (const b of this.lineBeams) {
       const t = b.age / b.life;
       const alpha = Math.max(0, 1 - t);
@@ -249,7 +242,6 @@ class FXManager {
       ctx.restore();
     }
 
-    // 2. Popping cells (scale up + white flash before vanishing)
     for (const pc of this.poppingCells) {
       const t = Math.max(0, pc.age / pc.duration);
       const scale = pc.delay > 0 ? 1 : (1 + Math.sin(t * Math.PI) * 0.32);
@@ -266,7 +258,6 @@ class FXManager {
       );
     }
 
-    // 3. Shattered 3D cube & sparkle particles
     for (const p of this.particles) {
       const t = p.age / p.life;
       const alpha = Math.max(0, 1 - t * t);
@@ -303,7 +294,6 @@ class FXManager {
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
         ctx.lineWidth = 1.5;
         ctx.stroke();
-        // Little white highlight
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.arc(-s * 0.2, -s * 0.2, s * 0.15, 0, Math.PI * 2);
@@ -317,7 +307,6 @@ class FXManager {
       ctx.restore();
     }
 
-    // 4. Floating score popups
     for (const ft of this.floatingTexts) {
       const t = ft.age / ft.life;
       const elastic = t < 0.2 ? (t / 0.2) * 1.15 : 1.15 - (t - 0.2) * 0.2;
@@ -338,7 +327,6 @@ class FXManager {
       ctx.restore();
     }
 
-    // 5. Big Combo & Praise Banners ("COMBO x3!", "UNBELIEVABLE!")
     for (const bn of this.banners) {
       const t = bn.age / bn.life;
       let scale = 1;
@@ -358,7 +346,6 @@ class FXManager {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // Title
       ctx.font = '800 36px "Baloo 2", "Nunito", -apple-system, sans-serif';
       ctx.lineWidth = 8;
       ctx.strokeStyle = 'rgba(8, 12, 34, 0.92)';

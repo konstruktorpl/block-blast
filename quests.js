@@ -2,9 +2,7 @@
 
 class QuestManager {
   constructor() {
-    this.trophies = parseInt(localStorage.getItem('bb_trophies') || '0', 10);
-    this.unlockedEffects = JSON.parse(localStorage.getItem('bb_unlocked_effects') || '["cubes"]');
-    this.selectedEffect = localStorage.getItem('bb_selected_effect') || 'cubes';
+    this.trophies = parseInt(localStorage.getItem('bb_trophies') || '0', 10) || 0;
 
     this.dailyKey = this.getTodayKey();
     this.weeklyKey = this.getCurrentWeekKey();
@@ -78,7 +76,6 @@ class QuestManager {
 
   initDailyQuests() {
     const pool = this.getDefaultDailyPool();
-    // Pick 3 random quests
     const shuffled = pool.sort(() => 0.5 - Math.random());
     this.dailyQuests = shuffled.slice(0, 3).map(q => ({
       ...q,
@@ -105,8 +102,6 @@ class QuestManager {
     localStorage.setItem('bb_daily_quests', JSON.stringify(this.dailyQuests));
     localStorage.setItem('bb_weekly_quests', JSON.stringify(this.weeklyQuests));
     localStorage.setItem('bb_trophies', String(this.trophies));
-    localStorage.setItem('bb_unlocked_effects', JSON.stringify(this.unlockedEffects));
-    localStorage.setItem('bb_selected_effect', this.selectedEffect);
   }
 
   onEvent(type, value = 1) {
@@ -157,31 +152,12 @@ class QuestManager {
     return 0;
   }
 
-  unlockEffect(effectId, cost) {
-    if (this.trophies >= cost && !this.unlockedEffects.includes(effectId)) {
-      this.trophies -= cost;
-      this.unlockedEffects.push(effectId);
-      this.selectedEffect = effectId;
-      this.saveQuests();
-      this.updateUIBadge();
-      return true;
-    }
-    return false;
-  }
-
-  selectEffect(effectId) {
-    if (this.unlockedEffects.includes(effectId)) {
-      this.selectedEffect = effectId;
-      this.saveQuests();
-      return true;
-    }
-    return false;
-  }
-
   updateUIBadge() {
     const badge = document.getElementById('questBadge');
     const trophyVal = document.getElementById('trophyCount');
+    const modalTrophy = document.getElementById('modalTrophyCount');
     if (trophyVal) trophyVal.textContent = this.trophies;
+    if (modalTrophy) modalTrophy.textContent = this.trophies;
     if (badge) {
       if (this.hasUnclaimed()) {
         badge.classList.remove('hidden');

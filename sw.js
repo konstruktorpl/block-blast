@@ -1,4 +1,4 @@
-const CACHE_NAME = 'block-blast-ios-v7';
+const CACHE_NAME = 'block-blast-ios-v8';
 const ASSETS = [
   './',
   './index.html',

@@ -1,49 +1,91 @@
-// Dynamic Background Palettes that cycle infinitely during gameplay (every 400 points)
+// Dynamic Background & Block Palettes that cycle infinitely during gameplay (every 400 points)
 const DYNAMIC_PALETTES = [
   {
-    name: 'Classic Blue',
+    name: 'Classic Indigo',
     bgGradient: 'linear-gradient(180deg, #4766b4 0%, #3f5aa5 100%)',
     themeColor: '#4766b4',
     boardBg: '#1f2749',
     boardBorder: '#1a2140',
     cellEmpty: '#1f2749',
-    cellEmptyBorder: '#161c37'
+    cellEmptyBorder: '#161c37',
+    palette: [
+      { id: 'red',    base: '#e5484d', top: '#f58b8e', left: '#ec6468', right: '#c23338', bottom: '#a3262b', inner: '#e5484d', glow: '#f58b8e' },
+      { id: 'orange', base: '#f07a2a', top: '#f9a868', left: '#f48d45', right: '#d0611a', bottom: '#ad4f12', inner: '#f07a2a', glow: '#f9a868' },
+      { id: 'yellow', base: '#f5b72e', top: '#fcd875', left: '#f8c64c', right: '#d99a17', bottom: '#b9800c', inner: '#f5b72e', glow: '#fcd875' },
+      { id: 'green',  base: '#4dc35a', top: '#8ae394', left: '#66d072', right: '#36a243', bottom: '#288535', inner: '#4dc35a', glow: '#8ae394' },
+      { id: 'cyan',   base: '#34bfe0', top: '#7ddcf0', left: '#52cbe7', right: '#229fbe', bottom: '#1a84a0', inner: '#34bfe0', glow: '#7ddcf0' },
+      { id: 'blue',   base: '#4a6ee0', top: '#8aa5f0', left: '#6385e8', right: '#3555c0', bottom: '#2742a2', inner: '#4a6ee0', glow: '#8aa5f0' },
+      { id: 'purple', base: '#9461d9', top: '#bf9aee', left: '#a87ae3', right: '#7a49bb', bottom: '#62379d', inner: '#9461d9', glow: '#bf9aee' }
+    ]
   },
   {
-    name: 'Deep Purple',
+    name: 'Deep Purple & Neon Pastels',
     bgGradient: 'linear-gradient(180deg, #5c3c92 0%, #462878 100%)',
     themeColor: '#5c3c92',
     boardBg: '#281a44',
     boardBorder: '#201338',
     cellEmpty: '#281a44',
-    cellEmptyBorder: '#1d1133'
+    cellEmptyBorder: '#1d1133',
+    palette: [
+      { id: 'magenta', base: '#e64980', top: '#faa2c1', left: '#f783ac', right: '#c2255c', bottom: '#9c1444', inner: '#e64980', glow: '#faa2c1' },
+      { id: 'lime',    base: '#82c91e', top: '#c0eb75', left: '#a9e34b', right: '#5c940d', bottom: '#3e6605', inner: '#82c91e', glow: '#c0eb75' },
+      { id: 'gold',    base: '#fcc419', top: '#ffe066', left: '#ffd43b', right: '#e67700', bottom: '#b85d00', inner: '#fcc419', glow: '#ffe066' },
+      { id: 'cyan',    base: '#15aabf', top: '#66d9e8', left: '#22b8cf', right: '#0c8599', bottom: '#086373', inner: '#15aabf', glow: '#66d9e8' },
+      { id: 'coral',   base: '#ff6b6b', top: '#ffa8a8', left: '#ff8787', right: '#e03131', bottom: '#b02020', inner: '#ff6b6b', glow: '#ffa8a8' },
+      { id: 'violet',  base: '#7950f2', top: '#b197fc', left: '#845ef7', right: '#5f3dc4', bottom: '#442799', inner: '#7950f2', glow: '#b197fc' },
+      { id: 'teal',    base: '#12b886', top: '#63e6be', left: '#20c997', right: '#099268', bottom: '#066849', inner: '#12b886', glow: '#63e6be' }
+    ]
   },
   {
-    name: 'Ocean Teal',
+    name: 'Ocean Teal & Marine Jewels',
     bgGradient: 'linear-gradient(180deg, #1b7b8a 0%, #13606c 100%)',
     themeColor: '#1b7b8a',
     boardBg: '#0f3c44',
     boardBorder: '#0b2e34',
     cellEmpty: '#0f3c44',
-    cellEmptyBorder: '#082328'
+    cellEmptyBorder: '#082328',
+    palette: [
+      { id: 'amber',   base: '#f59f00', top: '#ffe066', left: '#fcc419', right: '#d97706', bottom: '#b45309', inner: '#f59f00', glow: '#fde68a' },
+      { id: 'emerald', base: '#10b981', top: '#6ee7b7', left: '#34d399', right: '#059669', bottom: '#047857', inner: '#10b981', glow: '#a7f3d0' },
+      { id: 'cyan',    base: '#06b6d4', top: '#67e8f9', left: '#22d3ee', right: '#0891b2', bottom: '#0e7490', inner: '#06b6d4', glow: '#cffafe' },
+      { id: 'pink',    base: '#f43f5e', top: '#fda4af', left: '#fb7185', right: '#e11d48', bottom: '#be123c', inner: '#f43f5e', glow: '#fecdd3' },
+      { id: 'purple',  base: '#8b5cf6', top: '#c4b5fd', left: '#a78bfa', right: '#7c3aed', bottom: '#6d28d9', inner: '#8b5cf6', glow: '#ddd6fe' },
+      { id: 'orange',  base: '#f97316', top: '#fdba74', left: '#fb923c', right: '#ea580c', bottom: '#c2410c', inner: '#f97316', glow: '#fed7aa' }
+    ]
   },
   {
-    name: 'Sunset Crimson',
+    name: 'Sunset Crimson & Warm Gems',
     bgGradient: 'linear-gradient(180deg, #9e375f 0%, #80274a 100%)',
     themeColor: '#9e375f',
     boardBg: '#471429',
     boardBorder: '#380e20',
     cellEmpty: '#471429',
-    cellEmptyBorder: '#2a0917'
+    cellEmptyBorder: '#2a0917',
+    palette: [
+      { id: 'yellow',  base: '#eab308', top: '#fde047', left: '#facc15', right: '#ca8a04', bottom: '#a16207', inner: '#eab308', glow: '#fef08a' },
+      { id: 'orange',  base: '#ea580c', top: '#fb923c', left: '#f97316', right: '#c2410c', bottom: '#9a3412', inner: '#ea580c', glow: '#ffedd5' },
+      { id: 'ruby',    base: '#e11d48', top: '#fb7185', left: '#f43f5e', right: '#be123c', bottom: '#9f1239', inner: '#e11d48', glow: '#ffe4e6' },
+      { id: 'cyan',    base: '#0284c7', top: '#38bdf8', left: '#0ea5e9', right: '#0369a1', bottom: '#075985', inner: '#0284c7', glow: '#bae6fd' },
+      { id: 'lime',    base: '#65a30d', top: '#a3e635', left: '#84cc16', right: '#4d7c0f', bottom: '#3f6212', inner: '#65a30d', glow: '#d9f99d' },
+      { id: 'violet',  base: '#7c3aed', top: '#a78bfa', left: '#8b5cf6', right: '#6d28d9', bottom: '#5b21b6', inner: '#7c3aed', glow: '#ede9fe' }
+    ]
   },
   {
-    name: 'Emerald Forest',
+    name: 'Emerald Forest & Mint Radiance',
     bgGradient: 'linear-gradient(180deg, #2d7a52 0%, #205c3c 100%)',
     themeColor: '#2d7a52',
     boardBg: '#143d27',
     boardBorder: '#0e2d1c',
     cellEmpty: '#143d27',
-    cellEmptyBorder: '#091f13'
+    cellEmptyBorder: '#091f13',
+    palette: [
+      { id: 'gold',    base: '#eab308', top: '#fef08a', left: '#fde047', right: '#ca8a04', bottom: '#854d0e', inner: '#eab308', glow: '#fef9c3' },
+      { id: 'mint',    base: '#14b8a6', top: '#5eead4', left: '#2dd4bf', right: '#0f766e', bottom: '#115e59', inner: '#14b8a6', glow: '#ccfbf1' },
+      { id: 'orange',  base: '#f97316', top: '#fed7aa', left: '#fb923c', right: '#ea580c', bottom: '#9a3412', inner: '#f97316', glow: '#ffedd5' },
+      { id: 'cyan',    base: '#06b6d4', top: '#a5f3fc', left: '#22d3ee', right: '#0891b2', bottom: '#155e75', inner: '#06b6d4', glow: '#cffafe' },
+      { id: 'pink',    base: '#ec4899', top: '#fbcfe8', left: '#f472b6', right: '#db2777', bottom: '#9d174d', inner: '#ec4899', glow: '#fce7f3' },
+      { id: 'purple',  base: '#a855f7', top: '#e9d5ff', left: '#c084fc', right: '#9333ea', bottom: '#6b21a8', inner: '#a855f7', glow: '#f3e8ff' }
+    ]
   }
 ];
 
@@ -179,7 +221,7 @@ function roundRectPath(ctx, x, y, w, h, r) {
 function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {}) {
   const {
     alpha = 1,
-    pulse = 0, // 0..1 when a row/col is about to clear
+    pulse = 0,
     isGhost = false
   } = opts;
 
@@ -194,15 +236,12 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
   ctx.globalAlpha = alpha;
 
   const radius = Math.max(3, bs * 0.16);
-  const bevel = Math.max(3, bs * 0.155);
 
   if (theme.styleType === 'neon') {
-    // Neon Cyber Block
     roundRectPath(ctx, bx, by, bs, bs, radius);
     ctx.fillStyle = color.inner || '#110b22';
     ctx.fill();
 
-    // Glowing border
     ctx.lineWidth = Math.max(2, bs * 0.09);
     ctx.strokeStyle = color.base;
     if (!isGhost) {
@@ -213,29 +252,26 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // Inner bright core
     const inset = bs * 0.24;
     roundRectPath(ctx, bx + inset, by + inset, bs - inset * 2, bs - inset * 2, radius * 0.45);
     ctx.fillStyle = color.base;
     ctx.globalAlpha = alpha * 0.85;
     ctx.fill();
 
-    // Top-left specular highlight
     ctx.fillStyle = '#ffffff';
     ctx.globalAlpha = alpha * 0.5;
     roundRectPath(ctx, bx + inset + 2, by + inset + 2, (bs - inset * 2) * 0.45, (bs - inset * 2) * 0.22, 2);
     ctx.fill();
   } else if (theme.styleType === 'wood') {
-    // Wood Block with beveled edges and subtle wood grain
     roundRectPath(ctx, bx, by, bs, bs, radius * 0.7);
     ctx.save();
     ctx.clip();
 
-    // Base fill
     ctx.fillStyle = color.base;
     ctx.fillRect(bx, by, bs, bs);
 
-    // Top trapezium
+    const bevel = Math.max(3, bs * 0.155);
+
     ctx.beginPath();
     ctx.moveTo(bx, by);
     ctx.lineTo(bx + bs, by);
@@ -245,7 +281,6 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
     ctx.fillStyle = color.top;
     ctx.fill();
 
-    // Left trapezium
     ctx.beginPath();
     ctx.moveTo(bx, by);
     ctx.lineTo(bx + bevel, by + bevel);
@@ -255,7 +290,6 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
     ctx.fillStyle = color.left;
     ctx.fill();
 
-    // Right trapezium
     ctx.beginPath();
     ctx.moveTo(bx + bs, by);
     ctx.lineTo(bx + bs, by + bs);
@@ -265,7 +299,6 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
     ctx.fillStyle = color.right;
     ctx.fill();
 
-    // Bottom trapezium
     ctx.beginPath();
     ctx.moveTo(bx, by + bs);
     ctx.lineTo(bx + bevel, by + bs - bevel);
@@ -275,13 +308,11 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
     ctx.fillStyle = color.bottom;
     ctx.fill();
 
-    // Center carved face
     const innerSize = bs - bevel * 2;
     roundRectPath(ctx, bx + bevel, by + bevel, innerSize, innerSize, 2);
     ctx.fillStyle = color.inner;
     ctx.fill();
 
-    // Subtle wood grain lines
     ctx.strokeStyle = 'rgba(60, 30, 10, 0.16)';
     ctx.lineWidth = Math.max(1, bs * 0.035);
     ctx.beginPath();
@@ -302,18 +333,15 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
     ctx.restore();
   } else {
     // Classic Block Blast flat bevel (sharp square block)
-    // Scale bevel proportionally, but ensure it never overwhelms smaller dock pieces
     const bevelRatio = bs < 22 ? 0.16 : 0.14;
     const bevel = Math.max(1.5, Math.min(bs * bevelRatio, 4));
     roundRectPath(ctx, bx, by, bs, bs, theme.styleType === 'bevel3d' ? Math.max(1, bs * 0.05) : radius);
     ctx.save();
     ctx.clip();
 
-    // Base fill
     ctx.fillStyle = color.base;
     ctx.fillRect(bx, by, bs, bs);
 
-    // Top bevel
     ctx.beginPath();
     ctx.moveTo(bx, by);
     ctx.lineTo(bx + bs, by);
@@ -323,7 +351,6 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
     ctx.fillStyle = color.top;
     ctx.fill();
 
-    // Left bevel
     ctx.beginPath();
     ctx.moveTo(bx, by);
     ctx.lineTo(bx + bevel, by + bevel);
@@ -333,7 +360,6 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
     ctx.fillStyle = color.left;
     ctx.fill();
 
-    // Right bevel
     ctx.beginPath();
     ctx.moveTo(bx + bs, by);
     ctx.lineTo(bx + bs, by + bs);
@@ -343,7 +369,6 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
     ctx.fillStyle = color.right;
     ctx.fill();
 
-    // Bottom bevel
     ctx.beginPath();
     ctx.moveTo(bx, by + bs);
     ctx.lineTo(bx + bevel, by + bs - bevel);
@@ -353,14 +378,12 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
     ctx.fillStyle = color.bottom;
     ctx.fill();
 
-    // Inner face: flat color, like the original game
     const innerX = bx + bevel;
     const innerY = by + bevel;
     const innerS = bs - bevel * 2;
     ctx.fillStyle = color.base;
     ctx.fillRect(innerX, innerY, innerS, innerS);
 
-    // Thin dark outline
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.22)';
     ctx.lineWidth = 1;
     ctx.strokeRect(bx + 0.5, by + 0.5, bs - 1, bs - 1);
@@ -368,7 +391,6 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
     ctx.restore();
   }
 
-  // Row/column about to be cleared while dragging: soft light overlay
   if (pulse > 0) {
     roundRectPath(ctx, bx, by, bs, bs, theme.styleType === 'bevel3d' ? 2 : radius);
     ctx.fillStyle = `rgba(255, 255, 255, ${0.12 + pulse * 0.18})`;

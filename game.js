@@ -1094,64 +1094,7 @@ class BlockBlastGame {
     });
   }
 
-  renderEffectsList() {
-    if (!window.questManager) return;
-    const qm = window.questManager;
-    const container = document.getElementById('effectsList');
-    if (!container) return;
-    container.innerHTML = '';
-
-    const effects = [
-      { id: 'cubes', name: 'Классические 3D кубы', icon: '🧊', cost: 0 },
-      { id: 'fireworks', name: 'Неоновый Салют', icon: '🎆', cost: 35 },
-      { id: 'stars', name: 'Звёздная Сверхновая', icon: '⭐', cost: 75 },
-      { id: 'bubbles', name: 'Карамельные Пузыри', icon: '🫧', cost: 120 }
-    ];
-
-    effects.forEach(eff => {
-      const isUnlocked = qm.unlockedEffects.includes(eff.id);
-      const isSelected = qm.selectedEffect === eff.id;
-
-      const card = document.createElement('div');
-      card.className = `effect-card ${isSelected ? 'active' : ''}`;
-
-      let statusHtml = '';
-      if (isSelected) {
-        statusHtml = '<span class="effect-status active">Выбрано ✓</span>';
-      } else if (isUnlocked) {
-        statusHtml = '<span class="effect-status unlock">Выбрать</span>';
-      } else {
-        statusHtml = `<span class="effect-status locked">${eff.cost} 🏆</span>`;
-      }
-
-      card.innerHTML = `
-        <div class="effect-icon">${eff.icon}</div>
-        <div class="effect-name">${eff.name}</div>
-        ${statusHtml}
-      `;
-
-      card.addEventListener('click', () => {
-        if (isUnlocked) {
-          qm.selectEffect(eff.id);
-          window.soundEngine.playPickup();
-          this.renderEffectsList();
-        } else {
-          if (qm.trophies >= eff.cost) {
-            if (qm.unlockEffect(eff.id, eff.cost)) {
-              window.soundEngine.playNewRecord();
-              document.getElementById('modalTrophyCount').textContent = qm.trophies;
-              this.renderEffectsList();
-              this.updateHUD();
-            }
-          } else {
-            window.soundEngine.playGameOver();
-          }
-        }
-      });
-
-      container.appendChild(card);
-    });
-  }
+  
 
   renderThemeModalList() {
     const listEl = document.getElementById('themeList');
