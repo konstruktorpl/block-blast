@@ -1,21 +1,38 @@
-// Dynamic Background & Block Palettes that cycle infinitely during gameplay (every 400 points)
+// Dynamic Background & Block Palettes that cycle infinitely during gameplay (every 250 points)
 const DYNAMIC_PALETTES = [
   {
     name: 'Classic Indigo',
     bgGradient: 'linear-gradient(180deg, #4766b4 0%, #3f5aa5 100%)',
     themeColor: '#4766b4',
-    boardBg: '#1f2749',
-    boardBorder: '#1a2140',
-    cellEmpty: '#1f2749',
-    cellEmptyBorder: '#161c37',
+    boardBg: '#1b2447',
+    boardBorder: '#141c39',
+    cellEmpty: '#222d56',
+    cellEmptyBorder: '#18203f',
     palette: [
-      { id: 'red',    base: '#e5484d', top: '#f58b8e', left: '#ec6468', right: '#c23338', bottom: '#a3262b', inner: '#e5484d', glow: '#f58b8e' },
-      { id: 'orange', base: '#f07a2a', top: '#f9a868', left: '#f48d45', right: '#d0611a', bottom: '#ad4f12', inner: '#f07a2a', glow: '#f9a868' },
-      { id: 'yellow', base: '#f5b72e', top: '#fcd875', left: '#f8c64c', right: '#d99a17', bottom: '#b9800c', inner: '#f5b72e', glow: '#fcd875' },
-      { id: 'green',  base: '#4dc35a', top: '#8ae394', left: '#66d072', right: '#36a243', bottom: '#288535', inner: '#4dc35a', glow: '#8ae394' },
-      { id: 'cyan',   base: '#34bfe0', top: '#7ddcf0', left: '#52cbe7', right: '#229fbe', bottom: '#1a84a0', inner: '#34bfe0', glow: '#7ddcf0' },
-      { id: 'blue',   base: '#4a6ee0', top: '#8aa5f0', left: '#6385e8', right: '#3555c0', bottom: '#2742a2', inner: '#4a6ee0', glow: '#8aa5f0' },
-      { id: 'purple', base: '#9461d9', top: '#bf9aee', left: '#a87ae3', right: '#7a49bb', bottom: '#62379d', inner: '#9461d9', glow: '#bf9aee' }
+      { id: 'coral',  base: '#e55a60', top: '#f89498', left: '#ee7378', right: '#c64247', bottom: '#a83035', inner: '#e55a60', glow: '#f89498' },
+      { id: 'orange', base: '#ea7834', top: '#f8a876', left: '#f18e50', right: '#ca5d1c', bottom: '#aa4710', inner: '#ea7834', glow: '#f8a876' },
+      { id: 'gold',   base: '#f2b535', top: '#fbd87c', left: '#f6c552', right: '#d3981d', bottom: '#b37d10', inner: '#f2b535', glow: '#fbd87c' },
+      { id: 'green',  base: '#52be62', top: '#8fe09b', left: '#6ecf7d', right: '#3ca14a', bottom: '#2d8439', inner: '#52be62', glow: '#8fe09b' },
+      { id: 'sky',    base: '#38b7d9', top: '#80dbf2', left: '#56c6e4', right: '#2297b6', bottom: '#177b96', inner: '#38b7d9', glow: '#80dbf2' },
+      { id: 'blue',   base: '#4d75db', top: '#8eacf5', left: '#6b8de8', right: '#365bbe', bottom: '#27479f', inner: '#4d75db', glow: '#8eacf5' },
+      { id: 'purple', base: '#8d68d4', top: '#bfa7f2', left: '#a484e1', right: '#724eb8', bottom: '#5a3b98', inner: '#8d68d4', glow: '#bfa7f2' }
+    ]
+  },
+  {
+    name: 'Sage Garden (Original)',
+    bgGradient: 'linear-gradient(180deg, #98baa0 0%, #8bb194 100%)',
+    themeColor: '#98baa0',
+    boardBg: '#526e57',
+    boardBorder: '#435c47',
+    cellEmpty: '#3f5644',
+    cellEmptyBorder: '#344738',
+    palette: [
+      { id: 'coral',    base: '#dc7382', top: '#eea0ab', left: '#e58895', right: '#bf5766', bottom: '#a64453', inner: '#dc7382', glow: '#f7b8c2' },
+      { id: 'lavender', base: '#8c7bc7', top: '#b4a7df', left: '#9f90d4', right: '#7261ab', bottom: '#5a4b90', inner: '#8c7bc7', glow: '#d1c8ed' },
+      { id: 'caramel',  base: '#dd9d62', top: '#ecc299', left: '#e5ae7e', right: '#be7f46', bottom: '#a16532', inner: '#dd9d62', glow: '#f7dcc3' },
+      { id: 'slate',    base: '#739bb5', top: '#9fc2d7', left: '#88adc5', right: '#587c94', bottom: '#436378', inner: '#739bb5', glow: '#c4dceb' },
+      { id: 'amber',    base: '#e6af3f', top: '#f3cca6', left: '#ecc05f', right: '#c79025', bottom: '#a87515', inner: '#e6af3f', glow: '#fde5a8' },
+      { id: 'lime',     base: '#7fb85b', top: '#aadb8e', left: '#93c970', right: '#669c43', bottom: '#517f33', inner: '#7fb85b', glow: '#c9eaaf' }
     ]
   },
   {
@@ -98,11 +115,11 @@ const THEMES = {
     subtitle: 'Как в оригинальном Block Blast',
     bgGradient: 'linear-gradient(180deg, #4766b4 0%, #3f5aa5 100%)',
     themeColor: '#4766b4',
-    boardBg: '#1f2749',
-    boardBorder: '#1a2140',
-    boardShadow: 'none',
-    cellEmpty: '#1f2749',
-    cellEmptyBorder: '#161c37',
+    boardBg: '#1b2447',
+    boardBorder: '#141c39',
+    boardShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+    cellEmpty: '#222d56',
+    cellEmptyBorder: '#18203f',
     cellHighlight: 'rgba(255, 255, 255, 0.14)',
     dockBg: 'transparent',
     dockBorder: 'transparent',
@@ -110,13 +127,40 @@ const THEMES = {
     textAccent: '#ffc633',
     styleType: 'bevel3d',
     palette: [
-      { id: 'red',    base: '#e5484d', top: '#f58b8e', left: '#ec6468', right: '#c23338', bottom: '#a3262b', inner: '#e5484d', glow: '#f58b8e' },
-      { id: 'orange', base: '#f07a2a', top: '#f9a868', left: '#f48d45', right: '#d0611a', bottom: '#ad4f12', inner: '#f07a2a', glow: '#f9a868' },
-      { id: 'yellow', base: '#f5b72e', top: '#fcd875', left: '#f8c64c', right: '#d99a17', bottom: '#b9800c', inner: '#f5b72e', glow: '#fcd875' },
-      { id: 'green',  base: '#4dc35a', top: '#8ae394', left: '#66d072', right: '#36a243', bottom: '#288535', inner: '#4dc35a', glow: '#8ae394' },
-      { id: 'cyan',   base: '#34bfe0', top: '#7ddcf0', left: '#52cbe7', right: '#229fbe', bottom: '#1a84a0', inner: '#34bfe0', glow: '#7ddcf0' },
-      { id: 'blue',   base: '#4a6ee0', top: '#8aa5f0', left: '#6385e8', right: '#3555c0', bottom: '#2742a2', inner: '#4a6ee0', glow: '#8aa5f0' },
-      { id: 'purple', base: '#9461d9', top: '#bf9aee', left: '#a87ae3', right: '#7a49bb', bottom: '#62379d', inner: '#9461d9', glow: '#bf9aee' }
+      { id: 'coral',  base: '#e55a60', top: '#f89498', left: '#ee7378', right: '#c64247', bottom: '#a83035', inner: '#e55a60', glow: '#f89498' },
+      { id: 'orange', base: '#ea7834', top: '#f8a876', left: '#f18e50', right: '#ca5d1c', bottom: '#aa4710', inner: '#ea7834', glow: '#f8a876' },
+      { id: 'gold',   base: '#f2b535', top: '#fbd87c', left: '#f6c552', right: '#d3981d', bottom: '#b37d10', inner: '#f2b535', glow: '#fbd87c' },
+      { id: 'green',  base: '#52be62', top: '#8fe09b', left: '#6ecf7d', right: '#3ca14a', bottom: '#2d8439', inner: '#52be62', glow: '#8fe09b' },
+      { id: 'sky',    base: '#38b7d9', top: '#80dbf2', left: '#56c6e4', right: '#2297b6', bottom: '#177b96', inner: '#38b7d9', glow: '#80dbf2' },
+      { id: 'blue',   base: '#4d75db', top: '#8eacf5', left: '#6b8de8', right: '#365bbe', bottom: '#27479f', inner: '#4d75db', glow: '#8eacf5' },
+      { id: 'purple', base: '#8d68d4', top: '#bfa7f2', left: '#a484e1', right: '#724eb8', bottom: '#5a3b98', inner: '#8d68d4', glow: '#bfa7f2' }
+    ]
+  },
+
+  sage: {
+    id: 'sage',
+    name: 'Шалфей (Оригинал)',
+    subtitle: 'Аутентичный зелёный стиль',
+    bgGradient: 'linear-gradient(180deg, #98baa0 0%, #8bb194 100%)',
+    themeColor: '#98baa0',
+    boardBg: '#526e57',
+    boardBorder: '#435c47',
+    boardShadow: '0 8px 24px rgba(0, 0, 0, 0.28)',
+    cellEmpty: '#3f5644',
+    cellEmptyBorder: '#344738',
+    cellHighlight: 'rgba(255, 255, 255, 0.16)',
+    dockBg: 'transparent',
+    dockBorder: 'transparent',
+    textPrimary: '#ffffff',
+    textAccent: '#ffd24d',
+    styleType: 'bevel3d',
+    palette: [
+      { id: 'coral',    base: '#dc7382', top: '#eea0ab', left: '#e58895', right: '#bf5766', bottom: '#a64453', inner: '#dc7382', glow: '#f7b8c2' },
+      { id: 'lavender', base: '#8c7bc7', top: '#b4a7df', left: '#9f90d4', right: '#7261ab', bottom: '#5a4b90', inner: '#8c7bc7', glow: '#d1c8ed' },
+      { id: 'caramel',  base: '#dd9d62', top: '#ecc299', left: '#e5ae7e', right: '#be7f46', bottom: '#a16532', inner: '#dd9d62', glow: '#f7dcc3' },
+      { id: 'slate',    base: '#739bb5', top: '#9fc2d7', left: '#88adc5', right: '#587c94', bottom: '#436378', inner: '#739bb5', glow: '#c4dceb' },
+      { id: 'amber',    base: '#e6af3f', top: '#f3cca6', left: '#ecc05f', right: '#c79025', bottom: '#a87515', inner: '#e6af3f', glow: '#fde5a8' },
+      { id: 'lime',     base: '#7fb85b', top: '#aadb8e', left: '#93c970', right: '#669c43', bottom: '#517f33', inner: '#7fb85b', glow: '#c9eaaf' }
     ]
   },
 
@@ -332,67 +376,95 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
 
     ctx.restore();
   } else {
-    // Classic Block Blast flat bevel (sharp square block)
-    const bevelRatio = bs < 22 ? 0.16 : 0.14;
-    const bevel = Math.max(1.5, Math.min(bs * bevelRatio, 4));
-    roundRectPath(ctx, bx, by, bs, bs, theme.styleType === 'bevel3d' ? Math.max(1, bs * 0.05) : radius);
+    // Authentic Block Blast Soft Cushion 3D Block (Pillowed Bevel)
+    const r = Math.max(3, Math.round(bs * 0.16));
+    const bevel = Math.max(2, Math.min(bs * 0.17, 7));
+
+    // 1. Base rounded block
+    roundRectPath(ctx, bx, by, bs, bs, r);
+    ctx.fillStyle = color.base;
+    ctx.fill();
+
     ctx.save();
     ctx.clip();
 
-    ctx.fillStyle = color.base;
-    ctx.fillRect(bx, by, bs, bs);
-
+    // 2. Soft top-left highlight bevel (illuminated cushion rim)
     ctx.beginPath();
     ctx.moveTo(bx, by);
     ctx.lineTo(bx + bs, by);
     ctx.lineTo(bx + bs - bevel, by + bevel);
     ctx.lineTo(bx + bevel, by + bevel);
+    ctx.lineTo(bx + bevel, by + bs - bevel);
+    ctx.lineTo(bx, by + bs);
     ctx.closePath();
     ctx.fillStyle = color.top;
     ctx.fill();
 
+    // 3. Left secondary highlight for depth
     ctx.beginPath();
     ctx.moveTo(bx, by);
     ctx.lineTo(bx + bevel, by + bevel);
     ctx.lineTo(bx + bevel, by + bs - bevel);
     ctx.lineTo(bx, by + bs);
     ctx.closePath();
-    ctx.fillStyle = color.left;
+    ctx.fillStyle = color.left || color.top;
     ctx.fill();
 
+    // 4. Soft bottom-right shadow bevel
+    ctx.beginPath();
+    ctx.moveTo(bx + bs, by);
+    ctx.lineTo(bx + bs, by + bs);
+    ctx.lineTo(bx, by + bs);
+    ctx.lineTo(bx + bevel, by + bs - bevel);
+    ctx.lineTo(bx + bs - bevel, by + bs - bevel);
+    ctx.lineTo(bx + bs - bevel, by + bevel);
+    ctx.closePath();
+    ctx.fillStyle = color.bottom;
+    ctx.fill();
+
+    // 5. Right shadow facet
     ctx.beginPath();
     ctx.moveTo(bx + bs, by);
     ctx.lineTo(bx + bs, by + bs);
     ctx.lineTo(bx + bs - bevel, by + bs - bevel);
     ctx.lineTo(bx + bs - bevel, by + bevel);
     ctx.closePath();
-    ctx.fillStyle = color.right;
+    ctx.fillStyle = color.right || color.bottom;
     ctx.fill();
 
-    ctx.beginPath();
-    ctx.moveTo(bx, by + bs);
-    ctx.lineTo(bx + bevel, by + bs - bevel);
-    ctx.lineTo(bx + bs - bevel, by + bs - bevel);
-    ctx.lineTo(bx + bs, by + bs);
-    ctx.closePath();
-    ctx.fillStyle = color.bottom;
-    ctx.fill();
-
+    // 6. Raised center cushion face (smooth pillowed top facet)
     const innerX = bx + bevel;
     const innerY = by + bevel;
     const innerS = bs - bevel * 2;
-    ctx.fillStyle = color.base;
-    ctx.fillRect(innerX, innerY, innerS, innerS);
+    if (innerS > 3) {
+      const innerR = Math.max(2, Math.round(r * 0.6));
+      roundRectPath(ctx, innerX, innerY, innerS, innerS, innerR);
 
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.22)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(bx + 0.5, by + 0.5, bs - 1, bs - 1);
+      // Subtle gradient from top-left to base
+      const grad = ctx.createLinearGradient(innerX, innerY, innerX + innerS, innerY + innerS);
+      grad.addColorStop(0, color.left || color.top);
+      grad.addColorStop(0.35, color.base);
+      grad.addColorStop(1, color.base);
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Soft delicate specular shine line along the top inner cushion
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
+      roundRectPath(ctx, innerX + 1, innerY + 1, innerS - 2, Math.max(1.5, innerS * 0.16), 1);
+      ctx.fill();
+    }
 
     ctx.restore();
+
+    // 7. Gentle, soft outer contour for block separation (no harsh black border)
+    roundRectPath(ctx, bx, by, bs, bs, r);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.14)';
+    ctx.stroke();
   }
 
   if (pulse > 0) {
-    roundRectPath(ctx, bx, by, bs, bs, theme.styleType === 'bevel3d' ? 2 : radius);
+    roundRectPath(ctx, bx, by, bs, bs, radius);
     ctx.fillStyle = `rgba(255, 255, 255, ${0.12 + pulse * 0.18})`;
     ctx.fill();
   }

@@ -259,23 +259,92 @@ class BlockBlastGame {
 
   seedRandomStartingBlocks() {
     const paletteLen = (this.theme.palette && this.theme.palette.length) || 6;
-    // Scatter 4 to 8 single blocks
-    const targetCount = 4 + Math.floor(Math.random() * 5);
-    let placed = 0;
-    let attempts = 0;
-    const rowCounts = Array(8).fill(0);
-    const colCounts = Array(8).fill(0);
+    if (!window.SHAPES || !window.SHAPES.length) return;
 
-    while (placed < targetCount && attempts < 80) {
-      attempts++;
-      const r = Math.floor(Math.random() * 8);
-      const c = Math.floor(Math.random() * 8);
-      if (this.grid[r][c] === null && rowCounts[r] < 3 && colCounts[c] < 3) {
-        this.grid[r][c] = Math.floor(Math.random() * paletteLen);
-        rowCounts[r]++;
-        colCounts[c]++;
-        placed++;
+    // Authentic Block Blast: spawn real game shapes (lines, angles, squares), often assembled/clustered together
+    const candidateIds = [
+      'h4', 'h3', 'h2', 'v3', 'v2', 'sq2',
+      'c3_tl', 'c3_tr', 'c3_bl', 'c3_br',
+      'l_1', 'l_2', 'l_5', 'l_6', 't_up', 't_down'
+    ];
+    const candidateShapes = window.SHAPES.filter((s) => candidateIds.includes(s.id));
+    if (!candidateShapes.length) return;
+
+    // Place 2 to 3 shapes (e.g. 5-11 blocks total)
+    const shapesToPlace = 2 + (Math.random() < 0.4 ? 1 : 0);
+    let totalPlacedBlocks = 0;
+    let lastPlacement = null;
+
+    for (let sIdx = 0; sIdx < shapesToPlace; sIdx++) {
+      if (totalPlacedBlocks >= 12) break;
+
+      const shape = candidateShapes[Math.floor(Math.random() * candidateShapes.length)];
+      const colorIndex = (Math.floor(Math.random() * paletteLen) + sIdx) % paletteLen;
+
+      // Find valid placements that do not complete any full 8-block line
+      const validPlacements = [];
+
+      for (let r = 0; r <= 8 - shape.rows; r++) {
+        for (let c = 0; c <= 8 - shape.cols; c++) {
+          if (!window.canMatrixFitAt(this.grid, shape, r, c)) continue;
+
+          // Check hypothetical line completion (never complete a line on start!)
+          const rowCounts = Array(8).fill(0);
+          const colCounts = Array(8).fill(0);
+          for (let gr = 0; gr < 8; gr++) {
+            for (let gc = 0; gc < 8; gc++) {
+              if (this.grid[gr][gc] !== null) {
+                rowCounts[gr]++;
+                colCounts[gc]++;
+              }
+            }
+          }
+
+          let wouldClear = false;
+          for (const cell of shape.cells) {
+            const gr = r + cell.r;
+            const gc = c + cell.c;
+            rowCounts[gr]++;
+            colCounts[gc]++;
+            if (rowCounts[gr] >= 8 || colCounts[gc] >= 8) {
+              wouldClear = true;
+              break;
+            }
+          }
+          if (wouldClear) continue;
+
+          // Affinity: prefer lower half (rows 3..7) and prefer being adjacent to previous shape (assembled!)
+          let affinity = 1;
+          if (r >= 3) affinity += 3;
+          if (lastPlacement) {
+            const dist = Math.hypot(r - lastPlacement.r, c - lastPlacement.c);
+            if (dist <= 3.2) {
+              affinity += 12; // strongly cluster/assemble pieces together
+            }
+          }
+
+          validPlacements.push({ r, c, affinity });
+        }
       }
+
+      if (!validPlacements.length) continue;
+
+      const totalAffinity = validPlacements.reduce((sum, p) => sum + p.affinity, 0);
+      let rand = Math.random() * totalAffinity;
+      let chosen = validPlacements[0];
+      for (const p of validPlacements) {
+        rand -= p.affinity;
+        if (rand <= 0) {
+          chosen = p;
+          break;
+        }
+      }
+
+      for (const cell of shape.cells) {
+        this.grid[chosen.r + cell.r][chosen.c + cell.c] = colorIndex;
+        totalPlacedBlocks++;
+      }
+      lastPlacement = { r: chosen.r, c: chosen.c };
     }
   }
 
@@ -390,21 +459,27 @@ class BlockBlastGame {
     this.canvas.height = Math.round(h * dpr);
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Reserve ~27% of height (at least 115px, at most 165px) for the 3-piece dock at bottom
-    const minDockH = Math.min(155, Math.max(112, h * 0.26));
-    const topMargin = 6;
-    const gapBetweenBoardAndDock = Math.max(12, h * 0.025);
-    const maxBoardSpaceH = h - minDockH - topMargin - gapBetweenBoardAndDock;
-    const maxBoardSpaceW = w - 8;
+    // Give comfortable side padding and breathing room from HUD score
+    const sideMargin = Math.max(14, Math.round(w * 0.04));
+    const maxBoardSpaceW = w - sideMargin * 2;
 
+    const dockTargetH = Math.min(145, Math.max(105, Math.round(h * 0.22)));
+    const topMargin = Math.max(20, Math.min(44, Math.round(h * 0.05)));
+    const gapBetweenBoardAndDock = Math.max(16, Math.min(32, Math.round(h * 0.032)));
+
+    const maxBoardSpaceH = h - dockTargetH - topMargin - gapBetweenBoardAndDock - 14;
     const boardSize = Math.floor(Math.min(maxBoardSpaceW, maxBoardSpaceH));
-    const boardPad = Math.max(3, Math.round(boardSize * 0.01));
+    const boardPad = Math.max(4, Math.round(boardSize * 0.014));
     const cellSize = (boardSize - boardPad * 2) / 8;
 
     const boardX = Math.round((w - boardSize) / 2);
-    const boardY = topMargin;
-    const dockY = boardY + boardSize + gapBetweenBoardAndDock;
-    const dockHeight = Math.max(96, h - dockY - 4);
+
+    // Harmoniously distribute remaining vertical space so the board is lowered below the score
+    const totalContentH = boardSize + gapBetweenBoardAndDock + dockTargetH;
+    const extraH = Math.max(0, h - totalContentH);
+    const boardY = Math.round(topMargin + extraH * 0.28);
+    const dockY = boardY + boardSize + gapBetweenBoardAndDock + Math.round(extraH * 0.06);
+    const dockHeight = Math.max(90, h - dockY - 4);
 
     const slotW = boardSize / 3;
     const dockSlotCenters = [
@@ -639,6 +714,8 @@ class BlockBlastGame {
         this.drag.slotIndex = bestSlot;
         this.drag.piece = piece;
         this.drag.isTouch = isTouch;
+        this.drag.startX = pt.x;
+        this.drag.startY = pt.y;
         this.drag.x = pt.x;
         this.drag.y = pt.y;
         this.drag.visualX = center.x;
@@ -670,10 +747,15 @@ class BlockBlastGame {
     const { cellSize, boardX, boardY, boardPad } = this.metrics;
     const shape = this.drag.piece.shape;
 
-    // Lift the piece comfortably above the finger on iPhone so the thumb never blocks the view
-    const liftY = this.drag.isTouch ? cellSize * 2.45 : cellSize * 0.65;
-    const centerX = px;
-    const centerY = py - liftY;
+    // Responsive thumb drag: lift piece comfortably above finger and boost upward reach
+    const baseLift = this.drag.isTouch ? cellSize * 2.45 : cellSize * 0.7;
+    const deltaY = py - (this.drag.startY || py);
+    const deltaX = px - (this.drag.startX || px);
+    const extraUpwardReach = deltaY < 0 ? Math.abs(deltaY) * 0.22 : 0;
+    const extraSidewaysReach = deltaX * 0.1;
+
+    const centerX = px + extraSidewaysReach;
+    const centerY = py - baseLift - extraUpwardReach;
 
     const pieceW = shape.cols * cellSize;
     const pieceH = shape.rows * cellSize;
@@ -1107,16 +1189,21 @@ class BlockBlastGame {
       }
     }
 
-    // Smooth drag interpolation
+    // Ultra-snappy drag interpolation (instant follow, zero lag)
     if (this.drag.active) {
       const { cellSize } = this.metrics;
-      const liftY = this.drag.isTouch ? cellSize * 2.45 : cellSize * 0.65;
-      const targetX = this.drag.x;
-      const targetY = this.drag.y - liftY;
-      const lerp = Math.min(1, dt * 26);
+      const baseLift = this.drag.isTouch ? cellSize * 2.45 : cellSize * 0.7;
+      const deltaY = this.drag.y - (this.drag.startY || this.drag.y);
+      const deltaX = this.drag.x - (this.drag.startX || this.drag.x);
+      const extraUpwardReach = deltaY < 0 ? Math.abs(deltaY) * 0.22 : 0;
+      const extraSidewaysReach = deltaX * 0.1;
+
+      const targetX = this.drag.x + extraSidewaysReach;
+      const targetY = this.drag.y - baseLift - extraUpwardReach;
+      const lerp = Math.min(1, dt * 75);
       this.drag.visualX += (targetX - this.drag.visualX) * lerp;
       this.drag.visualY += (targetY - this.drag.visualY) * lerp;
-      this.drag.visualScale += (1.0 - this.drag.visualScale) * Math.min(1, dt * 18);
+      this.drag.visualScale += (1.0 - this.drag.visualScale) * Math.min(1, dt * 24);
     }
 
     this.fx.update(dt);
@@ -1149,12 +1236,20 @@ class BlockBlastGame {
       ctx.translate(sx, sy);
     }
 
-    // 1. Board: flat dark panel with thin grid lines (original Block Blast look)
+    // 1. Board Frame: Authentic rounded outer border with soft ambient shadow
+    const frameRadius = Math.max(10, Math.round(boardSize * 0.038));
     ctx.save();
-    window.roundRectPath(ctx, boardX, boardY, boardSize, boardSize, 4);
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.26)';
+    ctx.shadowBlur = 16;
+    ctx.shadowOffsetY = 6;
+    window.roundRectPath(ctx, boardX, boardY, boardSize, boardSize, frameRadius);
     ctx.fillStyle = theme.boardBg;
     ctx.fill();
-    ctx.lineWidth = 2;
+    ctx.restore();
+
+    ctx.save();
+    window.roundRectPath(ctx, boardX, boardY, boardSize, boardSize, frameRadius);
+    ctx.lineWidth = Math.max(3, Math.round(boardSize * 0.012));
     ctx.strokeStyle = theme.boardBorder;
     ctx.stroke();
     ctx.restore();
@@ -1162,20 +1257,26 @@ class BlockBlastGame {
     const gridOriginX = boardX + boardPad;
     const gridOriginY = boardY + boardPad;
 
-    // 2. Grid lines
+    // 2. Sunken Empty Grid Cells (Authentic Waffle / Recessed Wells)
+    const cellGap = Math.max(1.5, Math.round(cellSize * 0.04));
+    const cellRadius = Math.max(2, Math.round(cellSize * 0.08));
     ctx.save();
-    ctx.strokeStyle = theme.cellEmptyBorder;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let i = 1; i < 8; i++) {
-      const gx = Math.round(gridOriginX + i * cellSize) + 0.5;
-      const gy = Math.round(gridOriginY + i * cellSize) + 0.5;
-      ctx.moveTo(gx, gridOriginY);
-      ctx.lineTo(gx, gridOriginY + cellSize * 8);
-      ctx.moveTo(gridOriginX, gy);
-      ctx.lineTo(gridOriginX + cellSize * 8, gy);
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const cx = gridOriginX + c * cellSize + cellGap * 0.5;
+        const cy = gridOriginY + r * cellSize + cellGap * 0.5;
+        const cw = cellSize - cellGap;
+        const ch = cellSize - cellGap;
+
+        window.roundRectPath(ctx, cx, cy, cw, ch, cellRadius);
+        ctx.fillStyle = theme.cellEmpty;
+        ctx.fill();
+
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = theme.cellEmptyBorder;
+        ctx.stroke();
+      }
     }
-    ctx.stroke();
     ctx.restore();
 
     // Pulse factor for lines that are about to clear while holding a piece
@@ -1243,7 +1344,7 @@ class BlockBlastGame {
 
     // 5. Dock has no container in the original — pieces sit on the background
 
-    // 6. Draw Dock Pieces
+    // 6. Draw Dock Pieces (with soft ambient drop shadow)
     for (let i = 0; i < 3; i++) {
       const item = this.tray[i];
       if (!item || item.placed) continue;
@@ -1263,8 +1364,10 @@ class BlockBlastGame {
       const startX = center.x - pW / 2;
       const startY = center.y - pH / 2;
 
-      // Always draw with full brightness and opacity (1.0), exactly like on the game board
-      const alpha = 1.0;
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.28)';
+      ctx.shadowBlur = Math.round(dCellSize * 0.35);
+      ctx.shadowOffsetY = Math.round(dCellSize * 0.22);
 
       for (const cell of shape.cells) {
         window.drawStyledBlock(
@@ -1274,9 +1377,10 @@ class BlockBlastGame {
           dCellSize,
           colorObj,
           this.themeId,
-          { alpha }
+          { alpha: 1.0 }
         );
       }
+      ctx.restore();
     }
 
     // 7. Draw Currently Dragged Piece (Floating Under Finger with Drop Shadow)

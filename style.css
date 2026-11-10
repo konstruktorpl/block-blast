@@ -133,9 +133,10 @@ button {
   text-align: center;
   font-family: var(--font-game);
   font-weight: 800;
-  font-size: clamp(2.4rem, 10vw, 3.2rem);
-  line-height: 1.1;
+  font-size: clamp(2.8rem, 11vw, 3.8rem);
+  line-height: 1.05;
   color: #fff;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.28);
   pointer-events: none;
   transition: transform 0.12s ease-out;
 }
