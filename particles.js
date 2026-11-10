@@ -6,6 +6,7 @@ class FXManager {
     this.lineBeams = [];
     this.poppingCells = [];
     this.floatingTexts = [];
+    this.cellScores = [];
     this.banners = [];
     this.shakeTime = 0;
     this.shakeMagnitude = 0;
@@ -154,7 +155,18 @@ class FXManager {
     });
   }
 
-  spawnBanner(title, subtitle = '', color = '#ffd43b') {
+  spawnCellScore(x, y, val, delay = 0) {
+    this.cellScores.push({
+      x,
+      y,
+      val,
+      delay,
+      age: 0,
+      life: 0.65
+    });
+  }
+
+  spawnBanner(title, subtitle = '', color = '#ffd43b', isCombo = false) {
     if (this.banners.length > 1) {
       this.banners.shift();
     }
@@ -162,6 +174,7 @@ class FXManager {
       title,
       subtitle,
       color,
+      isCombo,
       age: 0,
       life: 1.25
     });
@@ -216,6 +229,48 @@ class FXManager {
       ft.y -= 48 * dt;
       if (ft.age >= ft.life) {
         this.floatingTexts.splice(i, 1);
+      }
+    }
+
+    for (let i = this.cellScores.length - 1; i >= 0; i--) {
+      const cs = this.cellScores[i];
+      if (cs.delay > 0) {
+        cs.delay -= dt;
+        continue;
+      }
+      cs.age += dt;
+      cs.y -= 38 * dt;
+      if (cs.age >= cs.life) {
+        this.cellScores.splice(i, 1);
+      }
+    }
+
+    // Ambient floating sparks along the combo perimeter
+    if (window.game && window.game.comboStreak >= 1 && window.game.metrics) {
+      const m = window.game.metrics;
+      if (Math.random() < 0.35) {
+        const edge = Math.floor(Math.random() * 4);
+        let sx, sy;
+        if (edge === 0) { sx = m.boardX + Math.random() * m.boardSize; sy = m.boardY; }
+        else if (edge === 1) { sx = m.boardX + m.boardSize; sy = m.boardY + Math.random() * m.boardSize; }
+        else if (edge === 2) { sx = m.boardX + Math.random() * m.boardSize; sy = m.boardY + m.boardSize; }
+        else { sx = m.boardX; sy = m.boardY + Math.random() * m.boardSize; }
+
+        this.particles.push({
+          x: sx,
+          y: sy,
+          vx: (Math.random() - 0.5) * 16,
+          vy: -20 - Math.random() * 26,
+          gravity: 0,
+          size: 3.5 + Math.random() * 3.5,
+          rotation: Math.random() * Math.PI * 2,
+          vRot: (Math.random() - 0.5) * 4,
+          color: Math.random() < 0.65 ? '#ff5cb8' : '#ffffff',
+          glow: '#ff2b85',
+          age: 0,
+          life: 0.65 + Math.random() * 0.35,
+          shape: 'auraSpark'
+        });
       }
     }
 
@@ -298,6 +353,10 @@ class FXManager {
         ctx.beginPath();
         ctx.arc(-s * 0.2, -s * 0.2, s * 0.15, 0, Math.PI * 2);
         ctx.fill();
+      } else if (p.shape === 'auraSpark') {
+        ctx.beginPath();
+        ctx.arc(0, 0, s * 0.55, 0, Math.PI * 2);
+        ctx.fill();
       } else {
         window.roundRectPath(ctx, -s / 2, -s / 2, s, s, Math.max(2, s * 0.22));
         ctx.fill();
@@ -327,6 +386,27 @@ class FXManager {
       ctx.restore();
     }
 
+    for (const cs of this.cellScores) {
+      if (cs.delay > 0) continue;
+      const t = cs.age / cs.life;
+      const alpha = Math.max(0, 1 - t * t);
+      const scale = 1 + Math.sin(t * Math.PI) * 0.25;
+
+      ctx.save();
+      ctx.translate(cs.x, cs.y);
+      ctx.scale(scale, scale);
+      ctx.globalAlpha = alpha;
+      ctx.font = '800 20px "Baloo 2", "Nunito", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.65)';
+      ctx.strokeText(`+${cs.val}`, 0, 0);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(`+${cs.val}`, 0, 0);
+      ctx.restore();
+    }
+
     for (const bn of this.banners) {
       const t = bn.age / bn.life;
       let scale = 1;
@@ -346,24 +426,55 @@ class FXManager {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      ctx.font = '800 36px "Baloo 2", "Nunito", -apple-system, sans-serif';
-      ctx.lineWidth = 8;
-      ctx.strokeStyle = 'rgba(8, 12, 34, 0.92)';
-      ctx.strokeText(bn.title, 0, 0);
+      if (bn.isCombo) {
+        // Authentic Block Blast Combo 3D Italic Banner with golden burst glow behind number
+        const glowGrad = ctx.createRadialGradient(28, 0, 0, 28, 0, 60);
+        glowGrad.addColorStop(0, 'rgba(255, 235, 59, 0.9)');
+        glowGrad.addColorStop(0.5, 'rgba(255, 214, 0, 0.5)');
+        glowGrad.addColorStop(1, 'rgba(255, 214, 0, 0)');
+        ctx.fillStyle = glowGrad;
+        ctx.beginPath();
+        ctx.arc(28, 0, 60, 0, Math.PI * 2);
+        ctx.fill();
 
-      const grad = ctx.createLinearGradient(0, -18, 0, 18);
-      grad.addColorStop(0, '#ffffff');
-      grad.addColorStop(0.45, bn.color);
-      grad.addColorStop(1, '#ff922b');
-      ctx.fillStyle = grad;
-      ctx.fillText(bn.title, 0, 0);
+        ctx.font = 'italic 900 48px "Baloo 2", "Nunito", -apple-system, sans-serif';
+        ctx.lineWidth = 10;
+        ctx.strokeStyle = '#103314';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+        ctx.shadowBlur = 8;
+        ctx.strokeText(bn.title, 0, 0);
 
-      if (bn.subtitle) {
-        ctx.font = '800 19px "Baloo 2", "Nunito", -apple-system, sans-serif';
-        ctx.lineWidth = 5;
-        ctx.strokeText(bn.subtitle, 0, 32);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(bn.subtitle, 0, 32);
+        ctx.fillStyle = '#d2fba4';
+        ctx.fillText(bn.title, 0, 0);
+
+        if (bn.subtitle) {
+          ctx.font = 'italic 800 20px "Baloo 2", "Nunito", sans-serif';
+          ctx.lineWidth = 5;
+          ctx.strokeStyle = '#103314';
+          ctx.strokeText(bn.subtitle, 0, 36);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(bn.subtitle, 0, 36);
+        }
+      } else {
+        ctx.font = '800 36px "Baloo 2", "Nunito", -apple-system, sans-serif';
+        ctx.lineWidth = 8;
+        ctx.strokeStyle = 'rgba(8, 12, 34, 0.92)';
+        ctx.strokeText(bn.title, 0, 0);
+
+        const grad = ctx.createLinearGradient(0, -18, 0, 18);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.45, bn.color);
+        grad.addColorStop(1, '#ff922b');
+        ctx.fillStyle = grad;
+        ctx.fillText(bn.title, 0, 0);
+
+        if (bn.subtitle) {
+          ctx.font = '800 19px "Baloo 2", "Nunito", -apple-system, sans-serif';
+          ctx.lineWidth = 5;
+          ctx.strokeText(bn.subtitle, 0, 32);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(bn.subtitle, 0, 32);
+        }
       }
 
       ctx.restore();

@@ -460,6 +460,17 @@ class BlockBlastGame {
     this.bestScoreEl.textContent = this.bestScore.toLocaleString('ru-RU');
     if (window.questManager) window.questManager.updateUIBadge();
 
+    const diamond = document.getElementById('comboDiamond');
+    if (diamond) {
+      if (this.comboStreak >= 1) {
+        if (!diamond.classList.contains('active')) {
+          diamond.classList.add('active');
+        }
+      } else {
+        diamond.classList.remove('active', 'pulse');
+      }
+    }
+
     const soundLabel = document.getElementById('soundLabel');
     if (soundLabel) {
       soundLabel.textContent = window.soundEngine.enabled ? 'Вкл' : 'Выкл';
@@ -951,7 +962,9 @@ class BlockBlastGame {
             const cObj = this.theme.palette[cIdx % this.theme.palette.length];
             const cx = gridOriginX + (c + 0.5) * cellSize;
             const cy = gridOriginY + (r + 0.5) * cellSize;
-            this.fx.spawnCellShatter(cx, cy, cellSize, cObj, c * 0.016);
+            const delay = c * 0.016;
+            this.fx.spawnCellShatter(cx, cy, cellSize, cObj, delay);
+            this.fx.spawnCellScore(cx, cy, 5 * Math.max(1, this.comboStreak), delay);
             this.grid[r][c] = null;
           }
         }
@@ -973,7 +986,9 @@ class BlockBlastGame {
             const cObj = this.theme.palette[cIdx % this.theme.palette.length];
             const cx = gridOriginX + (c + 0.5) * cellSize;
             const cy = gridOriginY + (r + 0.5) * cellSize;
-            this.fx.spawnCellShatter(cx, cy, cellSize, cObj, r * 0.016);
+            const delay = r * 0.016;
+            this.fx.spawnCellShatter(cx, cy, cellSize, cObj, delay);
+            this.fx.spawnCellScore(cx, cy, 5 * Math.max(1, this.comboStreak), delay);
             this.grid[r][c] = null;
           }
         }
@@ -1018,16 +1033,21 @@ class BlockBlastGame {
         totalLines >= 2 || this.comboStreak >= 2 ? 1.25 : 1.05
       );
 
-      // Juicy Banner Callout
+      // Authentic Block Blast Banner Callouts & Diamond Pop
       if (isAllClear) {
-        this.fx.spawnBanner('ЧИСТОЕ ПОЛЕ!', `БОНУС +300 • КОМБО x${this.comboStreak}`, '#51cf66');
-      } else if (this.comboStreak >= 2 && totalLines >= 2) {
-        const praise = this.getPraiseWord(totalLines + this.comboStreak - 1);
-        this.fx.spawnBanner(`КОМБО x${this.comboStreak}!`, `${praise} (${totalLines} ЛИНИИ)`, '#ffd43b');
-      } else if (this.comboStreak >= 2) {
-        this.fx.spawnBanner(`КОМБО x${this.comboStreak}!`, this.getPraiseWord(this.comboStreak), '#ffd43b');
+        this.fx.spawnBanner('ALL CLEAR!', `БОНУС +500`, '#51cf66');
+      } else if (this.comboStreak >= 1) {
+        this.fx.spawnBanner(`Combo ${this.comboStreak}`, totalLines >= 2 ? `+${totalLines} ЛИНИИ` : '', '#d2fba4', true);
       } else if (totalLines >= 2) {
         this.fx.spawnBanner(this.getPraiseWord(totalLines), `${totalLines} ЛИНИИ СРАЗУ!`, '#66d9e8');
+      }
+
+      const diamond = document.getElementById('comboDiamond');
+      if (diamond && this.comboStreak >= 1) {
+        diamond.classList.add('active');
+        diamond.classList.remove('pulse');
+        void diamond.offsetWidth;
+        diamond.classList.add('pulse');
       }
     } else {
       // No lines cleared on this placement
@@ -1041,6 +1061,8 @@ class BlockBlastGame {
         if (this.movesSinceLastClear >= 3) {
           this.comboStreak = 0;
           this.movesSinceLastClear = 0;
+          const diamond = document.getElementById('comboDiamond');
+          if (diamond) diamond.classList.remove('active', 'pulse');
         }
       }
     }
@@ -1293,6 +1315,20 @@ class BlockBlastGame {
     ctx.strokeStyle = theme.boardBorder;
     ctx.stroke();
     ctx.restore();
+
+    // 1.1 Authentic Combo Neon Aura (Vibrant Magenta/Pink pulsating aura with sparks)
+    if (this.comboStreak >= 1) {
+      const auraPulse = 0.72 + 0.28 * Math.sin(now * 0.009);
+      ctx.save();
+      const expand = 2;
+      window.roundRectPath(ctx, boardX - expand, boardY - expand, boardSize + expand * 2, boardSize + expand * 2, 8);
+      ctx.lineWidth = Math.min(4.5, 2.5 + this.comboStreak * 0.35);
+      ctx.strokeStyle = `rgba(255, 68, 185, ${0.85 * auraPulse})`;
+      ctx.shadowColor = '#ff2b85';
+      ctx.shadowBlur = 14 + Math.min(12, this.comboStreak * 2.5);
+      ctx.stroke();
+      ctx.restore();
+    }
 
     const gridOriginX = boardX + boardPad;
     const gridOriginY = boardY + boardPad;

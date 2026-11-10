@@ -103,6 +103,36 @@ button {
   padding: clamp(10px, 2.5vh, 26px) 0 clamp(6px, 1.8vh, 18px);
   flex-shrink: 0;
   z-index: 10;
+  position: relative;
+}
+
+.combo-diamond {
+  position: absolute;
+  width: clamp(72px, 18vw, 92px);
+  height: clamp(72px, 18vw, 92px);
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 50%, #0369a1 100%);
+  border-radius: 16px;
+  transform: rotate(45deg) scale(0.6);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+  box-shadow: 0 4px 20px rgba(2, 132, 199, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+  transition: opacity 0.28s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.combo-diamond.active {
+  opacity: 0.95;
+  transform: rotate(45deg) scale(1);
+}
+
+.combo-diamond.pulse {
+  animation: diamondPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes diamondPop {
+  0% { transform: rotate(45deg) scale(0.92); }
+  50% { transform: rotate(45deg) scale(1.18); }
+  100% { transform: rotate(45deg) scale(1); }
 }
 
 .best-score {
@@ -145,6 +175,8 @@ button {
 }
 
 .current-score {
+  position: relative;
+  z-index: 2;
   font-family: var(--font-game);
   font-weight: 800;
   font-size: clamp(3.5rem, 14.5vw, 4.8rem);
