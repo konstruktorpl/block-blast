@@ -191,9 +191,112 @@ function findKeyClearingShapes(grid) {
 }
 
 /**
+ * Analyzes the grid to find shapes that snugly fill holes, crevices, and pockets
+ * between existing blocks, and build up rows/columns toward completion (e.g. 7/8).
+ */
+function findHoleFillingShapes(grid) {
+  const holeCandidates = [];
+
+  const rowCounts = new Array(8).fill(0);
+  const colCounts = new Array(8).fill(0);
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      if (grid[r][c] !== null) {
+        rowCounts[r]++;
+        colCounts[c]++;
+      }
+    }
+  }
+
+  for (const shape of SHAPES) {
+    const placements = getAllValidPlacements(grid, shape);
+    if (!placements.length) continue;
+
+    let bestHoleScore = 0;
+    let bestPlacement = null;
+
+    for (const p of placements) {
+      let contactEdges = 0;
+      let deepPockets = 0;
+
+      for (const cell of shape.cells) {
+        const gr = p.r + cell.r;
+        const gc = p.c + cell.c;
+
+        let occupiedNeighbors = 0;
+        const neighbors = [
+          [gr - 1, gc],
+          [gr + 1, gc],
+          [gr, gc - 1],
+          [gr, gc + 1]
+        ];
+
+        for (const [nr, nc] of neighbors) {
+          if (nr < 0 || nr >= 8 || nc < 0 || nc >= 8) {
+            contactEdges += 1.0;
+          } else if (grid[nr][nc] !== null) {
+            contactEdges += 2.2;
+            occupiedNeighbors++;
+          }
+        }
+
+        // Cell is nestled inside a 1x1 pocket or deep crevice (3+ occupied neighbors)
+        if (occupiedNeighbors >= 3) {
+          deepPockets++;
+        }
+      }
+
+      // Bonus for completing or nearly completing lines (building toward a clear)
+      let lineBuildingBonus = 0;
+      const affectedRows = new Set(shape.cells.map((c) => p.r + c.r));
+      const affectedCols = new Set(shape.cells.map((c) => p.c + c.c));
+
+      for (const r of affectedRows) {
+        const added = shape.cells.filter((c) => p.r + c.r === r).length;
+        const newCount = rowCounts[r] + added;
+        if (newCount === 7) lineBuildingBonus += 4.0;
+        else if (newCount === 6) lineBuildingBonus += 2.0;
+      }
+      for (const c of affectedCols) {
+        const added = shape.cells.filter((c) => p.c + c.c === c).length;
+        const newCount = colCounts[c] + added;
+        if (newCount === 7) lineBuildingBonus += 4.0;
+        else if (newCount === 6) lineBuildingBonus += 2.0;
+      }
+
+      const score = (contactEdges / shape.blockCount) * 2.5 + deepPockets * 6.5 + lineBuildingBonus;
+      if (score > bestHoleScore) {
+        bestHoleScore = score;
+        bestPlacement = p;
+      }
+    }
+
+    // Qualify if it has solid contact with existing blocks / pockets
+    if (bestHoleScore >= 6.5 && bestPlacement) {
+      // Small pieces (1-block dot, 2-block bars, small corners, 2x2) receive natural extra weight for filling holes
+      let typeBonus = 1.0;
+      if (shape.id === 'dot1') typeBonus = 2.5;
+      else if (shape.id === 'h2' || shape.id === 'v2') typeBonus = 2.0;
+      else if (shape.id.startsWith('c3_')) typeBonus = 1.8;
+      else if (shape.id === 'sq2') typeBonus = 1.5;
+
+      holeCandidates.push({
+        shape,
+        score: bestHoleScore,
+        placement: bestPlacement,
+        weight: shape.weight * typeBonus * (1 + bestHoleScore * 0.15)
+      });
+    }
+  }
+
+  holeCandidates.sort((a, b) => b.score - a.score);
+  return holeCandidates;
+}
+
+/**
  * Generates a balanced, solvable tray of 3 pieces tailored to the current board state.
  * Includes authentic Dynamic Assisting: deals pieces that complete lines, sustain combos,
- * and provide clutch saves when crowded!
+ * plug awkward holes/cavities, and provide clutch saves when crowded!
  */
 function generateSmartTray(grid, palette, score = 0, comboStreak = 0) {
   let occupied = 0;
@@ -216,63 +319,140 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0) {
     return { ...s, weight: w };
   });
 
-  // Dynamic Assisting check: find key shapes that complete lines right now
+  // Dynamic Assisting checks:
+  // 1. Line-clearing pieces ("ключи")
   const keyClearingShapes = findKeyClearingShapes(grid);
 
+  // 2. Hole-filling pieces ("заполнители дыр")
+  const holeFillingShapes = findHoleFillingShapes(grid);
+
   // Dynamic luck probability:
-  // - High if player is on a combo streak (68% - 85%) to sustain the combo
-  // - High if board is crowded (> 60% full, ~88%) for a clutch save
-  // - Regular play: ~55% chance to hand at least one line-clearing piece
-  let assistChance = 0.55;
+  // - High if player is on a combo streak (70% - 85%) to sustain the combo
+  // - High if board is crowded (> 58% full, ~88%) for a clutch save
+  // - Regular play: ~60% chance to hand line-clearing or hole-filling assists
+  let assistChance = 0.60;
   if (comboStreak >= 1) {
-    assistChance = Math.min(0.85, 0.68 + comboStreak * 0.05);
+    assistChance = Math.min(0.85, 0.70 + comboStreak * 0.05);
   } else if (fillRatio > 0.58) {
     assistChance = 0.88;
   }
 
-  const shouldAssist = keyClearingShapes.length > 0 && Math.random() < assistChance;
+  const hasAssists = keyClearingShapes.length > 0 || holeFillingShapes.length > 0;
+  const shouldAssist = hasAssists && Math.random() < assistChance;
 
   let bestCandidate = null;
   let bestScore = -1;
 
   if (shouldAssist) {
-    // Pick a key clearing shape, favoring multi-clears
-    const totalKeyWeight = keyClearingShapes.reduce((sum, k) => sum + k.weight, 0);
-    let rand = Math.random() * totalKeyWeight;
-    let chosenKey = keyClearingShapes[0];
-    for (const k of keyClearingShapes) {
-      rand -= k.weight;
-      if (rand <= 0) {
-        chosenKey = k;
-        break;
-      }
-    }
-
-    // Place the key piece in a random slot (0, 1, or 2)
-    const keySlot = Math.floor(Math.random() * 3);
     const candidate = [null, null, null];
-    candidate[keySlot] = chosenKey.shape;
+    const availableSlots = [0, 1, 2];
 
-    // Simulate placing the key piece to open up space on the board
-    const postSim = simulatePlacement(grid, chosenKey.shape, chosenKey.placement.r, chosenKey.placement.c);
-    const simGrid = postSim.grid;
-
-    // Find pieces that fit on this cleared board for the remaining 2 slots
-    for (let i = 0; i < 3; i++) {
-      if (i === keySlot) continue;
-
-      // Check if another line clear is possible on the simulated board
-      const nextClearers = findKeyClearingShapes(simGrid);
-      if (nextClearers.length > 0 && Math.random() < 0.5) {
-        candidate[i] = nextClearers[Math.floor(Math.random() * nextClearers.length)].shape;
+    // Decide what kind of assist to prioritize first:
+    let primaryIsClearing = true;
+    if (keyClearingShapes.length > 0 && holeFillingShapes.length > 0) {
+      if (comboStreak >= 1 || fillRatio > 0.65) {
+        primaryIsClearing = Math.random() < 0.65; // line clear priority during combo/crowd
       } else {
-        const fitting = weightedPool.filter((s) => getAllValidPlacements(simGrid, s).length > 0);
-        candidate[i] = fitting.length > 0 ? pickWeightedShape(fitting) : pickWeightedShape(weightedPool);
+        primaryIsClearing = Math.random() < 0.45; // 55% hole-fill priority during regular play
       }
+    } else if (keyClearingShapes.length === 0) {
+      primaryIsClearing = false;
     }
 
-    bestCandidate = candidate;
-  } else {
+    // Pick primary assist piece
+    let primaryObj = null;
+    if (primaryIsClearing && keyClearingShapes.length > 0) {
+      const totalW = keyClearingShapes.reduce((s, k) => s + k.weight, 0);
+      let r = Math.random() * totalW;
+      for (const k of keyClearingShapes) {
+        r -= k.weight;
+        if (r <= 0) {
+          primaryObj = k;
+          break;
+        }
+      }
+      if (!primaryObj) primaryObj = keyClearingShapes[0];
+    } else if (holeFillingShapes.length > 0) {
+      const totalW = holeFillingShapes.reduce((s, k) => s + k.weight, 0);
+      let r = Math.random() * totalW;
+      for (const h of holeFillingShapes) {
+        r -= h.weight;
+        if (r <= 0) {
+          primaryObj = h;
+          break;
+        }
+      }
+      if (!primaryObj) primaryObj = holeFillingShapes[0];
+    }
+
+    if (primaryObj) {
+      // Place primary assist in a random slot
+      const slotIdx = Math.floor(Math.random() * availableSlots.length);
+      const primarySlot = availableSlots.splice(slotIdx, 1)[0];
+      candidate[primarySlot] = primaryObj.shape;
+
+      // Simulate placing the primary piece
+      const postSim = simulatePlacement(grid, primaryObj.shape, primaryObj.placement.r, primaryObj.placement.c);
+      const simGrid = postSim.grid;
+
+      // For the SECOND slot:
+      // If primary was a line-clearer, deliver a hole-filler to plug gaps on the board!
+      // If primary was a hole-filler, deliver a line-clearer if available!
+      const secondSlotIdx = Math.floor(Math.random() * availableSlots.length);
+      const secondSlot = availableSlots.splice(secondSlotIdx, 1)[0];
+
+      const nextClearers = findKeyClearingShapes(simGrid);
+      const nextHoleFillers = findHoleFillingShapes(simGrid);
+
+      let secondPiece = null;
+      if (primaryIsClearing && (nextHoleFillers.length > 0 || holeFillingShapes.length > 0) && Math.random() < 0.75) {
+        const poolH = nextHoleFillers.length > 0
+          ? nextHoleFillers
+          : holeFillingShapes.filter((h) => getAllValidPlacements(simGrid, h.shape).length > 0);
+        if (poolH.length > 0) {
+          secondPiece = poolH[Math.floor(Math.random() * poolH.length)].shape;
+        }
+      } else if (!primaryIsClearing && nextClearers.length > 0 && Math.random() < 0.75) {
+        secondPiece = nextClearers[Math.floor(Math.random() * nextClearers.length)].shape;
+      }
+
+      if (!secondPiece) {
+        if (nextClearers.length > 0 && Math.random() < 0.5) {
+          secondPiece = nextClearers[Math.floor(Math.random() * nextClearers.length)].shape;
+        } else if (nextHoleFillers.length > 0 && Math.random() < 0.6) {
+          secondPiece = nextHoleFillers[Math.floor(Math.random() * nextHoleFillers.length)].shape;
+        } else {
+          const fitting = weightedPool.filter((s) => getAllValidPlacements(simGrid, s).length > 0);
+          secondPiece = fitting.length > 0 ? pickWeightedShape(fitting) : pickWeightedShape(weightedPool);
+        }
+      }
+      candidate[secondSlot] = secondPiece;
+
+      // For the THIRD slot:
+      const thirdSlot = availableSlots[0];
+      const secondPlacements = getAllValidPlacements(simGrid, secondPiece);
+      let finalSimGrid = simGrid;
+      if (secondPlacements.length > 0) {
+        finalSimGrid = simulatePlacement(simGrid, secondPiece, secondPlacements[0].r, secondPlacements[0].c).grid;
+      }
+
+      const thirdClearers = findKeyClearingShapes(finalSimGrid);
+      const thirdHoleFillers = findHoleFillingShapes(finalSimGrid);
+
+      if (thirdClearers.length > 0 && Math.random() < 0.4) {
+        candidate[thirdSlot] = thirdClearers[Math.floor(Math.random() * thirdClearers.length)].shape;
+      } else if (thirdHoleFillers.length > 0 && Math.random() < 0.5) {
+        candidate[thirdSlot] = thirdHoleFillers[Math.floor(Math.random() * thirdHoleFillers.length)].shape;
+      } else {
+        const fitting = weightedPool.filter((s) => getAllValidPlacements(finalSimGrid, s).length > 0);
+        candidate[thirdSlot] = fitting.length > 0 ? pickWeightedShape(fitting) : pickWeightedShape(weightedPool);
+      }
+
+      bestCandidate = candidate;
+    }
+  }
+
+  if (!bestCandidate) {
     // Standard smart solver: try up to 18 combinations and pick the most playable & rewarding hand
     for (let attempt = 0; attempt < 18; attempt++) {
       const candidate = [];
@@ -355,4 +535,6 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0) {
 window.SHAPES = SHAPES;
 window.canMatrixFitAt = canMatrixFitAt;
 window.getAllValidPlacements = getAllValidPlacements;
+window.findKeyClearingShapes = findKeyClearingShapes;
+window.findHoleFillingShapes = findHoleFillingShapes;
 window.generateSmartTray = generateSmartTray;
