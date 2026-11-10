@@ -595,6 +595,7 @@ class BlockBlastGame {
     this.metrics = {
       width: w,
       height: h,
+      dpr,
       boardSize,
       boardX,
       boardY,
@@ -1549,6 +1550,7 @@ class BlockBlastGame {
     const {
       width,
       height,
+      dpr = 1,
       boardSize,
       boardX,
       boardY,
@@ -1699,10 +1701,15 @@ class BlockBlastGame {
       const startX = center.x - pW / 2;
       const startY = center.y - pH / 2;
 
-      ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.28)';
-      ctx.shadowBlur = Math.round(dCellSize * 0.35);
-      ctx.shadowOffsetY = Math.round(dCellSize * 0.22);
+      if (window.drawPieceShadow) {
+        window.drawPieceShadow(ctx, shape, startX, startY, dCellSize, colorObj, this.themeId, {
+          dpr,
+          offsetX: dCellSize * 0.13,
+          offsetY: dCellSize * 0.15,
+          blur: Math.max(2, dCellSize * 0.13),
+          shadowColor: theme.styleType === 'neon' ? 'rgba(0, 0, 0, 0.48)' : 'rgba(0, 0, 0, 0.27)'
+        });
+      }
 
       for (const cell of shape.cells) {
         window.drawStyledBlock(
@@ -1715,7 +1722,6 @@ class BlockBlastGame {
           { alpha: 1.0 }
         );
       }
-      ctx.restore();
     }
 
     // 7. Draw Currently Dragged Piece (Floating Under Finger with Drop Shadow)
@@ -1728,10 +1734,15 @@ class BlockBlastGame {
       const startX = this.drag.visualX - pW / 2;
       const startY = this.drag.visualY - pH / 2;
 
-      ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
-      ctx.shadowBlur = 16;
-      ctx.shadowOffsetY = 10;
+      if (window.drawPieceShadow) {
+        window.drawPieceShadow(ctx, shape, startX, startY, dSize, colorObj, this.themeId, {
+          dpr,
+          offsetX: dSize * 0.14,
+          offsetY: dSize * 0.22,
+          blur: Math.max(4, dSize * 0.26),
+          shadowColor: 'rgba(0, 0, 0, 0.36)'
+        });
+      }
 
       for (const cell of shape.cells) {
         window.drawStyledBlock(
@@ -1744,7 +1755,6 @@ class BlockBlastGame {
           { alpha: 0.96 }
         );
       }
-      ctx.restore();
     }
 
     // 8. Draw Particle Explosions, Shattering Cubes & Combo Banners

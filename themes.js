@@ -292,17 +292,73 @@ const THEMES = {
   }
 };
 
-function roundRectPath(ctx, x, y, w, h, r) {
+function appendRoundRectSubpath(ctx, x, y, w, h, r) {
   w = Math.max(0, w);
   h = Math.max(0, h);
   const radius = Math.max(0, Math.min(r, w / 2, h / 2));
-  ctx.beginPath();
   ctx.moveTo(x + radius, y);
   ctx.arcTo(x + w, y, x + w, y + h, radius);
   ctx.arcTo(x + w, y + h, x, y + h, radius);
   ctx.arcTo(x, y + h, x, y, radius);
   ctx.arcTo(x, y, x + w, y, radius);
   ctx.closePath();
+}
+
+function roundRectPath(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  appendRoundRectSubpath(ctx, x, y, w, h, r);
+}
+
+/**
+ * Draws a unified down-right drop shadow behind a multi-cell piece before its cells are drawn.
+ * Kept separate from drawStyledBlock because internal bevel clipping (ctx.clip) clips canvas shadows.
+ */
+function drawPieceShadow(ctx, shape, startX, startY, cellSize, color, themeId = 'classic', opts = {}) {
+  if (!shape || !shape.cells || shape.cells.length === 0) return;
+  const {
+    offsetX = cellSize * 0.13,
+    offsetY = cellSize * 0.15,
+    blur = Math.max(2, cellSize * 0.13),
+    shadowColor = null,
+    dpr = 1
+  } = opts;
+
+  const theme = THEMES[themeId] || THEMES.classic;
+  const pad = Math.max(0.5, cellSize * 0.018);
+  const bs = cellSize - pad * 2;
+  if (bs < 4) return;
+
+  const baseRadius = Math.max(3, bs * 0.16);
+  const radius =
+    theme.styleType === 'bevel3d'
+      ? Math.max(1, bs * 0.05)
+      : theme.styleType === 'wood'
+      ? baseRadius * 0.7
+      : baseRadius;
+
+  const inset = 0.35;
+  const casterSize = Math.max(1, bs - inset * 2);
+  const casterRadius = Math.max(0, radius - inset * 0.5);
+  const safeColor = color || {};
+
+  ctx.save();
+  ctx.shadowColor = shadowColor || (theme.styleType === 'neon' ? 'rgba(0, 0, 0, 0.48)' : 'rgba(0, 0, 0, 0.27)');
+  ctx.shadowOffsetX = offsetX * dpr;
+  ctx.shadowOffsetY = offsetY * dpr;
+  ctx.shadowBlur = blur * dpr;
+  ctx.fillStyle =
+    theme.styleType === 'neon'
+      ? (safeColor.inner || '#110b22')
+      : (safeColor.bottom || safeColor.base || '#000000');
+
+  ctx.beginPath();
+  for (const cell of shape.cells) {
+    const cx = startX + cell.c * cellSize + pad + inset;
+    const cy = startY + cell.r * cellSize + pad + inset;
+    appendRoundRectSubpath(ctx, cx, cy, casterSize, casterSize, casterRadius);
+  }
+  ctx.fill();
+  ctx.restore();
 }
 
 /**
@@ -509,4 +565,5 @@ function drawStyledBlock(ctx, x, y, size, color, themeId = 'classic', opts = {})
 
 window.THEMES = THEMES;
 window.drawStyledBlock = drawStyledBlock;
+window.drawPieceShadow = drawPieceShadow;
 window.roundRectPath = roundRectPath;
