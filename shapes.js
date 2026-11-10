@@ -5,33 +5,33 @@
 
 const SHAPES = [
   // 2-block bars
-  { id: 'h2', tier: 'small', weight: 10, matrix: [[1, 1]] },
-  { id: 'v2', tier: 'small', weight: 10, matrix: [[1], [1]] },
+  { id: 'h2', tier: 'small', weight: 14, matrix: [[1, 1]] },
+  { id: 'v2', tier: 'small', weight: 14, matrix: [[1], [1]] },
 
   // 2-block diagonals (classic Block Blast signature piece)
-  { id: 'diag2a', tier: 'small', weight: 5, matrix: [[1, 0], [0, 1]] },
-  { id: 'diag2b', tier: 'small', weight: 5, matrix: [[0, 1], [1, 0]] },
+  { id: 'diag2a', tier: 'small', weight: 3, matrix: [[1, 0], [0, 1]] },
+  { id: 'diag2b', tier: 'small', weight: 3, matrix: [[0, 1], [1, 0]] },
 
   // 3-block diagonals
-  { id: 'diag3a', tier: 'small', weight: 4, matrix: [[1, 0, 0], [0, 1, 0], [0, 0, 1]] },
-  { id: 'diag3b', tier: 'small', weight: 4, matrix: [[0, 0, 1], [0, 1, 0], [1, 0, 0]] },
+  { id: 'diag3a', tier: 'small', weight: 2, matrix: [[1, 0, 0], [0, 1, 0], [0, 0, 1]] },
+  { id: 'diag3b', tier: 'small', weight: 2, matrix: [[0, 0, 1], [0, 1, 0], [1, 0, 0]] },
 
   // 3-block bars
-  { id: 'h3', tier: 'small', weight: 12, matrix: [[1, 1, 1]] },
-  { id: 'v3', tier: 'small', weight: 12, matrix: [[1], [1], [1]] },
+  { id: 'h3', tier: 'small', weight: 16, matrix: [[1, 1, 1]] },
+  { id: 'v3', tier: 'small', weight: 16, matrix: [[1], [1], [1]] },
 
   // 3-block small corners (2x2 with 3 blocks)
-  { id: 'c3_tl', tier: 'small', weight: 8, matrix: [[1, 1], [1, 0]] },
-  { id: 'c3_tr', tier: 'small', weight: 8, matrix: [[1, 1], [0, 1]] },
-  { id: 'c3_bl', tier: 'small', weight: 8, matrix: [[1, 0], [1, 1]] },
-  { id: 'c3_br', tier: 'small', weight: 8, matrix: [[0, 1], [1, 1]] },
+  { id: 'c3_tl', tier: 'small', weight: 6, matrix: [[1, 1], [1, 0]] },
+  { id: 'c3_tr', tier: 'small', weight: 6, matrix: [[1, 1], [0, 1]] },
+  { id: 'c3_bl', tier: 'small', weight: 6, matrix: [[1, 0], [1, 1]] },
+  { id: 'c3_br', tier: 'small', weight: 6, matrix: [[0, 1], [1, 1]] },
 
   // 2x2 Square (4 blocks)
-  { id: 'sq2', tier: 'medium', weight: 12, matrix: [[1, 1], [1, 1]] },
+  { id: 'sq2', tier: 'medium', weight: 18, matrix: [[1, 1], [1, 1]] },
 
   // 4-block bars
-  { id: 'h4', tier: 'medium', weight: 9, matrix: [[1, 1, 1, 1]] },
-  { id: 'v4', tier: 'medium', weight: 9, matrix: [[1], [1], [1], [1]] },
+  { id: 'h4', tier: 'medium', weight: 16, matrix: [[1, 1, 1, 1]] },
+  { id: 'v4', tier: 'medium', weight: 16, matrix: [[1], [1], [1], [1]] },
 
   // 4-block T-shapes
   { id: 't_up',    tier: 'medium', weight: 8, matrix: [[0, 1, 0], [1, 1, 1]] },
@@ -40,37 +40,37 @@ const SHAPES = [
   { id: 't_right', tier: 'medium', weight: 8, matrix: [[1, 0], [1, 1], [1, 0]] },
 
   // 4-block L & J shapes
-  { id: 'l_1', tier: 'medium', weight: 7, matrix: [[1, 0], [1, 0], [1, 1]] },
-  { id: 'l_2', tier: 'medium', weight: 7, matrix: [[0, 1], [0, 1], [1, 1]] },
-  { id: 'l_3', tier: 'medium', weight: 7, matrix: [[1, 1], [1, 0], [1, 0]] },
-  { id: 'l_4', tier: 'medium', weight: 7, matrix: [[1, 1], [0, 1], [0, 1]] },
-  { id: 'l_5', tier: 'medium', weight: 7, matrix: [[1, 0, 0], [1, 1, 1]] },
-  { id: 'l_6', tier: 'medium', weight: 7, matrix: [[0, 0, 1], [1, 1, 1]] },
-  { id: 'l_7', tier: 'medium', weight: 7, matrix: [[1, 1, 1], [1, 0, 0]] },
-  { id: 'l_8', tier: 'medium', weight: 7, matrix: [[1, 1, 1], [0, 0, 1]] },
+  { id: 'l_1', tier: 'medium', weight: 8, matrix: [[1, 0], [1, 0], [1, 1]] },
+  { id: 'l_2', tier: 'medium', weight: 8, matrix: [[0, 1], [0, 1], [1, 1]] },
+  { id: 'l_3', tier: 'medium', weight: 8, matrix: [[1, 1], [1, 0], [1, 0]] },
+  { id: 'l_4', tier: 'medium', weight: 8, matrix: [[1, 1], [0, 1], [0, 1]] },
+  { id: 'l_5', tier: 'medium', weight: 8, matrix: [[1, 0, 0], [1, 1, 1]] },
+  { id: 'l_6', tier: 'medium', weight: 8, matrix: [[0, 0, 1], [1, 1, 1]] },
+  { id: 'l_7', tier: 'medium', weight: 8, matrix: [[1, 1, 1], [1, 0, 0]] },
+  { id: 'l_8', tier: 'medium', weight: 8, matrix: [[1, 1, 1], [0, 0, 1]] },
 
   // 4-block Z & S shapes
-  { id: 'z_h', tier: 'medium', weight: 7, matrix: [[1, 1, 0], [0, 1, 1]] },
-  { id: 's_h', tier: 'medium', weight: 7, matrix: [[0, 1, 1], [1, 1, 0]] },
-  { id: 'z_v', tier: 'medium', weight: 7, matrix: [[0, 1], [1, 1], [1, 0]] },
-  { id: 's_v', tier: 'medium', weight: 7, matrix: [[1, 0], [1, 1], [0, 1]] },
+  { id: 'z_h', tier: 'medium', weight: 4, matrix: [[1, 1, 0], [0, 1, 1]] },
+  { id: 's_h', tier: 'medium', weight: 4, matrix: [[0, 1, 1], [1, 1, 0]] },
+  { id: 'z_v', tier: 'medium', weight: 4, matrix: [[0, 1], [1, 1], [1, 0]] },
+  { id: 's_v', tier: 'medium', weight: 4, matrix: [[1, 0], [1, 1], [0, 1]] },
 
   // 5-block bars
-  { id: 'h5', tier: 'large', weight: 6, matrix: [[1, 1, 1, 1, 1]] },
-  { id: 'v5', tier: 'large', weight: 6, matrix: [[1], [1], [1], [1], [1]] },
+  { id: 'h5', tier: 'large', weight: 16, matrix: [[1, 1, 1, 1, 1]] },
+  { id: 'v5', tier: 'large', weight: 16, matrix: [[1], [1], [1], [1], [1]] },
 
   // 5-block Big Corners (3x3 L-shapes)
-  { id: 'bigL_tl', tier: 'large', weight: 6, matrix: [[1, 1, 1], [1, 0, 0], [1, 0, 0]] },
-  { id: 'bigL_tr', tier: 'large', weight: 6, matrix: [[1, 1, 1], [0, 0, 1], [0, 0, 1]] },
-  { id: 'bigL_bl', tier: 'large', weight: 6, matrix: [[1, 0, 0], [1, 0, 0], [1, 1, 1]] },
-  { id: 'bigL_br', tier: 'large', weight: 6, matrix: [[0, 0, 1], [0, 0, 1], [1, 1, 1]] },
+  { id: 'bigL_tl', tier: 'large', weight: 10, matrix: [[1, 1, 1], [1, 0, 0], [1, 0, 0]] },
+  { id: 'bigL_tr', tier: 'large', weight: 10, matrix: [[1, 1, 1], [0, 0, 1], [0, 0, 1]] },
+  { id: 'bigL_bl', tier: 'large', weight: 10, matrix: [[1, 0, 0], [1, 0, 0], [1, 1, 1]] },
+  { id: 'bigL_br', tier: 'large', weight: 10, matrix: [[0, 0, 1], [0, 0, 1], [1, 1, 1]] },
 
   // 6-block rectangles (2x3 and 3x2)
-  { id: 'rect_2x3', tier: 'large', weight: 5, matrix: [[1, 1, 1], [1, 1, 1]] },
-  { id: 'rect_3x2', tier: 'large', weight: 5, matrix: [[1, 1], [1, 1], [1, 1]] },
+  { id: 'rect_2x3', tier: 'large', weight: 18, matrix: [[1, 1, 1], [1, 1, 1]] },
+  { id: 'rect_3x2', tier: 'large', weight: 18, matrix: [[1, 1], [1, 1], [1, 1]] },
 
   // 9-block Giant Square (3x3)
-  { id: 'sq3', tier: 'large', weight: 7, matrix: [[1, 1, 1], [1, 1, 1], [1, 1, 1]] }
+  { id: 'sq3', tier: 'large', weight: 20, matrix: [[1, 1, 1], [1, 1, 1], [1, 1, 1]] }
 ];
 
 // Precompute cell coordinates and block count for each shape
@@ -348,14 +348,17 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0) {
   }
   const fillRatio = occupied / 64;
 
-  // Dynamic weights based on crowding
+  // Dynamic weights based on crowding and open board space
   const weightedPool = SHAPES.map((s) => {
     let w = s.weight;
     if (fillRatio > 0.62) {
-      if (s.tier === 'large') w *= 0.35;
-      if (s.tier === 'small') w *= 1.75;
-    } else if (fillRatio < 0.25 && score > 300) {
-      if (s.tier === 'large') w *= 1.25;
+      if (s.tier === 'large') w *= 0.25;
+      if (s.tier === 'small') w *= 1.85;
+    } else if (fillRatio < 0.52) {
+      // Board is open: aggressively boost large, satisfying shapes (3x3, 2x3, 3x2, squares, long bars)
+      if (s.tier === 'large') w *= 1.85;
+      if (s.id === 'sq3' || s.id === 'rect_2x3' || s.id === 'rect_3x2') w *= 2.0;
+      if (s.id.startsWith('h4') || s.id.startsWith('v4') || s.id.startsWith('h5') || s.id.startsWith('v5') || s.id === 'sq2') w *= 1.5;
     }
     return { ...s, weight: w };
   });
@@ -368,14 +371,14 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0) {
   const holeFillingShapes = findHoleFillingShapes(grid);
 
   // Dynamic luck probability:
-  // - High if player is on a combo streak (70% - 85%) to sustain the combo
-  // - High if board is crowded (> 58% full, ~88%) for a clutch save
-  // - Regular play: ~60% chance to hand line-clearing or hole-filling assists
-  let assistChance = 0.60;
+  // - High if player is on a combo streak (85% - 97%) to actively sustain the combo!
+  // - High if board is crowded (> 55% full, ~92%) for a clutch rescue
+  // - Regular play: ~72% chance to hand line-clearing or hole-filling assists
+  let assistChance = 0.72;
   if (comboStreak >= 1) {
-    assistChance = Math.min(0.85, 0.70 + comboStreak * 0.05);
-  } else if (fillRatio > 0.58) {
-    assistChance = 0.88;
+    assistChance = Math.min(0.97, 0.85 + comboStreak * 0.04);
+  } else if (fillRatio > 0.55) {
+    assistChance = 0.92;
   }
 
   const hasAssists = keyClearingShapes.length > 0 || holeFillingShapes.length > 0;
@@ -583,6 +586,113 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0) {
   });
 }
 
+/**
+ * Generates a pre-calculated opening hand (first 3 pieces) specifically tailored to the
+ * starting layout on the board. Guarantees that piece 1 clears a line (Combo 1),
+ * piece 2 can clear another line (Combo 2), and piece 3 continues the streak (Combo 3)!
+ * This provides the authentic Block Blast instant-gratification dopamine kickoff.
+ */
+function generateOpeningHand(grid, palette) {
+  let bestSequence = null;
+  let bestScore = -1;
+
+  // Try multiple sequence rollouts to find the best 3-piece combo chain
+  for (let attempt = 0; attempt < 50; attempt++) {
+    // 1. Pick a line clearer for Step 1
+    const clearers1 = findKeyClearingShapes(grid);
+    if (!clearers1.length) break;
+
+    const p1Obj = clearers1[Math.floor(Math.random() * clearers1.length)];
+    const sim1 = simulatePlacement(grid, p1Obj.shape, p1Obj.placement.r, p1Obj.placement.c);
+
+    // 2. Pick Piece 2 on sim1.grid
+    const clearers2 = findKeyClearingShapes(sim1.grid);
+    let p2Obj = null;
+    let sim2 = null;
+
+    if (clearers2.length > 0) {
+      p2Obj = clearers2[Math.floor(Math.random() * clearers2.length)];
+      sim2 = simulatePlacement(sim1.grid, p2Obj.shape, p2Obj.placement.r, p2Obj.placement.c);
+    } else {
+      const fillers2 = findHoleFillingShapes(sim1.grid);
+      if (fillers2.length > 0) {
+        p2Obj = fillers2[Math.floor(Math.random() * fillers2.length)];
+        sim2 = simulatePlacement(sim1.grid, p2Obj.shape, p2Obj.placement.r, p2Obj.placement.c);
+      } else {
+        const fitting = SHAPES.filter((s) => getAllValidPlacements(sim1.grid, s).length > 0);
+        if (!fitting.length) continue;
+        const shp = pickWeightedShape(fitting);
+        const pl = getAllValidPlacements(sim1.grid, shp)[0];
+        p2Obj = { shape: shp, placement: pl, cleared: 0 };
+        sim2 = simulatePlacement(sim1.grid, shp, pl.r, pl.c);
+      }
+    }
+
+    // 3. Pick Piece 3 on sim2.grid
+    const clearers3 = findKeyClearingShapes(sim2.grid);
+    let p3Obj = null;
+
+    if (clearers3.length > 0) {
+      p3Obj = clearers3[Math.floor(Math.random() * clearers3.length)];
+    } else {
+      const fillers3 = findHoleFillingShapes(sim2.grid);
+      if (fillers3.length > 0) {
+        p3Obj = fillers3[Math.floor(Math.random() * fillers3.length)];
+      } else {
+        const fitting3 = SHAPES.filter((s) => getAllValidPlacements(sim2.grid, s).length > 0);
+        if (!fitting3.length) continue;
+        p3Obj = { shape: pickWeightedShape(fitting3), cleared: 0 };
+      }
+    }
+
+    const hand = [p1Obj.shape, p2Obj.shape, p3Obj.shape];
+    let score = (p1Obj.cleared || 1) * 15;
+    if (p2Obj.cleared > 0) score += 35;
+    if (p3Obj.cleared > 0) score += 45;
+
+    // Variety bonus: prefer not having 3 identical pieces
+    const distinctIds = new Set(hand.map((s) => s.id));
+    score += distinctIds.size * 10;
+
+    // Favor larger / more satisfying pieces (squares, rectangles, 4-bars, 3-bars)
+    for (const s of hand) {
+      if (s.tier === 'large') score += 12;
+      if (s.id === 'sq3' || s.id.startsWith('rect_')) score += 10;
+      if (s.id === 'sq2' || s.id.startsWith('h4') || s.id.startsWith('v4')) score += 6;
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestSequence = hand;
+    }
+
+    // Found the holy grail: a triple-combo opening!
+    if (p2Obj.cleared > 0 && p3Obj.cleared > 0) {
+      break;
+    }
+  }
+
+  if (!bestSequence) {
+    return generateSmartTray(grid, palette, 0, 0);
+  }
+
+  // Shuffle slot positions slightly (or keep slot 0 as one of the immediate clearers)
+  // so the player can intuitively explore and place them
+  return bestSequence.map((shape, idx) => {
+    const colorIndex = (Math.floor(Math.random() * palette.length) + idx) % palette.length;
+    return {
+      slotIndex: idx,
+      shape,
+      colorIndex,
+      placed: false,
+      scale: 0.01,
+      targetScale: 1,
+      offsetX: 0,
+      offsetY: 0
+    };
+  });
+}
+
 window.SHAPES = SHAPES;
 window.canMatrixFitAt = canMatrixFitAt;
 window.getAllValidPlacements = getAllValidPlacements;
@@ -590,3 +700,4 @@ window.countTrappedSingleHoles = countTrappedSingleHoles;
 window.findKeyClearingShapes = findKeyClearingShapes;
 window.findHoleFillingShapes = findHoleFillingShapes;
 window.generateSmartTray = generateSmartTray;
+window.generateOpeningHand = generateOpeningHand;

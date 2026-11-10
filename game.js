@@ -173,16 +173,18 @@ class BlockBlastGame {
       this.tray = []; // dock stays empty while intro fills and disassembles
       this.startIntroAnimation(() => {
         // After intro finishes:
-        if (Math.random() < 0.5) {
+        if (Math.random() < 0.95) {
           this.seedRandomStartingBlocks();
+          this.isStartingHand = true;
         }
         this.spawnNewTray();
         this.saveGameState();
       });
     } else {
       // Direct start without intro
-      if (Math.random() < 0.5) {
+      if (Math.random() < 0.95) {
         this.seedRandomStartingBlocks();
+        this.isStartingHand = true;
       }
       this.spawnNewTray();
       this.saveGameState();
@@ -277,96 +279,160 @@ class BlockBlastGame {
     const paletteLen = (this.theme.palette && this.theme.palette.length) || 6;
     if (!window.SHAPES || !window.SHAPES.length) return;
 
-    // Authentic Block Blast: spawn real game shapes (lines, angles, squares), often assembled/clustered together
+    // Authentic Block Blast starting layout:
+    // Generates a substantial architectural cluster filling ~16-22 cells (approx 25-35% of the board).
+    // The cluster leaves lines primed at 6/8 and 7/8 filled, with 0 full lines and 0 trapped single holes,
+    // setting up multiple guaranteed line clears and combo opportunities for the opening hand!
     const candidateIds = [
-      'h4', 'h3', 'h2', 'v3', 'v2', 'sq2',
-      'c3_tl', 'c3_tr', 'c3_bl', 'c3_br',
-      'diag2a', 'diag2b', 'diag3a', 'diag3b',
-      'l_1', 'l_2', 'l_3', 'l_4', 'l_5', 'l_6', 't_up', 't_down'
+      'rect_2x3', 'rect_3x2', 'sq2', 'h5', 'h4', 'v4', 'h3', 'v3',
+      'c3_tl', 'c3_tr', 'c3_bl', 'c3_br', 'bigL_tl', 'bigL_tr', 'bigL_bl', 'bigL_br'
     ];
     const candidateShapes = window.SHAPES.filter((s) => candidateIds.includes(s.id));
     if (!candidateShapes.length) return;
 
-    // Place 2 to 3 shapes (e.g. 5-11 blocks total)
-    const shapesToPlace = 2 + (Math.random() < 0.4 ? 1 : 0);
-    let totalPlacedBlocks = 0;
-    let lastPlacement = null;
+    let seededSuccessfully = false;
 
-    for (let sIdx = 0; sIdx < shapesToPlace; sIdx++) {
-      if (totalPlacedBlocks >= 12) break;
+    // Attempt procedural generation
+    for (let trial = 0; trial < 80; trial++) {
+      const trialGrid = Array.from({ length: 8 }, () => Array(8).fill(null));
+      let placedBlocks = 0;
+      let placedPieces = 0;
 
-      const shape = candidateShapes[Math.floor(Math.random() * candidateShapes.length)];
-      const colorIndex = (Math.floor(Math.random() * paletteLen) + sIdx) % paletteLen;
+      // Random anchor mode: 0 = bottom-left, 1 = bottom-right, 2 = bottom-center
+      const anchorMode = Math.floor(Math.random() * 3);
+      const minR = 3;
 
-      // Find valid placements that do not complete any full 8-block line
-      const validPlacements = [];
+      while (placedBlocks < 16 && placedPieces < 7) {
+        const shape = candidateShapes[Math.floor(Math.random() * candidateShapes.length)];
+        const validPlacements = [];
 
-      for (let r = 0; r <= 8 - shape.rows; r++) {
-        for (let c = 0; c <= 8 - shape.cols; c++) {
-          if (!window.canMatrixFitAt(this.grid, shape, r, c)) continue;
+        for (let r = minR; r <= 8 - shape.rows; r++) {
+          for (let c = 0; c <= 8 - shape.cols; c++) {
+            if (anchorMode === 0 && c > 5) continue;
+            if (anchorMode === 1 && c < 2) continue;
+            if (!window.canMatrixFitAt(trialGrid, shape, r, c)) continue;
 
-          // Check hypothetical line completion (never complete a line on start!)
-          const rowCounts = Array(8).fill(0);
-          const colCounts = Array(8).fill(0);
-          for (let gr = 0; gr < 8; gr++) {
-            for (let gc = 0; gc < 8; gc++) {
-              if (this.grid[gr][gc] !== null) {
-                rowCounts[gr]++;
-                colCounts[gc]++;
+            // Maintain spatial cohesion: must touch existing placed blocks
+            if (placedPieces > 0) {
+              let adjacent = false;
+              for (const cell of shape.cells) {
+                const gr = r + cell.r;
+                const gc = c + cell.c;
+                const nbrs = [[gr - 1, gc], [gr + 1, gc], [gr, gc - 1], [gr, gc + 1]];
+                for (const [nr, nc] of nbrs) {
+                  if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && trialGrid[nr][nc] !== null) {
+                    adjacent = true;
+                    break;
+                  }
+                }
+                if (adjacent) break;
+              }
+              if (!adjacent) continue;
+            }
+
+            // Line cap rule: NO row or col must reach 8!
+            const rowCounts = Array(8).fill(0);
+            const colCounts = Array(8).fill(0);
+            for (let gr = 0; gr < 8; gr++) {
+              for (let gc = 0; gc < 8; gc++) {
+                if (trialGrid[gr][gc] !== null) { rowCounts[gr]++; colCounts[gc]++; }
               }
             }
-          }
 
-          let wouldClear = false;
-          for (const cell of shape.cells) {
-            const gr = r + cell.r;
-            const gc = c + cell.c;
-            rowCounts[gr]++;
-            colCounts[gc]++;
-            if (rowCounts[gr] >= 8 || colCounts[gc] >= 8) {
-              wouldClear = true;
-              break;
+            let causesClear = false;
+            for (const cell of shape.cells) {
+              const gr = r + cell.r;
+              const gc = c + cell.c;
+              rowCounts[gr]++;
+              colCounts[gc]++;
+              if (rowCounts[gr] >= 8 || colCounts[gc] >= 8) {
+                causesClear = true;
+                break;
+              }
             }
-          }
-          if (wouldClear) continue;
+            if (causesClear) continue;
 
-          // Affinity: prefer lower half (rows 3..7) and prefer being adjacent to previous shape (assembled!)
-          let affinity = 1;
-          if (r >= 3) affinity += 3;
-          if (lastPlacement) {
-            const dist = Math.hypot(r - lastPlacement.r, c - lastPlacement.c);
-            if (dist <= 3.2) {
-              affinity += 12; // strongly cluster/assemble pieces together
+            // Single trapped hole prevention
+            const testGrid = trialGrid.map((row) => row.slice());
+            for (const cell of shape.cells) {
+              testGrid[r + cell.r][c + cell.c] = 1;
             }
-          }
+            if (window.countTrappedSingleHoles(testGrid) > 0) continue;
 
-          validPlacements.push({ r, c, affinity });
+            let affinity = (r - 2) * 2;
+            validPlacements.push({ r, c, affinity });
+          }
         }
+
+        if (!validPlacements.length) break;
+
+        const chosen = validPlacements[Math.floor(Math.random() * validPlacements.length)];
+        const colorIndex = (placedPieces) % paletteLen;
+        for (const cell of shape.cells) {
+          trialGrid[chosen.r + cell.r][chosen.c + cell.c] = colorIndex;
+          placedBlocks++;
+        }
+        placedPieces++;
       }
 
-      if (!validPlacements.length) continue;
-
-      const totalAffinity = validPlacements.reduce((sum, p) => sum + p.affinity, 0);
-      let rand = Math.random() * totalAffinity;
-      let chosen = validPlacements[0];
-      for (const p of validPlacements) {
-        rand -= p.affinity;
-        if (rand <= 0) {
-          chosen = p;
+      // Check quality: between 15 and 22 cells, and at least 3 immediate key clearer shapes exist!
+      if (placedBlocks >= 15 && placedBlocks <= 22) {
+        const clearers = window.findKeyClearingShapes(trialGrid);
+        if (clearers.length >= 3) {
+          for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+              this.grid[r][c] = trialGrid[r][c];
+            }
+          }
+          seededSuccessfully = true;
           break;
         }
       }
+    }
 
-      for (const cell of shape.cells) {
-        this.grid[chosen.r + cell.r][chosen.c + cell.c] = colorIndex;
-        totalPlacedBlocks++;
+    // Fail-safe architectural presets (guaranteed 18-20 blocks with lines at 6/8 and 7/8)
+    if (!seededSuccessfully) {
+      const PRESETS = [
+        // Preset 1: Bottom-Left Citadel (19 cells)
+        [
+          { color: 0, cells: [[7, 0], [7, 1], [7, 2], [6, 0], [6, 1], [6, 2]] },
+          { color: 1, cells: [[7, 3], [7, 4], [7, 5], [6, 3], [6, 4], [6, 5]] },
+          { color: 2, cells: [[6, 6], [5, 6], [5, 5], [5, 4]] },
+          { color: 3, cells: [[5, 1], [5, 2], [4, 1]] }
+        ],
+        // Preset 2: Right Wing Terrace (19 cells)
+        [
+          { color: 0, cells: [[7, 2], [7, 3], [7, 4], [7, 5], [7, 6], [7, 7]] },
+          { color: 1, cells: [[6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7]] },
+          { color: 2, cells: [[5, 4], [5, 5], [5, 6], [5, 7]] },
+          { color: 3, cells: [[4, 6], [4, 7]] }
+        ],
+        // Preset 3: Stepped Pyramid (19 cells)
+        [
+          { color: 0, cells: [[7, 1], [7, 2], [7, 3], [7, 4], [7, 5], [7, 6], [7, 7]] },
+          { color: 1, cells: [[6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6]] },
+          { color: 2, cells: [[5, 2], [5, 3], [5, 4], [5, 5]] },
+          { color: 3, cells: [[4, 3], [4, 4]] }
+        ]
+      ];
+
+      const preset = PRESETS[Math.floor(Math.random() * PRESETS.length)];
+      for (const piece of preset) {
+        const cIdx = piece.color % paletteLen;
+        for (const [r, c] of piece.cells) {
+          this.grid[r][c] = cIdx;
+        }
       }
-      lastPlacement = { r: chosen.r, c: chosen.c };
     }
   }
 
   spawnNewTray() {
-    this.tray = window.generateSmartTray(this.grid, this.theme.palette, this.score, this.comboStreak);
+    if (this.isStartingHand && window.generateOpeningHand) {
+      this.tray = window.generateOpeningHand(this.grid, this.theme.palette);
+      this.isStartingHand = false;
+    } else {
+      this.tray = window.generateSmartTray(this.grid, this.theme.palette, this.score, this.comboStreak);
+    }
     this.checkPieceFitStates();
   }
 
