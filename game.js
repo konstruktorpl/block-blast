@@ -138,6 +138,11 @@ class BlockBlastGame {
     // DO NOT reset paletteIndex! Keep current color in continuous circle!
     this.applyPaletteIndex(this.paletteIndex);
 
+    // In original Block Blast: roughly 50% of new games start with a few random pre-seeded blocks!
+    if (Math.random() < 0.5) {
+      this.seedRandomStartingBlocks();
+    }
+
     this.spawnNewTray();
     if (window.questManager) {
       window.questManager.updateUIBadge();
@@ -145,6 +150,28 @@ class BlockBlastGame {
     this.saveGameState();
     this.updateHUD(true);
     document.getElementById('gameOverModal').classList.add('hidden');
+  }
+
+  seedRandomStartingBlocks() {
+    const paletteLen = (this.theme.palette && this.theme.palette.length) || 6;
+    // Scatter 4 to 8 single blocks
+    const targetCount = 4 + Math.floor(Math.random() * 5);
+    let placed = 0;
+    let attempts = 0;
+    const rowCounts = Array(8).fill(0);
+    const colCounts = Array(8).fill(0);
+
+    while (placed < targetCount && attempts < 80) {
+      attempts++;
+      const r = Math.floor(Math.random() * 8);
+      const c = Math.floor(Math.random() * 8);
+      if (this.grid[r][c] === null && rowCounts[r] < 3 && colCounts[c] < 3) {
+        this.grid[r][c] = Math.floor(Math.random() * paletteLen);
+        rowCounts[r]++;
+        colCounts[c]++;
+        placed++;
+      }
+    }
   }
 
   spawnNewTray() {
@@ -667,8 +694,8 @@ class BlockBlastGame {
       }
     }
 
-    // Base placement points (= number of blocks in the piece)
-    const placementPoints = shape.blockCount;
+    // Base placement points (juicy reward for placing shapes)
+    const placementPoints = shape.blockCount * 3;
     let movePoints = placementPoints;
 
     // Check full rows and columns
@@ -748,10 +775,11 @@ class BlockBlastGame {
       // Check if the entire 8x8 board is now completely empty ("ALL CLEAR!")
       const isAllClear = this.grid.every((row) => row.every((cell) => cell === null));
 
-      // Authentic Block Blast Line Clear & Combo Multiplier Scoring
-      const baseLineScore = 10 * ((totalLines * (totalLines + 1)) / 2);
-      const comboBonus = baseLineScore * this.comboStreak;
-      const allClearBonus = isAllClear ? 300 : 0;
+      // Authentic Block Blast Line Clear & High-Yield Combo Multiplier Scoring
+      const baseLineScore = 30 * ((totalLines * (totalLines + 1)) / 2);
+      const comboMultiplier = Math.max(1, this.comboStreak);
+      const comboBonus = baseLineScore * comboMultiplier + (this.comboStreak >= 2 ? (this.comboStreak - 1) * 50 : 0);
+      const allClearBonus = isAllClear ? 500 : 0;
       movePoints += comboBonus + allClearBonus;
 
       // Quests tracking for line clears, destroyed blocks, combo, all clear
@@ -1458,7 +1486,7 @@ if ('serviceWorker' in navigator) {
   });
 
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=11').then((reg) => {
+    navigator.serviceWorker.register('./sw.js?v=12').then((reg) => {
       reg.update().catch(() => {});
     }).catch(() => {});
   });
