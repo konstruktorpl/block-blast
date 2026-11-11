@@ -1,0 +1,15 @@
+{
+  "auth": {
+    "providers": {
+      "anonymous": true
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json",
+    "edition": "enterprise",
+    "dataAccessMode": "FIRESTORE_NATIVE",
+    "database": "blockblast-lb",
+    "location": "eur3"
+  }
+}

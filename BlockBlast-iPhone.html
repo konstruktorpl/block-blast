@@ -1182,6 +1182,289 @@ button {
 .menu-btn.orange { background: #f07a2a; box-shadow: 0 6px 0 #ad4f12; }
 .menu-btn.orange:active { transform: translateY(5px); box-shadow: 0 1px 0 #ad4f12; }
 
+.menu-btn.blue { background: #3b82f6; box-shadow: 0 6px 0 #1d4ed8; }
+.menu-btn.blue:active { transform: translateY(5px); box-shadow: 0 1px 0 #1d4ed8; }
+
+/* HUD Leaderboard Icon Button */
+.lb-hud-btn {
+  width: 34px;
+  height: 34px;
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.12s ease;
+}
+
+.lb-hud-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.lb-hud-btn:active {
+  transform: scale(0.9);
+}
+
+/* Game Over Secondary Leaderboard Button */
+.secondary-btn {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  background: var(--modal-row);
+  color: #ffffff;
+  font-family: var(--font-game);
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.12s ease, transform 0.1s ease;
+}
+
+.secondary-btn:active {
+  transform: scale(0.985);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.gameover-rank-pill {
+  background: rgba(255, 212, 59, 0.2);
+  color: var(--text-accent);
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 900;
+}
+
+/* ---------- Global Leaderboard Modal ---------- */
+.lb-modal-card {
+  max-width: 390px;
+}
+
+.lb-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.lb-header-title h2 {
+  font-size: clamp(1.22rem, 5vw, 1.55rem);
+  white-space: nowrap;
+}
+
+.lb-online-tag {
+  font-size: 0.7rem;
+  font-weight: 900;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(32, 201, 151, 0.2);
+  color: #63e6be;
+  border: 1px solid rgba(99, 230, 190, 0.35);
+}
+
+.lb-online-tag.offline {
+  background: rgba(255, 193, 7, 0.18);
+  color: #ffd43b;
+  border-color: rgba(255, 212, 59, 0.35);
+}
+
+.lb-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lb-refresh-btn {
+  font-size: 1.15rem;
+}
+
+.lb-profile-card {
+  background: var(--modal-row);
+  border-radius: 14px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lb-profile-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  text-align: center;
+}
+
+.lb-stat-item {
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 10px;
+  padding: 7px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lb-stat-label {
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.lb-stat-val {
+  font-family: var(--font-game);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.lb-stat-val.accent {
+  color: var(--text-accent);
+}
+
+.lb-name-row {
+  display: flex;
+  gap: 8px;
+}
+
+.lb-input {
+  flex: 1;
+  min-width: 0;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  padding: 8px 11px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 800;
+  outline: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.lb-input:focus {
+  border-color: var(--text-accent);
+}
+
+.lb-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 700;
+}
+
+.lb-save-btn {
+  padding: 0 14px;
+  border: none;
+  border-radius: 10px;
+  background: #1fc79b;
+  color: #fff;
+  font-family: var(--font-game);
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #129472;
+  flex-shrink: 0;
+}
+
+.lb-save-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #129472;
+}
+
+.lb-status {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.72);
+  text-align: center;
+  margin-bottom: 8px;
+  min-height: 16px;
+}
+
+.lb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 44dvh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: var(--modal-row);
+  border: 1.5px solid rgba(255, 255, 255, 0.06);
+}
+
+.lb-row.me {
+  border-color: var(--text-accent);
+  background: rgba(255, 212, 59, 0.14);
+}
+
+.lb-row.top1 {
+  background: linear-gradient(90deg, rgba(255, 212, 59, 0.22), var(--modal-row));
+}
+
+.lb-row.top2 {
+  background: linear-gradient(90deg, rgba(226, 232, 240, 0.16), var(--modal-row));
+}
+
+.lb-row.top3 {
+  background: linear-gradient(90deg, rgba(240, 140, 60, 0.18), var(--modal-row));
+}
+
+.lb-rank {
+  width: 30px;
+  text-align: center;
+  font-family: var(--font-game);
+  font-weight: 800;
+  font-size: 1.02rem;
+  color: rgba(255, 255, 255, 0.8);
+  flex-shrink: 0;
+}
+
+.lb-name-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.lb-name {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lb-sub {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.62);
+  font-weight: 700;
+}
+
+.lb-score {
+  font-family: var(--font-game);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-accent);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+
 </style>
 </head>
 <body>
@@ -1209,6 +1492,12 @@ button {
           </svg>
           <span id="trophyCount" class="trophy-val">0</span>
           <span id="questBadge" class="quest-badge hidden">!</span>
+        </button>
+
+        <button id="btnLeaderboard" class="lb-hud-btn" aria-label="Глобальный лидерборд" title="Лидерборд">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#9fd8ff" d="M7.5 21H2V9h5.5v12zm7.25-18h-5.5v18h5.5V3zM22 11h-5.5v10H22V11z"/>
+          </svg>
         </button>
 
         <button id="btnSettings" class="gear-btn" aria-label="Настройки">
@@ -1253,6 +1542,10 @@ button {
       <button id="btnStartQuests" class="menu-btn orange">
         <svg viewBox="0 0 24 24" style="width: 32px; height: 32px;"><path fill="#fff" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.78-.37 3.22-1.63 3.61-3.06C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2z"/></svg>
         <span>Квесты</span>
+      </button>
+      <button id="btnStartLeaderboard" class="menu-btn blue">
+        <svg viewBox="0 0 24 24" style="width: 30px; height: 30px;"><path fill="#fff" d="M7.5 21H2V9h5.5v12zm7.25-18h-5.5v18h5.5V3zM22 11h-5.5v10H22V11z"/></svg>
+        <span>Лидерборд</span>
       </button>
     </div>
   </div>
@@ -1314,6 +1607,17 @@ button {
           <span id="settingsTrophyPill" class="settings-pill">0 🏆</span>
         </button>
 
+        <button id="btnSettingsLeaderboard" class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-icon">🌍</span>
+            <div class="settings-text">
+              <span class="settings-title">Глобальный рейтинг</span>
+              <span class="settings-desc" id="settingsLbDesc">Таблица лучших игроков мира</span>
+            </div>
+          </div>
+          <span id="settingsLbPill" class="settings-pill">Топ 50</span>
+        </button>
+
         <button id="btnRestart" class="settings-row">
           <div class="settings-row-left">
             <span class="settings-icon">🔄</span>
@@ -1340,7 +1644,7 @@ button {
       <div class="settings-footer">
         <button id="btnReloadApp" class="settings-reload-btn">
           <span>Обновить игру / очистить кэш</span>
-          <span class="version-pill">v42 🔄</span>
+          <span class="version-pill">v43 🔄</span>
         </button>
       </div>
     </div>
@@ -1419,6 +1723,11 @@ button {
         <button id="btnPlayAgain" class="primary-btn">
           Играть снова
         </button>
+
+        <button id="btnGameOverLeaderboard" class="secondary-btn">
+          <span>🌍 Глобальный рейтинг</span>
+          <span id="gameOverRankBadge" class="gameover-rank-pill hidden"></span>
+        </button>
       </div>
     </div>
   </div>
@@ -1448,6 +1757,47 @@ button {
         <span id="dailyTimer" class="quest-timer-badge">⏱ 24ч</span>
       </div>
       <div id="dailyQuestsList" class="quest-list"></div>
+    </div>
+  </div>
+
+  <!-- Global Leaderboard Modal -->
+  <div id="leaderboardModal" class="modal-backdrop hidden">
+    <div class="modal-card lb-modal-card">
+      <div class="modal-header">
+        <div class="lb-header-title">
+          <h2>Лидерборд</h2>
+          <span id="lbOnlineTag" class="lb-online-tag">Онлайн</span>
+        </div>
+        <div class="lb-header-actions">
+          <button id="btnLbRefresh" class="close-btn lb-refresh-btn" title="Обновить рейтинг" aria-label="Обновить">↻</button>
+          <button class="close-btn" data-close="leaderboardModal">✕</button>
+        </div>
+      </div>
+
+      <div class="lb-profile-card">
+        <div class="lb-profile-stats">
+          <div class="lb-stat-item">
+            <span class="lb-stat-label">МЕСТО В МИРЕ</span>
+            <span id="lbMyRank" class="lb-stat-val accent">—</span>
+          </div>
+          <div class="lb-stat-item">
+            <span class="lb-stat-label">ВАШ РЕКОРД</span>
+            <span id="lbMyScore" class="lb-stat-val">0</span>
+          </div>
+          <div class="lb-stat-item">
+            <span class="lb-stat-label">МАКС. КОМБО</span>
+            <span id="lbMyCombo" class="lb-stat-val">x1</span>
+          </div>
+        </div>
+
+        <form id="lbNameForm" class="lb-name-row">
+          <input id="lbNameInput" class="lb-input" type="text" maxlength="20" placeholder="Ваш никнейм..." autocomplete="nickname" />
+          <button id="btnLbSaveName" type="submit" class="lb-save-btn">ОК</button>
+        </form>
+      </div>
+
+      <div id="lbStatus" class="lb-status">Загрузка таблицы лидеров...</div>
+      <div id="lbList" class="lb-list"></div>
     </div>
   </div>
 
@@ -4409,6 +4759,361 @@ window.FXManager = FXManager;
 
 </script>
   <script>
+// Global Online Leaderboard for Block Blast!
+// Powered by Firebase Auth (Anonymous) + Cloud Firestore Enterprise Edition (Pipelines).
+// Gracefully degrades offline and auto-syncs pending best scores when connectivity returns.
+
+(function () {
+  const FIREBASE_SDK_VERSION = '13.2.0';
+  const FIREBASE_CONFIG = {
+    projectId: 'blockblast-a8b17',
+    appId: '1:450865751597:web:09476ca6b2dfb50cac7aa4',
+    storageBucket: 'blockblast-a8b17.firebasestorage.app',
+    apiKey: 'AIzaSyCm1xdsyJAsbNczK1P6YiIluEOSBzyqg2o',
+    authDomain: 'blockblast-a8b17.firebaseapp.com',
+    messagingSenderId: '450865751597'
+  };
+  const FIRESTORE_DATABASE_ID = 'blockblast-lb';
+  const COLLECTION_NAME = 'leaderboard';
+  const TOP_LIMIT = 50;
+
+  class LeaderboardManager {
+    constructor() {
+      this.sdk = null;
+      this.app = null;
+      this.auth = null;
+      this.db = null;
+      this.user = null;
+      this.initPromise = null;
+
+      this.playerName = this.sanitizeName(localStorage.getItem('bb_player_name') || '');
+      this.maxComboSeen = Math.max(1, parseInt(localStorage.getItem('bb_lb_max_combo') || '1', 10) || 1);
+      this.gamesPlayedCount = Math.max(0, parseInt(localStorage.getItem('bb_lb_games') || '0', 10) || 0);
+      this.lastSyncedSignature = localStorage.getItem('bb_lb_synced_sig') || '';
+
+      this.cachedEntries = [];
+      this.cachedRank = null;
+      this.cachedAt = 0;
+      this.lastError = null;
+    }
+
+    sanitizeName(raw) {
+      const cleaned = String(raw || '')
+        .replace(/[\r\n\t]+/g, ' ')
+        .trim()
+        .slice(0, 20);
+      return cleaned;
+    }
+
+    getDefaultName(uid) {
+      const suffix = uid ? uid.slice(-4).toUpperCase() : '0000';
+      return `Игрок #${suffix}`;
+    }
+
+    getEffectiveName(uid) {
+      if (this.playerName && this.playerName.length >= 1) {
+        return this.playerName;
+      }
+      return this.getDefaultName(uid || (this.user && this.user.uid));
+    }
+
+    hasCustomName() {
+      return Boolean(this.playerName && this.playerName.length >= 1);
+    }
+
+    setPlayerName(rawName) {
+      const clean = this.sanitizeName(rawName);
+      this.playerName = clean;
+      if (clean) {
+        localStorage.setItem('bb_player_name', clean);
+      } else {
+        localStorage.removeItem('bb_player_name');
+      }
+      return clean;
+    }
+
+    recordLocalProgress(score, maxCombo, gameIncrement = 0) {
+      const safeScore = Math.max(0, Math.floor(Number(score) || 0));
+      const safeCombo = Math.max(1, Math.min(999, Math.floor(Number(maxCombo) || 1)));
+      if (safeCombo > this.maxComboSeen) {
+        this.maxComboSeen = safeCombo;
+        localStorage.setItem('bb_lb_max_combo', String(this.maxComboSeen));
+      }
+      if (gameIncrement > 0) {
+        this.gamesPlayedCount += gameIncrement;
+        localStorage.setItem('bb_lb_games', String(this.gamesPlayedCount));
+      }
+      const localBest = Math.max(
+        safeScore,
+        parseInt(localStorage.getItem('bb_best_score') || '0', 10) || 0
+      );
+      return {
+        bestScore: localBest,
+        maxCombo: this.maxComboSeen,
+        gamesPlayed: this.gamesPlayedCount
+      };
+    }
+
+    async ensureInitialized() {
+      if (this.db && this.user) return true;
+      if (this.initPromise) return this.initPromise;
+
+      this.initPromise = (async () => {
+        try {
+          if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+            throw new Error('offline');
+          }
+
+          const base = `https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}`;
+          const [appMod, authMod, fsMod] = await Promise.all([
+            import(`${base}/firebase-app.js`),
+            import(`${base}/firebase-auth.js`),
+            import(`${base}/firebase-firestore-pipelines.js`)
+          ]);
+
+          this.sdk = { appMod, authMod, fsMod };
+          const existingApps = appMod.getApps();
+          this.app = existingApps.length > 0 ? existingApps[0] : appMod.initializeApp(FIREBASE_CONFIG);
+          this.auth = authMod.getAuth(this.app);
+          this.db = fsMod.getFirestore(this.app, FIRESTORE_DATABASE_ID);
+
+          this.user = await new Promise((resolve, reject) => {
+            let settled = false;
+            const unsub = authMod.onAuthStateChanged(
+              this.auth,
+              async (user) => {
+                if (settled) return;
+                if (user) {
+                  settled = true;
+                  unsub();
+                  resolve(user);
+                } else {
+                  try {
+                    const cred = await authMod.signInAnonymously(this.auth);
+                    settled = true;
+                    unsub();
+                    resolve(cred.user);
+                  } catch (err) {
+                    settled = true;
+                    unsub();
+                    reject(err);
+                  }
+                }
+              },
+              (err) => {
+                if (settled) return;
+                settled = true;
+                unsub();
+                reject(err);
+              }
+            );
+          });
+
+          this.lastError = null;
+          return true;
+        } catch (err) {
+          this.lastError = err;
+          return false;
+        } finally {
+          this.initPromise = null;
+        }
+      })();
+
+      return this.initPromise;
+    }
+
+    async syncScore({ bestScore = null, maxCombo = null, force = false } = {}) {
+      const localBest = Math.max(
+        0,
+        Math.floor(Number(bestScore ?? (localStorage.getItem('bb_best_score') || 0)) || 0)
+      );
+      const localCombo = Math.max(
+        this.maxComboSeen,
+        Math.floor(Number(maxCombo || 1) || 1)
+      );
+      if (localCombo > this.maxComboSeen) {
+        this.maxComboSeen = Math.min(999, localCombo);
+        localStorage.setItem('bb_lb_max_combo', String(this.maxComboSeen));
+      }
+
+      if (localBest <= 0) {
+        return { synced: false, reason: 'zero_score' };
+      }
+
+      const ready = await this.ensureInitialized();
+      if (!ready || !this.user || !this.db) {
+        return { synced: false, reason: 'offline' };
+      }
+
+      const uid = this.user.uid;
+      const name = this.getEffectiveName(uid);
+      const desiredSig = `${uid}|${name}|${localBest}|${this.maxComboSeen}|${this.gamesPlayedCount}`;
+      if (!force && desiredSig === this.lastSyncedSignature) {
+        return { synced: true, skipped: true };
+      }
+
+      try {
+        const { doc, getDocFromServer, setDoc, serverTimestamp } = this.sdk.fsMod;
+        const ref = doc(this.db, COLLECTION_NAME, uid);
+        const snap = await getDocFromServer(ref);
+        const prev = snap.exists() ? snap.data() : null;
+
+        const mergedBest = Math.min(50000000, Math.max(localBest, prev ? Number(prev.bestScore) || 0 : 0));
+        const mergedCombo = Math.min(999, Math.max(this.maxComboSeen, prev ? Number(prev.maxCombo) || 1 : 1));
+        const mergedGames = Math.min(1000000, Math.max(this.gamesPlayedCount, prev ? Number(prev.gamesPlayed) || 0 : 0));
+        const finalName = this.hasCustomName()
+          ? this.playerName
+          : (prev && prev.name ? this.sanitizeName(prev.name) : '') || name;
+
+        if (
+          !force &&
+          prev &&
+          prev.name === finalName &&
+          prev.bestScore === mergedBest &&
+          prev.maxCombo === mergedCombo &&
+          prev.gamesPlayed === mergedGames
+        ) {
+          this.lastSyncedSignature = `${uid}|${finalName}|${mergedBest}|${mergedCombo}|${mergedGames}`;
+          localStorage.setItem('bb_lb_synced_sig', this.lastSyncedSignature);
+          return { synced: true, skipped: true, entry: prev };
+        }
+
+        const payload = {
+          uid,
+          name: finalName,
+          bestScore: mergedBest,
+          maxCombo: mergedCombo,
+          gamesPlayed: mergedGames,
+          updatedAt: serverTimestamp()
+        };
+
+        await setDoc(ref, payload);
+
+        if (mergedBest > localBest) {
+          localStorage.setItem('bb_best_score', String(mergedBest));
+        }
+        this.maxComboSeen = mergedCombo;
+        this.gamesPlayedCount = mergedGames;
+        this.lastSyncedSignature = `${uid}|${finalName}|${mergedBest}|${mergedCombo}|${mergedGames}`;
+        localStorage.setItem('bb_lb_synced_sig', this.lastSyncedSignature);
+        this.lastError = null;
+
+        return {
+          synced: true,
+          entry: { ...payload, bestScore: mergedBest, maxCombo: mergedCombo, gamesPlayed: mergedGames }
+        };
+      } catch (err) {
+        this.lastError = err;
+        return { synced: false, error: err };
+      }
+    }
+
+    async fetchLeaderboard({ force = false } = {}) {
+      const ready = await this.ensureInitialized();
+      if (!ready || !this.user || !this.db) {
+        return {
+          ok: false,
+          offline: true,
+          entries: this.cachedEntries,
+          myRank: this.cachedRank,
+          myUid: this.user ? this.user.uid : null
+        };
+      }
+
+      const now = Date.now();
+      if (!force && this.cachedEntries.length > 0 && now - this.cachedAt < 8000) {
+        return {
+          ok: true,
+          entries: this.cachedEntries,
+          myRank: this.cachedRank,
+          myUid: this.user.uid
+        };
+      }
+
+      try {
+        const { pipelines, doc, getDocFromServer } = this.sdk.fsMod;
+        const { execute, field, countAll } = pipelines;
+
+        const topPipe = this.db
+          .pipeline()
+          .collection(COLLECTION_NAME)
+          .where(field('bestScore').greaterThan(0))
+          .sort(field('bestScore').descending(), field('updatedAt').ascending())
+          .limit(TOP_LIMIT);
+
+        const [topSnap, mySnap] = await Promise.all([
+          execute(topPipe),
+          getDocFromServer(doc(this.db, COLLECTION_NAME, this.user.uid))
+        ]);
+
+        const entries = topSnap.results.map((r) => {
+          const d = r.data();
+          return {
+            uid: d.uid || r.id,
+            name: this.sanitizeName(d.name) || this.getDefaultName(d.uid || r.id),
+            bestScore: Number(d.bestScore) || 0,
+            maxCombo: Number(d.maxCombo) || 1,
+            gamesPlayed: Number(d.gamesPlayed) || 0
+          };
+        });
+
+        let myRank = null;
+        const idxInTop = entries.findIndex((e) => e.uid === this.user.uid);
+        if (idxInTop !== -1) {
+          myRank = idxInTop + 1;
+        } else if (mySnap.exists()) {
+          const myData = mySnap.data();
+          const myBest = Number(myData.bestScore) || 0;
+          if (myBest > 0) {
+            const rankPipe = this.db
+              .pipeline()
+              .collection(COLLECTION_NAME)
+              .where(field('bestScore').greaterThan(myBest))
+              .aggregate(countAll().as('higherCount'));
+            const rankSnap = await execute(rankPipe);
+            const higher = rankSnap.results[0] ? Number(rankSnap.results[0].data().higherCount) || 0 : 0;
+            myRank = higher + 1;
+          }
+        }
+
+        if (mySnap.exists()) {
+          const d = mySnap.data();
+          if (!this.hasCustomName() && d.name) {
+            this.playerName = this.sanitizeName(d.name);
+            if (this.playerName) localStorage.setItem('bb_player_name', this.playerName);
+          }
+        }
+
+        this.cachedEntries = entries;
+        this.cachedRank = myRank;
+        this.cachedAt = now;
+        this.lastError = null;
+
+        return {
+          ok: true,
+          entries,
+          myRank,
+          myUid: this.user.uid
+        };
+      } catch (err) {
+        this.lastError = err;
+        return {
+          ok: false,
+          error: err,
+          entries: this.cachedEntries,
+          myRank: this.cachedRank,
+          myUid: this.user ? this.user.uid : null
+        };
+      }
+    }
+  }
+
+  window.LeaderboardManager = LeaderboardManager;
+  window.leaderboardManager = new LeaderboardManager();
+})();
+
+</script>
+  <script>
 // Core 8x8 Game Engine, Touch Controller & Renderer for Block Blast!
 
 class BlockBlastGame {
@@ -4506,6 +5211,16 @@ class BlockBlastGame {
       this.startNewGame(true);
     } else {
       this.updateHUD(true);
+    }
+
+    if (window.leaderboardManager) {
+      window.leaderboardManager.recordLocalProgress(this.bestScore, this.maxCombo || 1, 0);
+      if (this.bestScore > 0) {
+        window.leaderboardManager.syncScore({
+          bestScore: this.bestScore,
+          maxCombo: this.maxCombo || 1
+        }).then(() => this.updateHUD());
+      }
     }
 
     requestAnimationFrame((t) => this.loop(t));
@@ -4966,6 +5681,22 @@ class BlockBlastGame {
     if (trophyPill && window.questManager) {
       trophyPill.textContent = `${window.questManager.trophies || 0} 🏆`;
     }
+
+    const lbPill = document.getElementById('settingsLbPill');
+    const lbDesc = document.getElementById('settingsLbDesc');
+    if (window.leaderboardManager) {
+      const lm = window.leaderboardManager;
+      if (lbPill) {
+        lbPill.textContent = lm.cachedRank
+          ? `#${lm.cachedRank} в мире`
+          : (this.bestScore > 0 ? this.bestScore.toLocaleString('ru-RU') : 'Топ 50');
+      }
+      if (lbDesc) {
+        lbDesc.textContent = lm.hasCustomName()
+          ? `Игрок: ${lm.playerName}`
+          : 'Таблица лучших игроков мира';
+      }
+    }
   }
 
   resize() {
@@ -5092,6 +5823,81 @@ class BlockBlastGame {
     if (btnStartQuests) {
       btnStartQuests.addEventListener('click', (e) => {
         openQuests(e);
+      });
+    }
+
+    // Open Global Leaderboard helper
+    let lastLbOpen = 0;
+    const openLeaderboard = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const now = Date.now();
+      if (now - lastLbOpen < 300) return;
+      lastLbOpen = now;
+      window.soundEngine.init();
+      window.soundEngine.playPickup();
+      show('leaderboardModal');
+      this.renderLeaderboardModal(true);
+    };
+
+    const btnLeaderboard = document.getElementById('btnLeaderboard');
+    if (btnLeaderboard) {
+      btnLeaderboard.addEventListener('pointerup', openLeaderboard);
+      btnLeaderboard.addEventListener('click', openLeaderboard);
+    }
+
+    const btnSettingsLeaderboard = document.getElementById('btnSettingsLeaderboard');
+    if (btnSettingsLeaderboard) {
+      btnSettingsLeaderboard.addEventListener('click', (e) => {
+        hide('settingsModal');
+        openLeaderboard(e);
+      });
+    }
+
+    const btnStartLeaderboard = document.getElementById('btnStartLeaderboard');
+    if (btnStartLeaderboard) {
+      btnStartLeaderboard.addEventListener('click', (e) => {
+        openLeaderboard(e);
+      });
+    }
+
+    const btnGameOverLeaderboard = document.getElementById('btnGameOverLeaderboard');
+    if (btnGameOverLeaderboard) {
+      btnGameOverLeaderboard.addEventListener('click', (e) => {
+        openLeaderboard(e);
+      });
+    }
+
+    const btnLbRefresh = document.getElementById('btnLbRefresh');
+    if (btnLbRefresh) {
+      btnLbRefresh.addEventListener('click', () => {
+        window.soundEngine.playPickup();
+        this.renderLeaderboardModal(true);
+      });
+    }
+
+    const lbNameForm = document.getElementById('lbNameForm');
+    if (lbNameForm) {
+      lbNameForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!window.leaderboardManager) return;
+        const input = document.getElementById('lbNameInput');
+        const cleaned = window.leaderboardManager.setPlayerName(input ? input.value : '');
+        if (input) input.value = cleaned;
+        window.soundEngine.playPickup();
+
+        const statusEl = document.getElementById('lbStatus');
+        if (statusEl) statusEl.textContent = 'Сохраняем имя и обновляем рейтинг...';
+
+        await window.leaderboardManager.syncScore({
+          bestScore: this.bestScore,
+          maxCombo: this.maxCombo || 1,
+          force: true
+        });
+        this.updateHUD();
+        await this.renderLeaderboardModal(true);
       });
     }
 
@@ -5436,6 +6242,9 @@ class BlockBlastGame {
       if (window.questManager) {
         window.questManager.onEvent('games_played', 1);
       }
+      if (window.leaderboardManager) {
+        window.leaderboardManager.recordLocalProgress(this.bestScore, this.maxCombo || 1, 1);
+      }
     }
 
     // Base placement points (juicy reward for placing shapes)
@@ -5628,6 +6437,9 @@ class BlockBlastGame {
     if (this.score > this.bestScore) {
       this.bestScore = this.score;
       localStorage.setItem('bb_best_score', String(this.bestScore));
+      if (window.leaderboardManager) {
+        window.leaderboardManager.recordLocalProgress(this.bestScore, this.maxCombo || 1, 0);
+      }
     }
 
     // Quest: Score update
@@ -5687,6 +6499,16 @@ class BlockBlastGame {
       window.questManager.updateUIBadge();
     }
 
+    if (window.leaderboardManager) {
+      window.leaderboardManager.recordLocalProgress(this.bestScore, this.maxCombo || 1, 0);
+      if (this.bestScore > 0) {
+        window.leaderboardManager.syncScore({
+          bestScore: this.bestScore,
+          maxCombo: this.maxCombo || 1
+        }).then(() => this.refreshGameOverRankBadge());
+      }
+    }
+
     setTimeout(() => {
       document.getElementById('finalScoreValue').textContent = this.score.toLocaleString('ru-RU');
       document.getElementById('finalBestValue').textContent = this.bestScore.toLocaleString('ru-RU');
@@ -5700,6 +6522,7 @@ class BlockBlastGame {
       }
 
       this.updateReviveUI();
+      this.refreshGameOverRankBadge();
       document.getElementById('gameOverModal').classList.remove('hidden');
     }, 620);
   }
@@ -6271,6 +7094,124 @@ class BlockBlastGame {
   }
 
   
+
+  refreshGameOverRankBadge() {
+    const pill = document.getElementById('gameOverRankBadge');
+    if (!pill || !window.leaderboardManager) return;
+    const rank = window.leaderboardManager.cachedRank;
+    if (rank) {
+      pill.textContent = `#${rank} в мире`;
+      pill.classList.remove('hidden');
+    } else {
+      pill.classList.add('hidden');
+    }
+  }
+
+  async renderLeaderboardModal(forceRefresh = false) {
+    const lm = window.leaderboardManager;
+    if (!lm) return;
+
+    const myRankEl = document.getElementById('lbMyRank');
+    const myScoreEl = document.getElementById('lbMyScore');
+    const myComboEl = document.getElementById('lbMyCombo');
+    const nameInput = document.getElementById('lbNameInput');
+    const statusEl = document.getElementById('lbStatus');
+    const listEl = document.getElementById('lbList');
+    const onlineTag = document.getElementById('lbOnlineTag');
+
+    if (myScoreEl) myScoreEl.textContent = this.bestScore.toLocaleString('ru-RU');
+    if (myComboEl) myComboEl.textContent = `x${Math.max(lm.maxComboSeen, this.maxCombo || 1)}`;
+    if (myRankEl) myRankEl.textContent = lm.cachedRank ? `#${lm.cachedRank}` : '—';
+    if (nameInput && document.activeElement !== nameInput) {
+      nameInput.value = lm.playerName || '';
+      nameInput.placeholder = lm.getDefaultName(lm.user ? lm.user.uid : '');
+    }
+
+    if (statusEl) statusEl.textContent = 'Синхронизация с облаком...';
+
+    if (this.bestScore > 0) {
+      await lm.syncScore({ bestScore: this.bestScore, maxCombo: this.maxCombo || 1 });
+    }
+
+    const res = await lm.fetchLeaderboard({ force: forceRefresh });
+    if (nameInput && document.activeElement !== nameInput) {
+      nameInput.placeholder = lm.getDefaultName(res.myUid || (lm.user ? lm.user.uid : ''));
+      if (!nameInput.value && lm.playerName) nameInput.value = lm.playerName;
+    }
+
+    if (onlineTag) {
+      if (res.ok) {
+        onlineTag.textContent = 'Онлайн';
+        onlineTag.classList.remove('offline');
+      } else {
+        onlineTag.textContent = 'Офлайн';
+        onlineTag.classList.add('offline');
+      }
+    }
+
+    if (myRankEl) {
+      myRankEl.textContent = res.myRank ? `#${res.myRank}` : '—';
+    }
+    this.updateHUD();
+    this.refreshGameOverRankBadge();
+
+    if (!listEl) return;
+    listEl.innerHTML = '';
+
+    if (!res.ok && (!res.entries || res.entries.length === 0)) {
+      if (statusEl) {
+        statusEl.textContent = 'Нет подключения к сети. Ваш рекорд сохранён локально и отправится автоматически при появлении интернета.';
+      }
+      return;
+    }
+
+    if (!res.entries || res.entries.length === 0) {
+      if (statusEl) {
+        statusEl.textContent = 'Пока нет записей — сыграйте первую партию и станьте #1!';
+      }
+      return;
+    }
+
+    if (statusEl) {
+      statusEl.textContent = res.ok
+        ? `Топ-${res.entries.length} лучших игроков мира`
+        : 'Показаны кэшированные данные (нет сети)';
+    }
+
+    res.entries.forEach((entry, index) => {
+      const rank = index + 1;
+      const isMe = Boolean(res.myUid && entry.uid === res.myUid);
+      const row = document.createElement('div');
+      row.className = `lb-row${isMe ? ' me' : ''}${rank <= 3 ? ` top${rank}` : ''}`;
+
+      const rankEl = document.createElement('span');
+      rankEl.className = 'lb-rank';
+      rankEl.textContent = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+
+      const nameWrap = document.createElement('div');
+      nameWrap.className = 'lb-name-wrap';
+
+      const nameEl = document.createElement('span');
+      nameEl.className = 'lb-name';
+      nameEl.textContent = isMe ? `${entry.name} (Вы)` : entry.name;
+
+      const subEl = document.createElement('span');
+      subEl.className = 'lb-sub';
+      subEl.textContent = `Макс. комбо x${entry.maxCombo || 1}${entry.gamesPlayed ? ` • Игр: ${entry.gamesPlayed}` : ''}`;
+
+      nameWrap.appendChild(nameEl);
+      nameWrap.appendChild(subEl);
+
+      const scoreEl = document.createElement('span');
+      scoreEl.className = 'lb-score';
+      scoreEl.textContent = (Number(entry.bestScore) || 0).toLocaleString('ru-RU');
+
+      row.appendChild(rankEl);
+      row.appendChild(nameWrap);
+      row.appendChild(scoreEl);
+      listEl.appendChild(row);
+    });
+  }
 
   renderThemeModalList() {
     const listEl = document.getElementById('themeList');

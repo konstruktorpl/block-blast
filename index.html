@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=42" />
+  <link rel="stylesheet" href="style.css?v=43" />
 </head>
 <body>
   <div id="bgCrossfade" class="bg-crossfade"></div>
@@ -42,6 +42,12 @@
           </svg>
           <span id="trophyCount" class="trophy-val">0</span>
           <span id="questBadge" class="quest-badge hidden">!</span>
+        </button>
+
+        <button id="btnLeaderboard" class="lb-hud-btn" aria-label="Глобальный лидерборд" title="Лидерборд">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#9fd8ff" d="M7.5 21H2V9h5.5v12zm7.25-18h-5.5v18h5.5V3zM22 11h-5.5v10H22V11z"/>
+          </svg>
         </button>
 
         <button id="btnSettings" class="gear-btn" aria-label="Настройки">
@@ -86,6 +92,10 @@
       <button id="btnStartQuests" class="menu-btn orange">
         <svg viewBox="0 0 24 24" style="width: 32px; height: 32px;"><path fill="#fff" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.78-.37 3.22-1.63 3.61-3.06C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2z"/></svg>
         <span>Квесты</span>
+      </button>
+      <button id="btnStartLeaderboard" class="menu-btn blue">
+        <svg viewBox="0 0 24 24" style="width: 30px; height: 30px;"><path fill="#fff" d="M7.5 21H2V9h5.5v12zm7.25-18h-5.5v18h5.5V3zM22 11h-5.5v10H22V11z"/></svg>
+        <span>Лидерборд</span>
       </button>
     </div>
   </div>
@@ -147,6 +157,17 @@
           <span id="settingsTrophyPill" class="settings-pill">0 🏆</span>
         </button>
 
+        <button id="btnSettingsLeaderboard" class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-icon">🌍</span>
+            <div class="settings-text">
+              <span class="settings-title">Глобальный рейтинг</span>
+              <span class="settings-desc" id="settingsLbDesc">Таблица лучших игроков мира</span>
+            </div>
+          </div>
+          <span id="settingsLbPill" class="settings-pill">Топ 50</span>
+        </button>
+
         <button id="btnRestart" class="settings-row">
           <div class="settings-row-left">
             <span class="settings-icon">🔄</span>
@@ -173,7 +194,7 @@
       <div class="settings-footer">
         <button id="btnReloadApp" class="settings-reload-btn">
           <span>Обновить игру / очистить кэш</span>
-          <span class="version-pill">v42 🔄</span>
+          <span class="version-pill">v43 🔄</span>
         </button>
       </div>
     </div>
@@ -252,6 +273,11 @@
         <button id="btnPlayAgain" class="primary-btn">
           Играть снова
         </button>
+
+        <button id="btnGameOverLeaderboard" class="secondary-btn">
+          <span>🌍 Глобальный рейтинг</span>
+          <span id="gameOverRankBadge" class="gameover-rank-pill hidden"></span>
+        </button>
       </div>
     </div>
   </div>
@@ -284,11 +310,53 @@
     </div>
   </div>
 
-  <script src="quests.js?v=42"></script>
-  <script src="themes.js?v=42"></script>
-  <script src="audio.js?v=42"></script>
-  <script src="shapes.js?v=42"></script>
-  <script src="particles.js?v=42"></script>
-  <script src="game.js?v=42"></script>
+  <!-- Global Leaderboard Modal -->
+  <div id="leaderboardModal" class="modal-backdrop hidden">
+    <div class="modal-card lb-modal-card">
+      <div class="modal-header">
+        <div class="lb-header-title">
+          <h2>Лидерборд</h2>
+          <span id="lbOnlineTag" class="lb-online-tag">Онлайн</span>
+        </div>
+        <div class="lb-header-actions">
+          <button id="btnLbRefresh" class="close-btn lb-refresh-btn" title="Обновить рейтинг" aria-label="Обновить">↻</button>
+          <button class="close-btn" data-close="leaderboardModal">✕</button>
+        </div>
+      </div>
+
+      <div class="lb-profile-card">
+        <div class="lb-profile-stats">
+          <div class="lb-stat-item">
+            <span class="lb-stat-label">МЕСТО В МИРЕ</span>
+            <span id="lbMyRank" class="lb-stat-val accent">—</span>
+          </div>
+          <div class="lb-stat-item">
+            <span class="lb-stat-label">ВАШ РЕКОРД</span>
+            <span id="lbMyScore" class="lb-stat-val">0</span>
+          </div>
+          <div class="lb-stat-item">
+            <span class="lb-stat-label">МАКС. КОМБО</span>
+            <span id="lbMyCombo" class="lb-stat-val">x1</span>
+          </div>
+        </div>
+
+        <form id="lbNameForm" class="lb-name-row">
+          <input id="lbNameInput" class="lb-input" type="text" maxlength="20" placeholder="Ваш никнейм..." autocomplete="nickname" />
+          <button id="btnLbSaveName" type="submit" class="lb-save-btn">ОК</button>
+        </form>
+      </div>
+
+      <div id="lbStatus" class="lb-status">Загрузка таблицы лидеров...</div>
+      <div id="lbList" class="lb-list"></div>
+    </div>
+  </div>
+
+  <script src="quests.js?v=43"></script>
+  <script src="themes.js?v=43"></script>
+  <script src="audio.js?v=43"></script>
+  <script src="shapes.js?v=43"></script>
+  <script src="particles.js?v=43"></script>
+  <script src="leaderboard.js?v=43"></script>
+  <script src="game.js?v=43"></script>
 </body>
 </html>

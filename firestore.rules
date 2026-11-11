@@ -1,0 +1,151 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // This security rules file assumes the following data structures:
+    //
+    // Collection: leaderboard
+    // Document ID: {userId} (must match authenticated Firebase user's request.auth.uid)
+    // Fields:
+    //   - uid: string (required, immutable, must equal request.auth.uid, 1..128 chars)
+    //   - name: string (required, 1..20 chars, non-empty after trim, no \r/\n/\t)
+    //   - bestScore: int (required, 1..50000000, monotonic non-decreasing on update)
+    //   - maxCombo: int (required, 1..999, monotonic non-decreasing on update)
+    //   - gamesPlayed: int (required, 0..1000000, monotonic non-decreasing on update)
+    //   - updatedAt: timestamp (required, must equal request.time / serverTimestamp() on create and update)
+    //
+    // Notes:
+    //   - Database ID: "leaderboard" (Firestore Enterprise Native mode).
+    //   - Authentication: Firebase Anonymous Auth (request.auth != null).
+    //   - Privacy: Contains NO PII (no email, phone, address, or real identity fields).
+    //   - Client queries:
+    //       * Top-50 pipeline: where(bestScore > 0), sort(bestScore DESC, updatedAt ASC), limit(50)
+    //       * Rank pipeline: where(bestScore > myBest), aggregate(countAll)
+    //       * Own profile lookup: getDoc(leaderboard/{uid})
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    // Check if the user is authenticated (includes Firebase Anonymous Auth)
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if authenticated user owns the document path {userId}
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Check if authenticated user owns the existing document via its uid field
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.uid;
+    }
+
+    // Verify uid hasn't been spoofed on create
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) ||
+        request.resource.data.uid == request.auth.uid;
+    }
+
+    // Ensure uid field is not modified on update
+    function uidNotModified() {
+      return !('uid' in request.resource.data) ||
+        request.resource.data.uid == resource.data.uid;
+    }
+
+    // Validate required fields exist in the incoming document
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // Enforce strict schema by rejecting extraneous fields
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // Ensure immutable fields cannot change on update
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // Validate string length bounds
+    function validStringLength(field, minLen, maxLen) {
+      return request.resource.data[field] is string &&
+        request.resource.data[field].size() >= minLen &&
+        request.resource.data[field].size() <= maxLen;
+    }
+
+    // Validate integer is within inclusive [minVal, maxVal] bounds
+    function isValidIntRange(value, minVal, maxVal) {
+      return value is int && value >= minVal && value <= maxVal;
+    }
+
+    // ===============================================================
+    // Domain Validators (CRITICAL: Called on BOTH create and update)
+    // ===============================================================
+
+    function isValidLeaderboardEntry(data) {
+      let allowedFields = ['uid', 'name', 'bestScore', 'maxCombo', 'gamesPlayed', 'updatedAt'];
+      return hasRequiredFields(allowedFields) &&
+        hasOnlyAllowedFields(allowedFields) &&
+        validStringLength('uid', 1, 128) &&
+        data.uid == request.auth.uid &&
+        validStringLength('name', 1, 20) &&
+        data.name.trim().size() >= 1 &&
+        data.name.matches('^[^\\r\\n\\t]+$') &&
+        isValidIntRange(data.bestScore, 1, 50000000) &&
+        isValidIntRange(data.maxCombo, 1, 999) &&
+        isValidIntRange(data.gamesPlayed, 0, 1000000) &&
+        data.updatedAt is timestamp &&
+        data.updatedAt == request.time;
+    }
+
+    // Enforce monotonic non-decreasing stats and uid immutability on update
+    function isValidLeaderboardUpdate() {
+      return uidNotModified() &&
+        areImmutableFieldsUnchanged(['uid']) &&
+        request.resource.data.bestScore >= resource.data.bestScore &&
+        request.resource.data.maxCombo >= resource.data.maxCombo &&
+        request.resource.data.gamesPlayed >= resource.data.gamesPlayed;
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    match /leaderboard/{userId} {
+      // Any authenticated user (including Anonymous Auth) may read entries for
+      // global top-50 list queries, aggregate countAll() rank queries, and getDoc.
+      // Unauthenticated public reads remain denied.
+      allow read: if isAuthenticated();
+
+      // Only the owning user may create their own leaderboard entry with valid schema.
+      allow create: if isOwner(userId) &&
+        uidUnchanged() &&
+        isValidLeaderboardEntry(request.resource.data);
+
+      // Only the owning user may update their own leaderboard entry, preserving
+      // schema validity, uid immutability, and monotonic non-decreasing progress.
+      allow update: if isOwner(userId) &&
+        isDocOwner() &&
+        isValidLeaderboardUpdate() &&
+        isValidLeaderboardEntry(request.resource.data);
+
+      // Players cannot delete leaderboard entries.
+      allow delete: if false;
+    }
+
+    // Default deny all other collections, documents, and subcollections.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

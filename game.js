@@ -97,6 +97,16 @@ class BlockBlastGame {
       this.updateHUD(true);
     }
 
+    if (window.leaderboardManager) {
+      window.leaderboardManager.recordLocalProgress(this.bestScore, this.maxCombo || 1, 0);
+      if (this.bestScore > 0) {
+        window.leaderboardManager.syncScore({
+          bestScore: this.bestScore,
+          maxCombo: this.maxCombo || 1
+        }).then(() => this.updateHUD());
+      }
+    }
+
     requestAnimationFrame((t) => this.loop(t));
   }
 
@@ -555,6 +565,22 @@ class BlockBlastGame {
     if (trophyPill && window.questManager) {
       trophyPill.textContent = `${window.questManager.trophies || 0} 🏆`;
     }
+
+    const lbPill = document.getElementById('settingsLbPill');
+    const lbDesc = document.getElementById('settingsLbDesc');
+    if (window.leaderboardManager) {
+      const lm = window.leaderboardManager;
+      if (lbPill) {
+        lbPill.textContent = lm.cachedRank
+          ? `#${lm.cachedRank} в мире`
+          : (this.bestScore > 0 ? this.bestScore.toLocaleString('ru-RU') : 'Топ 50');
+      }
+      if (lbDesc) {
+        lbDesc.textContent = lm.hasCustomName()
+          ? `Игрок: ${lm.playerName}`
+          : 'Таблица лучших игроков мира';
+      }
+    }
   }
 
   resize() {
@@ -681,6 +707,81 @@ class BlockBlastGame {
     if (btnStartQuests) {
       btnStartQuests.addEventListener('click', (e) => {
         openQuests(e);
+      });
+    }
+
+    // Open Global Leaderboard helper
+    let lastLbOpen = 0;
+    const openLeaderboard = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const now = Date.now();
+      if (now - lastLbOpen < 300) return;
+      lastLbOpen = now;
+      window.soundEngine.init();
+      window.soundEngine.playPickup();
+      show('leaderboardModal');
+      this.renderLeaderboardModal(true);
+    };
+
+    const btnLeaderboard = document.getElementById('btnLeaderboard');
+    if (btnLeaderboard) {
+      btnLeaderboard.addEventListener('pointerup', openLeaderboard);
+      btnLeaderboard.addEventListener('click', openLeaderboard);
+    }
+
+    const btnSettingsLeaderboard = document.getElementById('btnSettingsLeaderboard');
+    if (btnSettingsLeaderboard) {
+      btnSettingsLeaderboard.addEventListener('click', (e) => {
+        hide('settingsModal');
+        openLeaderboard(e);
+      });
+    }
+
+    const btnStartLeaderboard = document.getElementById('btnStartLeaderboard');
+    if (btnStartLeaderboard) {
+      btnStartLeaderboard.addEventListener('click', (e) => {
+        openLeaderboard(e);
+      });
+    }
+
+    const btnGameOverLeaderboard = document.getElementById('btnGameOverLeaderboard');
+    if (btnGameOverLeaderboard) {
+      btnGameOverLeaderboard.addEventListener('click', (e) => {
+        openLeaderboard(e);
+      });
+    }
+
+    const btnLbRefresh = document.getElementById('btnLbRefresh');
+    if (btnLbRefresh) {
+      btnLbRefresh.addEventListener('click', () => {
+        window.soundEngine.playPickup();
+        this.renderLeaderboardModal(true);
+      });
+    }
+
+    const lbNameForm = document.getElementById('lbNameForm');
+    if (lbNameForm) {
+      lbNameForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!window.leaderboardManager) return;
+        const input = document.getElementById('lbNameInput');
+        const cleaned = window.leaderboardManager.setPlayerName(input ? input.value : '');
+        if (input) input.value = cleaned;
+        window.soundEngine.playPickup();
+
+        const statusEl = document.getElementById('lbStatus');
+        if (statusEl) statusEl.textContent = 'Сохраняем имя и обновляем рейтинг...';
+
+        await window.leaderboardManager.syncScore({
+          bestScore: this.bestScore,
+          maxCombo: this.maxCombo || 1,
+          force: true
+        });
+        this.updateHUD();
+        await this.renderLeaderboardModal(true);
       });
     }
 
@@ -1025,6 +1126,9 @@ class BlockBlastGame {
       if (window.questManager) {
         window.questManager.onEvent('games_played', 1);
       }
+      if (window.leaderboardManager) {
+        window.leaderboardManager.recordLocalProgress(this.bestScore, this.maxCombo || 1, 1);
+      }
     }
 
     // Base placement points (juicy reward for placing shapes)
@@ -1217,6 +1321,9 @@ class BlockBlastGame {
     if (this.score > this.bestScore) {
       this.bestScore = this.score;
       localStorage.setItem('bb_best_score', String(this.bestScore));
+      if (window.leaderboardManager) {
+        window.leaderboardManager.recordLocalProgress(this.bestScore, this.maxCombo || 1, 0);
+      }
     }
 
     // Quest: Score update
@@ -1276,6 +1383,16 @@ class BlockBlastGame {
       window.questManager.updateUIBadge();
     }
 
+    if (window.leaderboardManager) {
+      window.leaderboardManager.recordLocalProgress(this.bestScore, this.maxCombo || 1, 0);
+      if (this.bestScore > 0) {
+        window.leaderboardManager.syncScore({
+          bestScore: this.bestScore,
+          maxCombo: this.maxCombo || 1
+        }).then(() => this.refreshGameOverRankBadge());
+      }
+    }
+
     setTimeout(() => {
       document.getElementById('finalScoreValue').textContent = this.score.toLocaleString('ru-RU');
       document.getElementById('finalBestValue').textContent = this.bestScore.toLocaleString('ru-RU');
@@ -1289,6 +1406,7 @@ class BlockBlastGame {
       }
 
       this.updateReviveUI();
+      this.refreshGameOverRankBadge();
       document.getElementById('gameOverModal').classList.remove('hidden');
     }, 620);
   }
@@ -1860,6 +1978,124 @@ class BlockBlastGame {
   }
 
   
+
+  refreshGameOverRankBadge() {
+    const pill = document.getElementById('gameOverRankBadge');
+    if (!pill || !window.leaderboardManager) return;
+    const rank = window.leaderboardManager.cachedRank;
+    if (rank) {
+      pill.textContent = `#${rank} в мире`;
+      pill.classList.remove('hidden');
+    } else {
+      pill.classList.add('hidden');
+    }
+  }
+
+  async renderLeaderboardModal(forceRefresh = false) {
+    const lm = window.leaderboardManager;
+    if (!lm) return;
+
+    const myRankEl = document.getElementById('lbMyRank');
+    const myScoreEl = document.getElementById('lbMyScore');
+    const myComboEl = document.getElementById('lbMyCombo');
+    const nameInput = document.getElementById('lbNameInput');
+    const statusEl = document.getElementById('lbStatus');
+    const listEl = document.getElementById('lbList');
+    const onlineTag = document.getElementById('lbOnlineTag');
+
+    if (myScoreEl) myScoreEl.textContent = this.bestScore.toLocaleString('ru-RU');
+    if (myComboEl) myComboEl.textContent = `x${Math.max(lm.maxComboSeen, this.maxCombo || 1)}`;
+    if (myRankEl) myRankEl.textContent = lm.cachedRank ? `#${lm.cachedRank}` : '—';
+    if (nameInput && document.activeElement !== nameInput) {
+      nameInput.value = lm.playerName || '';
+      nameInput.placeholder = lm.getDefaultName(lm.user ? lm.user.uid : '');
+    }
+
+    if (statusEl) statusEl.textContent = 'Синхронизация с облаком...';
+
+    if (this.bestScore > 0) {
+      await lm.syncScore({ bestScore: this.bestScore, maxCombo: this.maxCombo || 1 });
+    }
+
+    const res = await lm.fetchLeaderboard({ force: forceRefresh });
+    if (nameInput && document.activeElement !== nameInput) {
+      nameInput.placeholder = lm.getDefaultName(res.myUid || (lm.user ? lm.user.uid : ''));
+      if (!nameInput.value && lm.playerName) nameInput.value = lm.playerName;
+    }
+
+    if (onlineTag) {
+      if (res.ok) {
+        onlineTag.textContent = 'Онлайн';
+        onlineTag.classList.remove('offline');
+      } else {
+        onlineTag.textContent = 'Офлайн';
+        onlineTag.classList.add('offline');
+      }
+    }
+
+    if (myRankEl) {
+      myRankEl.textContent = res.myRank ? `#${res.myRank}` : '—';
+    }
+    this.updateHUD();
+    this.refreshGameOverRankBadge();
+
+    if (!listEl) return;
+    listEl.innerHTML = '';
+
+    if (!res.ok && (!res.entries || res.entries.length === 0)) {
+      if (statusEl) {
+        statusEl.textContent = 'Нет подключения к сети. Ваш рекорд сохранён локально и отправится автоматически при появлении интернета.';
+      }
+      return;
+    }
+
+    if (!res.entries || res.entries.length === 0) {
+      if (statusEl) {
+        statusEl.textContent = 'Пока нет записей — сыграйте первую партию и станьте #1!';
+      }
+      return;
+    }
+
+    if (statusEl) {
+      statusEl.textContent = res.ok
+        ? `Топ-${res.entries.length} лучших игроков мира`
+        : 'Показаны кэшированные данные (нет сети)';
+    }
+
+    res.entries.forEach((entry, index) => {
+      const rank = index + 1;
+      const isMe = Boolean(res.myUid && entry.uid === res.myUid);
+      const row = document.createElement('div');
+      row.className = `lb-row${isMe ? ' me' : ''}${rank <= 3 ? ` top${rank}` : ''}`;
+
+      const rankEl = document.createElement('span');
+      rankEl.className = 'lb-rank';
+      rankEl.textContent = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+
+      const nameWrap = document.createElement('div');
+      nameWrap.className = 'lb-name-wrap';
+
+      const nameEl = document.createElement('span');
+      nameEl.className = 'lb-name';
+      nameEl.textContent = isMe ? `${entry.name} (Вы)` : entry.name;
+
+      const subEl = document.createElement('span');
+      subEl.className = 'lb-sub';
+      subEl.textContent = `Макс. комбо x${entry.maxCombo || 1}${entry.gamesPlayed ? ` • Игр: ${entry.gamesPlayed}` : ''}`;
+
+      nameWrap.appendChild(nameEl);
+      nameWrap.appendChild(subEl);
+
+      const scoreEl = document.createElement('span');
+      scoreEl.className = 'lb-score';
+      scoreEl.textContent = (Number(entry.bestScore) || 0).toLocaleString('ru-RU');
+
+      row.appendChild(rankEl);
+      row.appendChild(nameWrap);
+      row.appendChild(scoreEl);
+      listEl.appendChild(row);
+    });
+  }
 
   renderThemeModalList() {
     const listEl = document.getElementById('themeList');

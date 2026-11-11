@@ -11,7 +11,7 @@ html = html.replace(/href="icon\.svg"/g, `href="${iconDataUri}"`);
 html = html.replace(/<link rel="manifest" href="manifest\.json"\s*\/>/, '');
 html = html.replace(/<link rel="stylesheet" href="style\.css[^"]*"\s*\/?>/, () => `<style>\n${css}\n</style>`);
 
-for (const file of ['quests.js', 'themes.js', 'audio.js', 'shapes.js', 'particles.js', 'game.js']) {
+for (const file of ['quests.js', 'themes.js', 'audio.js', 'shapes.js', 'particles.js', 'leaderboard.js', 'game.js']) {
   const js = fs.readFileSync(path.join(dir, file), 'utf8');
   const re = new RegExp(`<script src="${file}[^"]*"><\\/script>`);
   html = html.replace(re, () => `<script>\n${js}\n</script>`);

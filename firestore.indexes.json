@@ -1,0 +1,14 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "leaderboard",
+      "queryScope": "COLLECTION",
+      "density": "SPARSE_ANY",
+      "fields": [
+        { "fieldPath": "bestScore", "order": "DESCENDING" },
+        { "fieldPath": "updatedAt", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
