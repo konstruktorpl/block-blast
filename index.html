@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=44" />
+  <link rel="stylesheet" href="style.css?v=45" />
 </head>
 <body>
   <div id="bgCrossfade" class="bg-crossfade"></div>
@@ -72,6 +72,17 @@
 
   <!-- Start Screen -->
   <div id="startScreen" class="start-screen">
+    <div class="start-bg-shapes" aria-hidden="true">
+      <span class="bg-block b1"></span>
+      <span class="bg-block b2"></span>
+      <span class="bg-block b3"></span>
+      <span class="bg-block b4"></span>
+      <span class="bg-block b5"></span>
+      <span class="bg-block b6"></span>
+      <span class="bg-block b7"></span>
+      <span class="bg-block b8"></span>
+    </div>
+
     <div class="logo">
       <div class="logo-top">
         <span class="l-b">B</span><span class="l-l">L</span><span class="l-o">O<svg class="logo-crown" viewBox="0 0 64 44"><path d="M4 14 L18 26 L32 6 L46 26 L60 14 L54 40 H10 Z" fill="#ffc633" stroke="#d98f0b" stroke-width="3" stroke-linejoin="round"/><circle cx="4" cy="14" r="4.5" fill="#ffc633"/><circle cx="32" cy="6" r="4.5" fill="#ffc633"/><circle cx="60" cy="14" r="4.5" fill="#ffc633"/></svg></span><span class="l-c">C</span><span class="l-k">K</span>
@@ -79,9 +90,12 @@
       <div class="logo-bottom">BLAST</div>
     </div>
 
-    <div class="start-piece">
-      <i></i><i></i><b></b>
-      <b></b><i></i><i></i>
+    <div class="start-piece-stage">
+      <div class="start-piece">
+        <i></i><i></i><b></b>
+        <b></b><i></i><i></i>
+      </div>
+      <div class="start-piece-shadow" aria-hidden="true"></div>
     </div>
 
     <div class="start-buttons">
@@ -194,7 +208,7 @@
       <div class="settings-footer">
         <button id="btnReloadApp" class="settings-reload-btn">
           <span>Обновить игру / очистить кэш</span>
-          <span class="version-pill">v44 🔄</span>
+          <span class="version-pill">v45 🔄</span>
         </button>
       </div>
     </div>
@@ -351,12 +365,12 @@
     </div>
   </div>
 
-  <script src="quests.js?v=44"></script>
-  <script src="themes.js?v=44"></script>
-  <script src="audio.js?v=44"></script>
-  <script src="shapes.js?v=44"></script>
-  <script src="particles.js?v=44"></script>
-  <script src="leaderboard.js?v=44"></script>
-  <script src="game.js?v=44"></script>
+  <script src="quests.js?v=45"></script>
+  <script src="themes.js?v=45"></script>
+  <script src="audio.js?v=45"></script>
+  <script src="shapes.js?v=45"></script>
+  <script src="particles.js?v=45"></script>
+  <script src="leaderboard.js?v=45"></script>
+  <script src="game.js?v=45"></script>
 </body>
 </html>
