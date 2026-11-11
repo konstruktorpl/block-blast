@@ -372,17 +372,49 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  min-height: 118px;
   gap: 18px;
+  cursor: pointer;
+}
+
+.start-piece-bob {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 86px;
+  animation: pieceFloat 3.2s ease-in-out infinite;
+  will-change: transform;
 }
 
 .start-piece {
+  --pc-base: #f5b72e;
+  --pc-top: #fcd875;
+  --pc-left: #f8c64c;
+  --pc-right: #d99a17;
+  --pc-bottom: #b9800c;
   display: grid;
   grid-template-columns: repeat(3, 28px);
   grid-template-rows: repeat(2, 28px);
   gap: 1px;
   filter: drop-shadow(4px 7px 6px rgba(7, 18, 56, 0.45));
-  animation: pieceFloat 3.2s ease-in-out infinite;
-  will-change: transform;
+  transition: transform 0.22s cubic-bezier(0.55, 0.055, 0.675, 0.19), opacity 0.18s ease;
+  will-change: transform, opacity;
+}
+
+.start-piece.is-swapping-out {
+  transform: scale(0.35) rotate(-14deg);
+  opacity: 0;
+}
+
+.start-piece.is-swapping-in {
+  animation: pieceSwapIn 0.48s cubic-bezier(0.22, 1.35, 0.36, 1) forwards;
+}
+
+@keyframes pieceSwapIn {
+  0%   { transform: scale(0.35) rotate(14deg); opacity: 0; }
+  65%  { transform: scale(1.08) rotate(-2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
 @keyframes pieceFloat {
@@ -398,17 +430,27 @@ button {
 }
 
 .start-piece i {
-  background: #f5b72e;
+  background: var(--pc-base);
   border-style: solid;
   border-width: 3px;
   border-radius: 3px;
-  border-color: #fcd875 #d99a17 #b9800c #f8c64c;
+  border-color: var(--pc-top) var(--pc-right) var(--pc-bottom) var(--pc-left);
   animation: pieceCellGlow 3.2s ease-in-out infinite;
 }
 
 .start-piece i:nth-child(2) { animation-delay: 0.15s; }
 .start-piece i:nth-child(5) { animation-delay: 0.3s; }
 .start-piece i:nth-child(6) { animation-delay: 0.45s; }
+
+.start-piece.is-swapping-in i {
+  animation: cellPopIn 0.38s cubic-bezier(0.22, 1.4, 0.36, 1) backwards;
+  animation-delay: var(--cell-delay, 0ms);
+}
+
+@keyframes cellPopIn {
+  0%   { transform: scale(0.15); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
 
 @keyframes pieceCellGlow {
   0%, 65%, 100% { filter: brightness(1); }
@@ -419,11 +461,22 @@ button {
   background: transparent;
 }
 
+.start-piece-shadow-wrap {
+  transition: transform 0.22s ease, opacity 0.22s ease;
+  will-change: transform, opacity;
+}
+
+.start-piece-stage.is-swapping .start-piece-shadow-wrap {
+  transform: scaleX(0.45) scaleY(0.6);
+  opacity: 0.2;
+}
+
 .start-piece-shadow {
   width: 86px;
   height: 14px;
   border-radius: 50%;
   background: radial-gradient(ellipse at center, rgba(7, 18, 56, 0.44) 0%, rgba(7, 18, 56, 0.16) 55%, rgba(7, 18, 56, 0) 76%);
+  transition: width 0.28s ease;
   animation: pieceShadowPulse 3.2s ease-in-out infinite;
   will-change: transform, opacity;
 }
@@ -495,7 +548,7 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bg-block, .logo, .logo-top span, .logo-crown, .start-piece, .start-piece i, .start-piece-shadow, .menu-btn.green::after {
+  .bg-block, .logo, .logo-top span, .logo-crown, .start-piece-bob, .start-piece, .start-piece i, .start-piece-shadow, .menu-btn.green::after {
     animation: none !important;
   }
 }
@@ -1681,12 +1734,16 @@ button {
       <div class="logo-bottom">BLAST</div>
     </div>
 
-    <div class="start-piece-stage">
-      <div class="start-piece">
-        <i></i><i></i><b></b>
-        <b></b><i></i><i></i>
+    <div class="start-piece-stage" id="startPieceStage">
+      <div class="start-piece-bob">
+        <div class="start-piece" id="startPiece">
+          <i></i><i></i><b></b>
+          <b></b><i></i><i></i>
+        </div>
       </div>
-      <div class="start-piece-shadow" aria-hidden="true"></div>
+      <div class="start-piece-shadow-wrap">
+        <div class="start-piece-shadow" id="startPieceShadow" aria-hidden="true"></div>
+      </div>
     </div>
 
     <div class="start-buttons">
@@ -1799,7 +1856,7 @@ button {
       <div class="settings-footer">
         <button id="btnReloadApp" class="settings-reload-btn">
           <span>Обновить игру / очистить кэш</span>
-          <span class="version-pill">v45 🔄</span>
+          <span class="version-pill">v46 🔄</span>
         </button>
       </div>
     </div>
@@ -5343,6 +5400,7 @@ class BlockBlastGame {
 
     this.applyTheme(this.themeId, true);
     this.bindEvents();
+    this.initStartPieceShowcase();
     this.resize();
 
     if (!this.loadSavedGame()) {
@@ -5366,6 +5424,116 @@ class BlockBlastGame {
 
   get theme() {
     return this.activeThemeState || window.THEMES[this.themeId] || window.THEMES.classic;
+  }
+
+  initStartPieceShowcase() {
+    const stage = document.getElementById('startPieceStage');
+    const pieceEl = document.getElementById('startPiece');
+    const shadowEl = document.getElementById('startPieceShadow');
+    const startScreen = document.getElementById('startScreen');
+    if (!stage || !pieceEl) return;
+
+    const showcase = [
+      {
+        cols: 3, rows: 2,
+        cells: [1, 1, 0, 0, 1, 1],
+        c: { base: '#f5b72e', top: '#fcd875', left: '#f8c64c', right: '#d99a17', bottom: '#b9800c' }
+      },
+      {
+        cols: 3, rows: 2,
+        cells: [0, 1, 0, 1, 1, 1],
+        c: { base: '#f0445c', top: '#ff8a9b', left: '#ff6378', right: '#d1263e', bottom: '#a3172c' }
+      },
+      {
+        cols: 2, rows: 2,
+        cells: [1, 1, 1, 1],
+        c: { base: '#24c98b', top: '#7ef0c2', left: '#46dca1', right: '#15a66e', bottom: '#0e7d52' }
+      },
+      {
+        cols: 3, rows: 2,
+        cells: [1, 0, 0, 1, 1, 1],
+        c: { base: '#26b6e8', top: '#8ee3ff', left: '#52caf4', right: '#1494c4', bottom: '#0d7099' }
+      },
+      {
+        cols: 4, rows: 1,
+        cells: [1, 1, 1, 1],
+        c: { base: '#9c5cff', top: '#ceb0ff', left: '#b27eff', right: '#7b3de0', bottom: '#5b24b8' }
+      },
+      {
+        cols: 3, rows: 3,
+        cells: [1, 0, 0, 1, 0, 0, 1, 1, 1],
+        c: { base: '#ff8c24', top: '#ffc278', left: '#ffa64d', right: '#d96a0b', bottom: '#ab4f02' }
+      },
+      {
+        cols: 3, rows: 2,
+        cells: [0, 1, 1, 1, 1, 0],
+        c: { base: '#3d7eff', top: '#8fb8ff', left: '#5e96ff', right: '#235cd6', bottom: '#1742a8' }
+      }
+    ];
+
+    let idx = 0;
+    let isTransitioning = false;
+    let outTimer = null;
+    let inTimer = null;
+
+    const swapToNext = () => {
+      if (isTransitioning) return;
+      if (!startScreen || startScreen.classList.contains('hidden')) return;
+      isTransitioning = true;
+
+      idx = (idx + 1) % showcase.length;
+      const item = showcase[idx];
+
+      stage.classList.add('is-swapping');
+      pieceEl.classList.remove('is-swapping-in');
+      pieceEl.classList.add('is-swapping-out');
+
+      clearTimeout(outTimer);
+      clearTimeout(inTimer);
+
+      outTimer = setTimeout(() => {
+        pieceEl.style.gridTemplateColumns = `repeat(${item.cols}, 28px)`;
+        pieceEl.style.gridTemplateRows = `repeat(${item.rows}, 28px)`;
+        pieceEl.style.setProperty('--pc-base', item.c.base);
+        pieceEl.style.setProperty('--pc-top', item.c.top);
+        pieceEl.style.setProperty('--pc-left', item.c.left);
+        pieceEl.style.setProperty('--pc-right', item.c.right);
+        pieceEl.style.setProperty('--pc-bottom', item.c.bottom);
+
+        pieceEl.innerHTML = '';
+        let fillIdx = 0;
+        item.cells.forEach((filled) => {
+          const el = document.createElement(filled ? 'i' : 'b');
+          if (filled) {
+            el.style.setProperty('--cell-delay', `${fillIdx * 45}ms`);
+            fillIdx++;
+          }
+          pieceEl.appendChild(el);
+        });
+
+        if (shadowEl) {
+          shadowEl.style.width = `${item.cols * 28 + 4}px`;
+        }
+
+        pieceEl.classList.remove('is-swapping-out');
+        void pieceEl.offsetWidth;
+        stage.classList.remove('is-swapping');
+        pieceEl.classList.add('is-swapping-in');
+
+        inTimer = setTimeout(() => {
+          pieceEl.classList.remove('is-swapping-in');
+          isTransitioning = false;
+        }, 500);
+      }, 220);
+    };
+
+    stage.addEventListener('click', () => {
+      window.soundEngine.init();
+      window.soundEngine.playHoverTick();
+      swapToNext();
+    });
+
+    setInterval(swapToNext, 2600);
   }
 
   /**

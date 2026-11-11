@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=45" />
+  <link rel="stylesheet" href="style.css?v=46" />
 </head>
 <body>
   <div id="bgCrossfade" class="bg-crossfade"></div>
@@ -90,12 +90,16 @@
       <div class="logo-bottom">BLAST</div>
     </div>
 
-    <div class="start-piece-stage">
-      <div class="start-piece">
-        <i></i><i></i><b></b>
-        <b></b><i></i><i></i>
+    <div class="start-piece-stage" id="startPieceStage">
+      <div class="start-piece-bob">
+        <div class="start-piece" id="startPiece">
+          <i></i><i></i><b></b>
+          <b></b><i></i><i></i>
+        </div>
       </div>
-      <div class="start-piece-shadow" aria-hidden="true"></div>
+      <div class="start-piece-shadow-wrap">
+        <div class="start-piece-shadow" id="startPieceShadow" aria-hidden="true"></div>
+      </div>
     </div>
 
     <div class="start-buttons">
@@ -208,7 +212,7 @@
       <div class="settings-footer">
         <button id="btnReloadApp" class="settings-reload-btn">
           <span>Обновить игру / очистить кэш</span>
-          <span class="version-pill">v45 🔄</span>
+          <span class="version-pill">v46 🔄</span>
         </button>
       </div>
     </div>
@@ -365,12 +369,12 @@
     </div>
   </div>
 
-  <script src="quests.js?v=45"></script>
-  <script src="themes.js?v=45"></script>
-  <script src="audio.js?v=45"></script>
-  <script src="shapes.js?v=45"></script>
-  <script src="particles.js?v=45"></script>
-  <script src="leaderboard.js?v=45"></script>
-  <script src="game.js?v=45"></script>
+  <script src="quests.js?v=46"></script>
+  <script src="themes.js?v=46"></script>
+  <script src="audio.js?v=46"></script>
+  <script src="shapes.js?v=46"></script>
+  <script src="particles.js?v=46"></script>
+  <script src="leaderboard.js?v=46"></script>
+  <script src="game.js?v=46"></script>
 </body>
 </html>

@@ -89,6 +89,7 @@ class BlockBlastGame {
 
     this.applyTheme(this.themeId, true);
     this.bindEvents();
+    this.initStartPieceShowcase();
     this.resize();
 
     if (!this.loadSavedGame()) {
@@ -112,6 +113,116 @@ class BlockBlastGame {
 
   get theme() {
     return this.activeThemeState || window.THEMES[this.themeId] || window.THEMES.classic;
+  }
+
+  initStartPieceShowcase() {
+    const stage = document.getElementById('startPieceStage');
+    const pieceEl = document.getElementById('startPiece');
+    const shadowEl = document.getElementById('startPieceShadow');
+    const startScreen = document.getElementById('startScreen');
+    if (!stage || !pieceEl) return;
+
+    const showcase = [
+      {
+        cols: 3, rows: 2,
+        cells: [1, 1, 0, 0, 1, 1],
+        c: { base: '#f5b72e', top: '#fcd875', left: '#f8c64c', right: '#d99a17', bottom: '#b9800c' }
+      },
+      {
+        cols: 3, rows: 2,
+        cells: [0, 1, 0, 1, 1, 1],
+        c: { base: '#f0445c', top: '#ff8a9b', left: '#ff6378', right: '#d1263e', bottom: '#a3172c' }
+      },
+      {
+        cols: 2, rows: 2,
+        cells: [1, 1, 1, 1],
+        c: { base: '#24c98b', top: '#7ef0c2', left: '#46dca1', right: '#15a66e', bottom: '#0e7d52' }
+      },
+      {
+        cols: 3, rows: 2,
+        cells: [1, 0, 0, 1, 1, 1],
+        c: { base: '#26b6e8', top: '#8ee3ff', left: '#52caf4', right: '#1494c4', bottom: '#0d7099' }
+      },
+      {
+        cols: 4, rows: 1,
+        cells: [1, 1, 1, 1],
+        c: { base: '#9c5cff', top: '#ceb0ff', left: '#b27eff', right: '#7b3de0', bottom: '#5b24b8' }
+      },
+      {
+        cols: 3, rows: 3,
+        cells: [1, 0, 0, 1, 0, 0, 1, 1, 1],
+        c: { base: '#ff8c24', top: '#ffc278', left: '#ffa64d', right: '#d96a0b', bottom: '#ab4f02' }
+      },
+      {
+        cols: 3, rows: 2,
+        cells: [0, 1, 1, 1, 1, 0],
+        c: { base: '#3d7eff', top: '#8fb8ff', left: '#5e96ff', right: '#235cd6', bottom: '#1742a8' }
+      }
+    ];
+
+    let idx = 0;
+    let isTransitioning = false;
+    let outTimer = null;
+    let inTimer = null;
+
+    const swapToNext = () => {
+      if (isTransitioning) return;
+      if (!startScreen || startScreen.classList.contains('hidden')) return;
+      isTransitioning = true;
+
+      idx = (idx + 1) % showcase.length;
+      const item = showcase[idx];
+
+      stage.classList.add('is-swapping');
+      pieceEl.classList.remove('is-swapping-in');
+      pieceEl.classList.add('is-swapping-out');
+
+      clearTimeout(outTimer);
+      clearTimeout(inTimer);
+
+      outTimer = setTimeout(() => {
+        pieceEl.style.gridTemplateColumns = `repeat(${item.cols}, 28px)`;
+        pieceEl.style.gridTemplateRows = `repeat(${item.rows}, 28px)`;
+        pieceEl.style.setProperty('--pc-base', item.c.base);
+        pieceEl.style.setProperty('--pc-top', item.c.top);
+        pieceEl.style.setProperty('--pc-left', item.c.left);
+        pieceEl.style.setProperty('--pc-right', item.c.right);
+        pieceEl.style.setProperty('--pc-bottom', item.c.bottom);
+
+        pieceEl.innerHTML = '';
+        let fillIdx = 0;
+        item.cells.forEach((filled) => {
+          const el = document.createElement(filled ? 'i' : 'b');
+          if (filled) {
+            el.style.setProperty('--cell-delay', `${fillIdx * 45}ms`);
+            fillIdx++;
+          }
+          pieceEl.appendChild(el);
+        });
+
+        if (shadowEl) {
+          shadowEl.style.width = `${item.cols * 28 + 4}px`;
+        }
+
+        pieceEl.classList.remove('is-swapping-out');
+        void pieceEl.offsetWidth;
+        stage.classList.remove('is-swapping');
+        pieceEl.classList.add('is-swapping-in');
+
+        inTimer = setTimeout(() => {
+          pieceEl.classList.remove('is-swapping-in');
+          isTransitioning = false;
+        }, 500);
+      }, 220);
+    };
+
+    stage.addEventListener('click', () => {
+      window.soundEngine.init();
+      window.soundEngine.playHoverTick();
+      swapToNext();
+    });
+
+    setInterval(swapToNext, 2600);
   }
 
   /**

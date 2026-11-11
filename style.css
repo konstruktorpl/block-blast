@@ -354,17 +354,49 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  min-height: 118px;
   gap: 18px;
+  cursor: pointer;
+}
+
+.start-piece-bob {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 86px;
+  animation: pieceFloat 3.2s ease-in-out infinite;
+  will-change: transform;
 }
 
 .start-piece {
+  --pc-base: #f5b72e;
+  --pc-top: #fcd875;
+  --pc-left: #f8c64c;
+  --pc-right: #d99a17;
+  --pc-bottom: #b9800c;
   display: grid;
   grid-template-columns: repeat(3, 28px);
   grid-template-rows: repeat(2, 28px);
   gap: 1px;
   filter: drop-shadow(4px 7px 6px rgba(7, 18, 56, 0.45));
-  animation: pieceFloat 3.2s ease-in-out infinite;
-  will-change: transform;
+  transition: transform 0.22s cubic-bezier(0.55, 0.055, 0.675, 0.19), opacity 0.18s ease;
+  will-change: transform, opacity;
+}
+
+.start-piece.is-swapping-out {
+  transform: scale(0.35) rotate(-14deg);
+  opacity: 0;
+}
+
+.start-piece.is-swapping-in {
+  animation: pieceSwapIn 0.48s cubic-bezier(0.22, 1.35, 0.36, 1) forwards;
+}
+
+@keyframes pieceSwapIn {
+  0%   { transform: scale(0.35) rotate(14deg); opacity: 0; }
+  65%  { transform: scale(1.08) rotate(-2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
 @keyframes pieceFloat {
@@ -380,17 +412,27 @@ button {
 }
 
 .start-piece i {
-  background: #f5b72e;
+  background: var(--pc-base);
   border-style: solid;
   border-width: 3px;
   border-radius: 3px;
-  border-color: #fcd875 #d99a17 #b9800c #f8c64c;
+  border-color: var(--pc-top) var(--pc-right) var(--pc-bottom) var(--pc-left);
   animation: pieceCellGlow 3.2s ease-in-out infinite;
 }
 
 .start-piece i:nth-child(2) { animation-delay: 0.15s; }
 .start-piece i:nth-child(5) { animation-delay: 0.3s; }
 .start-piece i:nth-child(6) { animation-delay: 0.45s; }
+
+.start-piece.is-swapping-in i {
+  animation: cellPopIn 0.38s cubic-bezier(0.22, 1.4, 0.36, 1) backwards;
+  animation-delay: var(--cell-delay, 0ms);
+}
+
+@keyframes cellPopIn {
+  0%   { transform: scale(0.15); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
 
 @keyframes pieceCellGlow {
   0%, 65%, 100% { filter: brightness(1); }
@@ -401,11 +443,22 @@ button {
   background: transparent;
 }
 
+.start-piece-shadow-wrap {
+  transition: transform 0.22s ease, opacity 0.22s ease;
+  will-change: transform, opacity;
+}
+
+.start-piece-stage.is-swapping .start-piece-shadow-wrap {
+  transform: scaleX(0.45) scaleY(0.6);
+  opacity: 0.2;
+}
+
 .start-piece-shadow {
   width: 86px;
   height: 14px;
   border-radius: 50%;
   background: radial-gradient(ellipse at center, rgba(7, 18, 56, 0.44) 0%, rgba(7, 18, 56, 0.16) 55%, rgba(7, 18, 56, 0) 76%);
+  transition: width 0.28s ease;
   animation: pieceShadowPulse 3.2s ease-in-out infinite;
   will-change: transform, opacity;
 }
@@ -477,7 +530,7 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bg-block, .logo, .logo-top span, .logo-crown, .start-piece, .start-piece i, .start-piece-shadow, .menu-btn.green::after {
+  .bg-block, .logo, .logo-top span, .logo-crown, .start-piece-bob, .start-piece, .start-piece i, .start-piece-shadow, .menu-btn.green::after {
     animation: none !important;
   }
 }
