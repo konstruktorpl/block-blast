@@ -236,12 +236,14 @@ class BlockBlastGame {
   }
 
   /**
-   * Aligns document root background and meta theme-color with the visible screen
+   * Aligns document root background, body state, and meta theme-color with the visible screen
    * (Start Screen blue vs active gameplay theme) so iOS PWA safe-area edges match seamlessly.
    */
-  syncRootSurfaceColor() {
+  syncRootSurfaceColor(instant = true) {
     const startScreen = document.getElementById('startScreen');
-    const onStartScreen = startScreen && !startScreen.classList.contains('hidden');
+    const onStartScreen = Boolean(startScreen && !startScreen.classList.contains('hidden'));
+    document.body.classList.toggle('on-start-screen', onStartScreen);
+
     const surface = this.lastVisualSurface || this.theme;
     const rootBg = onStartScreen ? '#2384dc' : this.getSurfaceBottomColor(surface);
     const isStandalone =
@@ -251,7 +253,8 @@ class BlockBlastGame {
       ? (isStandalone ? '#2384dc' : '#2350c9')
       : (isStandalone ? rootBg : ((surface && surface.themeColor) || rootBg));
 
-    document.documentElement.style.background = rootBg;
+    document.documentElement.style.transition = instant ? 'none' : 'background-color 0.85s ease-in-out';
+    document.documentElement.style.backgroundColor = rootBg;
     const metaTheme = document.getElementById('metaThemeColor');
     if (metaTheme) metaTheme.setAttribute('content', metaColor);
   }
@@ -268,14 +271,12 @@ class BlockBlastGame {
       clearTimeout(this._crossfadeTimeout);
       this._crossfadeTimeout = setTimeout(() => {
         document.documentElement.style.setProperty('--bg-gradient', surface.bgGradient);
-        document.body.style.background = surface.bgGradient;
-        this.syncRootSurfaceColor();
+        this.syncRootSurfaceColor(false);
         crossfadeEl.style.opacity = '0';
-      }, 650);
+      }, 860);
     } else {
       if (crossfadeEl) crossfadeEl.style.opacity = '0';
       document.documentElement.style.setProperty('--bg-gradient', surface.bgGradient);
-      document.body.style.background = surface.bgGradient;
     }
 
     document.documentElement.style.setProperty('--board-bg', surface.boardBg);
@@ -285,7 +286,7 @@ class BlockBlastGame {
     if (surface.modalRow) document.documentElement.style.setProperty('--modal-row', surface.modalRow);
     if (surface.modalShadow) document.documentElement.style.setProperty('--modal-shadow', surface.modalShadow);
 
-    this.syncRootSurfaceColor();
+    this.syncRootSurfaceColor(instant);
   }
 
   applyTheme(themeId, instant = false) {
@@ -2547,6 +2548,7 @@ window.BlockBlastGame = BlockBlastGame;
 window.addEventListener('DOMContentLoaded', () => {
   if (/[?&]play\b/.test(window.location.search)) {
     document.getElementById('startScreen').classList.add('hidden');
+    document.body.classList.remove('on-start-screen');
   }
   window.game = new BlockBlastGame();
 });
