@@ -534,24 +534,15 @@ function evaluateTrayAllPermutations(grid, tray, comboStreak = 0) {
 
 /**
  * Determines DDA Target Mode based on game phase, record progression & revive shield:
- * - 'EASY': Early-Game Shield (<30 moves), post-revive grace (<6 moves), or chasing Record + 2,500 runway.
- * - 'HARD': Past Record + 2,500 — tightens spaces while keeping solvable paths for skilled players.
- * - 'KILL_PLAYER': Deep post-record exhaustion (>= 65% tension on crowded boards) to trigger dramatic Revive.
+ * - 'EASY': Early-Game Shield (<30 moves), post-revive grace (<6 moves), or chasing Record + 3,000 runway.
+ * - 'HARD': Past Record + 3,000 — gradually raises puzzle tightness while keeping fair solvable paths.
  */
 function determineDDAMode(grid, score, meta, tension, overrun) {
   const movesCount = meta.movesCount || 0;
   const postReviveMoves = meta.postReviveMoves ?? 99;
 
-  if (movesCount < 30 || postReviveMoves < 6 || overrun <= 2500) {
+  if (movesCount < 30 || postReviveMoves < 6 || overrun <= 2800) {
     return 'EASY';
-  }
-
-  const occupied = countOccupiedCells(grid);
-  if (tension >= 0.65 && occupied >= 24) {
-    const killProb = 0.10 + (tension - 0.65) * 0.85;
-    if (Math.random() < killProb) {
-      return 'KILL_PLAYER';
-    }
   }
 
   return 'HARD';
@@ -561,9 +552,9 @@ function determineDDAMode(grid, score, meta, tension, overrun) {
  * Generates a balanced, solvable tray of 3 pieces tailored to the current board state.
  * Features authentic Dynamic Director:
  * 1. Keep-Board-Clean Bias: Actively deals sweepable pieces & chain clears so the board stays open and airy.
- * 2. Early-Game Shield: ~98% assist rate on first 30 moves to protect against frustrating abrupt early deaths.
- * 3. Combo x4+ Extension Guarantee: 100% guarantee to deal a combo-extending piece during high streaks (reaching x8-x12).
- * 4. Record-Adaptive Difficulty Curve: Smoothly assists up to Best Score + ~2,500 buffer, then gradually ramps challenge.
+ * 2. Early-Game Shield: 100% assist + verified solvability on first 30 moves to protect against abrupt early deaths.
+ * 3. Combo x4+ Extension Guarantee: Strong combo-extending support during streaks.
+ * 4. Soft Record-Adaptive Difficulty Curve: Generous +3,000 buffer past Best Score, then gently ramps tension up to 0.75 over 9,000 points.
  */
 function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {}) {
   const occupied = countOccupiedCells(grid);
@@ -572,16 +563,16 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
   const movesCount = meta.movesCount || 0;
   const initialBestScore = meta.initialBestScore || 0;
 
-  // Record-Adaptive Rubber-Banding Curve:
+  // Soft Record-Adaptive Rubber-Banding Curve:
   // - Effective baseline target for new players with 0 record is 4500.
   // - Below recordTarget -> easy ("до рекорда дойти очень легко")
-  // - recordTarget to recordTarget + 2500 -> generous sweet spot ("дать набрать пару лишних тысяч")
-  // - Above recordTarget + 2500 -> smooth tension ramp up to 1.0 over next 3500 points ("опять начинает усложнять")
+  // - recordTarget to recordTarget + 3000 -> celebratory sweet spot after beating the record
+  // - Above recordTarget + 3000 -> gradual ramp up to 0.75 tension over next 9000 points (never sudden brick-wall punishment)
   const recordTarget = Math.max(initialBestScore, 4500);
   const overrun = score - recordTarget;
   let tension = 0;
-  if (overrun > 2500) {
-    tension = Math.min(1.0, (overrun - 2500) / 3500);
+  if (overrun > 2800) {
+    tension = Math.min(1.0, (overrun - 2800) / 5500);
   }
 
   // Dynamic shape weights shaped by board density and Record Tension (excluding rescue-only 1x1 dot!)
@@ -590,11 +581,11 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
     const isAwkward = s.id.startsWith('z_') || s.id.startsWith('s_') || s.id.startsWith('diag');
 
     if (fillRatio > 0.58) {
-      if (s.tier === 'large') w *= (0.18 + tension * 0.55);
-      if (s.tier === 'small') w *= (1.95 - tension * 0.70);
+      if (s.tier === 'large') w *= (0.18 + tension * 0.35);
+      if (s.tier === 'small') w *= (1.95 - tension * 0.55);
     } else if (fillRatio < 0.52) {
       // Open board: big, satisfying shapes dominate below record
-      const boostScale = 1.0 - tension * 0.45;
+      const boostScale = 1.0 - tension * 0.40;
       if (s.tier === 'large') w *= (1.0 + 0.90 * boostScale);
       if (s.id === 'sq3') w *= (1.0 + 1.45 * boostScale);
       else if (s.id === 'rect_2x3' || s.id === 'rect_3x2') w *= (1.0 + 1.15 * boostScale);
@@ -603,12 +594,12 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
       }
     }
 
-    // Below record: suppress awkward Z/S & diagonals; high tension past record mixes them back in strongly
+    // Gradual increase in awkward/angular pieces past record (softer than sudden flood)
     if (isAwkward) {
-      w *= (0.45 + tension * 1.75);
+      w *= (0.45 + tension * 1.15);
     }
     if (tension > 0.2 && (s.id.startsWith('bigL_') || s.id.startsWith('l_') || s.id.startsWith('t_'))) {
-      w *= (1.0 + tension * 0.95);
+      w *= (1.0 + tension * 0.60);
     }
 
     return { ...s, weight: w };
@@ -619,30 +610,28 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
   const holeFillingShapes = findHoleFillingShapes(grid);
 
   const ddaMode = determineDDAMode(grid, score, meta, tension, overrun);
-  const isEarlyShield = movesCount < 30 && overrun <= 2500;
+  const isEarlyShield = movesCount < 30 && overrun <= 2800;
   const isEarlyHoneymoon = movesCount < 6;
   const isHighCombo = comboStreak >= 4;
 
-  // Dynamic Director Probability:
+  // Dynamic Director Probability (gradual drop past record, converges fairly without sudden cliff):
   let assistChance;
-  if (ddaMode === 'KILL_PLAYER') {
-    assistChance = 0; // Lookahead Deadlock Hunter handles KILL_PLAYER cleanly
-  } else if (isEarlyShield) {
+  if (isEarlyShield) {
     assistChance = 1.0;
   } else if (isHighCombo) {
-    const superComboTaper = comboStreak >= 8 ? Math.min(0.55, (comboStreak - 7) * 0.08) : 0;
+    const superComboTaper = comboStreak >= 8 ? Math.min(0.50, (comboStreak - 7) * 0.07) : 0;
     const baseComboAssist = 0.90 - superComboTaper;
-    assistChance = Math.max(0.20, baseComboAssist - tension * 0.58);
+    assistChance = Math.max(0.18, baseComboAssist - tension * 0.56);
   } else if (comboStreak >= 1) {
-    assistChance = Math.max(0.24, 0.88 - tension * 0.62);
+    assistChance = Math.max(0.22, 0.88 - tension * 0.62);
   } else if (fillRatio >= 0.28) {
-    assistChance = Math.max(0.18, 0.86 - tension * 0.68);
+    assistChance = Math.max(0.16, 0.86 - tension * 0.66);
   } else {
-    assistChance = Math.max(0.15, 0.78 - tension * 0.62);
+    assistChance = Math.max(0.14, 0.78 - tension * 0.60);
   }
 
   const hasAssists = keyClearingShapes.length > 0 || holeFillingShapes.length > 0;
-  const shouldAssist = ddaMode !== 'KILL_PLAYER' && hasAssists && Math.random() < assistChance;
+  const shouldAssist = hasAssists && Math.random() < assistChance;
 
   let bestCandidate = null;
   let bestScore = -1;
@@ -657,7 +646,7 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
       if (isHighCombo || isEarlyHoneymoon) {
         primaryIsClearing = true; // Guarantee immediate combo continuation!
       } else if (comboStreak >= 1 || fillRatio >= 0.30) {
-        primaryIsClearing = Math.random() < (0.82 - tension * 0.15);
+        primaryIsClearing = Math.random() < (0.82 - tension * 0.12);
       } else {
         primaryIsClearing = Math.random() < 0.55;
       }
@@ -694,10 +683,10 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
       const nextHoleFillers = findHoleFillingShapes(simGrid);
 
       let secondObj = null;
-      const superComboChainPenalty = comboStreak >= 7 ? Math.min(0.45, (comboStreak - 6) * 0.08) : 0;
+      const superComboChainPenalty = comboStreak >= 7 ? Math.min(0.40, (comboStreak - 6) * 0.06) : 0;
       const chainProbability = isHighCombo
-        ? Math.max(0.20, 0.72 - superComboChainPenalty - tension * 0.35)
-        : Math.max(0.25, 0.72 - tension * 0.40);
+        ? Math.max(0.26, 0.72 - superComboChainPenalty - tension * 0.22)
+        : Math.max(0.32, 0.72 - tension * 0.24);
 
       if (nextClearers.length > 0 && Math.random() < chainProbability) {
         secondObj = pickWeightedItem(nextClearers);
@@ -734,8 +723,8 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
       const thirdClearers = findKeyClearingShapes(finalSimGrid);
       const thirdHoleFillers = findHoleFillingShapes(finalSimGrid);
       const thirdClearChance = isHighCombo
-        ? Math.max(0.15, 0.52 - (comboStreak >= 7 ? Math.min(0.30, (comboStreak - 6) * 0.06) : 0) - tension * 0.35)
-        : Math.max(0.15, 0.55 - tension * 0.40);
+        ? Math.max(0.22, 0.52 - (comboStreak >= 7 ? Math.min(0.26, (comboStreak - 6) * 0.05) : 0) - tension * 0.20)
+        : Math.max(0.24, 0.55 - tension * 0.24);
 
       const safeThirdFilter = (s) => {
         if (getAllValidPlacements(finalSimGrid, s).length === 0) return false;
@@ -765,14 +754,24 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
         }
       }
 
-      bestCandidate = candidate;
+      if (candidate.every(Boolean)) {
+        // Verify full 3-piece solvability during Early Shield or dense boards so a single bad ordering doesn't brick
+        if (isEarlyShield || fillRatio >= 0.45) {
+          const check = evaluateTrayAllPermutations(grid, candidate, comboStreak);
+          if (check.solvable) {
+            bestCandidate = candidate;
+          }
+        } else {
+          bestCandidate = candidate;
+        }
+      }
     }
   }
 
   if (!bestCandidate) {
     // 6-Permutation Lookahead Pool (checks ALL 6 move orderings A-B-C..C-B-A)
-    const poolSize = ddaMode === 'EASY' ? 14 : 16;
-    const maxLargePerHand = ddaMode === 'KILL_PLAYER' ? 3 : (tension > 0.55 ? 2 : 1);
+    const poolSize = ddaMode === 'EASY' ? 14 : 18;
+    const maxLargePerHand = tension > 0.50 ? 2 : 1;
     const evaluatedCandidates = [];
     let solvableCount = 0;
 
@@ -782,12 +781,7 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
 
       for (let i = 0; i < 3; i++) {
         let pool = weightedPool;
-        if (ddaMode === 'KILL_PLAYER') {
-          const unplayable = weightedPool.filter((s) => getAllValidPlacements(grid, s).length === 0);
-          if (unplayable.length > 0 && Math.random() < 0.65) {
-            pool = unplayable;
-          }
-        } else if (largeCount >= maxLargePerHand) {
+        if (largeCount >= maxLargePerHand) {
           pool = weightedPool.filter((s) => s.tier !== 'large');
         }
         const picked = pickWeightedShape(pool);
@@ -804,29 +798,20 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
         break;
       }
       // Fast-path exit in HARD once we have enough diverse solvable puzzles
-      if (ddaMode === 'HARD' && solvableCount >= 7) {
-        break;
-      }
-      // Fast-path exit in KILL_PLAYER as soon as a verified deadlock across all 6 permutations is found
-      if (ddaMode === 'KILL_PLAYER' && !evalRes.solvable) {
+      if (ddaMode === 'HARD' && solvableCount >= 8 && attempt >= 7) {
         break;
       }
     }
 
-    if (ddaMode === 'KILL_PLAYER') {
-      // Pick deadlocking tray (-1) if found; else sort ascending for maximum pressure
-      evaluatedCandidates.sort((a, b) => {
-        if (a.fitness === -1 && b.fitness !== -1) return -1;
-        if (b.fitness === -1 && a.fitness !== -1) return 1;
-        return a.fitness - b.fitness;
-      });
-      bestCandidate = evaluatedCandidates[0].tray;
-    } else if (ddaMode === 'HARD') {
-      // Always leave an escape path for skilled players if possible (`solvable === true`)!
+    if (ddaMode === 'HARD') {
+      // Smoothly tighten selection along solvable pool as tension rises (0.35 -> 0.92), never forced deadlock
       const solvablePool = evaluatedCandidates.filter((c) => c.solvable);
       if (solvablePool.length > 0) {
-        solvablePool.sort((a, b) => a.fitness - b.fitness); // Tightest solvable puzzle
-        const pickIdx = Math.floor(Math.random() * Math.min(3, solvablePool.length));
+        solvablePool.sort((a, b) => b.fitness - a.fitness); // Best -> tightest
+        const targetPos = Math.floor((solvablePool.length - 1) * Math.min(0.92, 0.35 + tension * 0.58));
+        const windowStart = Math.max(0, Math.min(solvablePool.length - 1, targetPos - 1));
+        const windowEnd = Math.min(solvablePool.length, windowStart + 3);
+        const pickIdx = windowStart + Math.floor(Math.random() * (windowEnd - windowStart));
         bestCandidate = solvablePool[pickIdx].tray;
       } else {
         bestCandidate = evaluatedCandidates[0].tray;
@@ -838,7 +823,7 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
     }
   }
 
-  // Safety fallback (active for EASY and HARD; intentionally skipped in KILL_PLAYER)
+  // Safety fallback (always keeps at least 1 immediately playable option when any shape fits)
   const normalFitting = weightedPool.filter((s) => getAllValidPlacements(grid, s).length > 0);
   const dotRescue = findClutchSingleDotRescue(grid);
   if (!bestCandidate) {
@@ -849,28 +834,26 @@ function generateSmartTray(grid, palette, score = 0, comboStreak = 0, meta = {})
     } else {
       bestCandidate = [pickWeightedShape(weightedPool), pickWeightedShape(weightedPool), pickWeightedShape(weightedPool)];
     }
-  } else if (
-    ddaMode !== 'KILL_PLAYER' &&
-    !bestCandidate.some((s) => getAllValidPlacements(grid, s).length > 0)
-  ) {
+  } else if (!bestCandidate.some((s) => getAllValidPlacements(grid, s).length > 0)) {
     if (normalFitting.length > 0) {
       bestCandidate[0] = pickWeightedShape(normalFitting);
     }
   }
 
-  // Ultra-rare authentic 1x1 Rescue Dot (`dot1`) — NEVER spawns casually or during KILL_PLAYER!
+  // Ultra-rare authentic 1x1 Rescue Dot (`dot1`) — gradually tapers at high post-record tension
   const movesSinceDot = meta.movesSinceDot ?? 99;
-  if (ddaMode !== 'KILL_PLAYER' && !bestCandidate.some((s) => s.id === 'dot1') && dotRescue) {
+  if (!bestCandidate.some((s) => s.id === 'dot1') && dotRescue) {
     const noNormalFits = normalFitting.length === 0;
     const isEmergencyClear = fillRatio >= 0.54 && keyClearingShapes.length === 0 && dotRescue.cleared >= 1;
     let dotChance = 0;
 
-    if (noNormalFits && tension < 0.85) {
-      dotChance = 1.0; // Miracle survival when >=2-cell shapes can no longer fit!
-    } else if (movesSinceDot >= 12 && tension < 0.75) {
-      if (dotRescue.fixesTrappedHole && dotRescue.cleared >= 1) dotChance = 0.50;
-      else if (dotRescue.fixesTrappedHole) dotChance = 0.28;
-      else if (isEmergencyClear) dotChance = isEarlyShield ? 0.45 : 0.30;
+    if (noNormalFits) {
+      dotChance = tension < 0.70 ? 0.85 : 0.35;
+    } else if (movesSinceDot >= 12 && tension < 0.80) {
+      const tensionScale = Math.max(0.35, 1.0 - tension * 0.75);
+      if (dotRescue.fixesTrappedHole && dotRescue.cleared >= 1) dotChance = 0.50 * tensionScale;
+      else if (dotRescue.fixesTrappedHole) dotChance = 0.28 * tensionScale;
+      else if (isEmergencyClear) dotChance = (isEarlyShield ? 0.45 : 0.30) * tensionScale;
     }
 
     if (dotChance > 0 && Math.random() < dotChance) {
