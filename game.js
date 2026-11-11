@@ -226,9 +226,41 @@ class BlockBlastGame {
   }
 
   /**
+   * Extracts the bottom-most color stop from a CSS gradient string for seamless iOS root fill.
+   */
+  getSurfaceBottomColor(surface) {
+    const grad = surface && surface.bgGradient ? surface.bgGradient : '';
+    const matches = grad.match(/#[0-9a-fA-F]{3,8}/g);
+    if (matches && matches.length > 0) return matches[matches.length - 1];
+    return (surface && surface.themeColor) || '#3f5aa5';
+  }
+
+  /**
+   * Aligns document root background and meta theme-color with the visible screen
+   * (Start Screen blue vs active gameplay theme) so iOS PWA safe-area edges match seamlessly.
+   */
+  syncRootSurfaceColor() {
+    const startScreen = document.getElementById('startScreen');
+    const onStartScreen = startScreen && !startScreen.classList.contains('hidden');
+    const surface = this.lastVisualSurface || this.theme;
+    const rootBg = onStartScreen ? '#2384dc' : this.getSurfaceBottomColor(surface);
+    const isStandalone =
+      window.navigator.standalone === true ||
+      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    const metaColor = onStartScreen
+      ? (isStandalone ? '#2384dc' : '#2350c9')
+      : (isStandalone ? rootBg : ((surface && surface.themeColor) || rootBg));
+
+    document.documentElement.style.background = rootBg;
+    const metaTheme = document.getElementById('metaThemeColor');
+    if (metaTheme) metaTheme.setAttribute('content', metaColor);
+  }
+
+  /**
    * Applies background gradients, CSS modal/surface variables, and meta theme color smoothly or instantly.
    */
   applyVisualSurface(surface, instant = false) {
+    this.lastVisualSurface = surface;
     const crossfadeEl = document.getElementById('bgCrossfade');
     if (crossfadeEl && !instant) {
       crossfadeEl.style.background = surface.bgGradient;
@@ -236,14 +268,13 @@ class BlockBlastGame {
       clearTimeout(this._crossfadeTimeout);
       this._crossfadeTimeout = setTimeout(() => {
         document.documentElement.style.setProperty('--bg-gradient', surface.bgGradient);
-        document.documentElement.style.background = surface.themeColor;
         document.body.style.background = surface.bgGradient;
+        this.syncRootSurfaceColor();
         crossfadeEl.style.opacity = '0';
       }, 650);
     } else {
       if (crossfadeEl) crossfadeEl.style.opacity = '0';
       document.documentElement.style.setProperty('--bg-gradient', surface.bgGradient);
-      document.documentElement.style.background = surface.themeColor;
       document.body.style.background = surface.bgGradient;
     }
 
@@ -254,8 +285,7 @@ class BlockBlastGame {
     if (surface.modalRow) document.documentElement.style.setProperty('--modal-row', surface.modalRow);
     if (surface.modalShadow) document.documentElement.style.setProperty('--modal-shadow', surface.modalShadow);
 
-    const metaTheme = document.getElementById('metaThemeColor');
-    if (metaTheme) metaTheme.setAttribute('content', surface.themeColor);
+    this.syncRootSurfaceColor();
   }
 
   applyTheme(themeId, instant = false) {
@@ -901,6 +931,7 @@ class BlockBlastGame {
       window.soundEngine.init();
       window.soundEngine.playPickup();
       hide('startScreen');
+      this.syncRootSurfaceColor();
       this.startNewGame(true);
     });
 
@@ -944,6 +975,7 @@ class BlockBlastGame {
       window.soundEngine.playPickup();
       hide('settingsModal');
       show('startScreen');
+      this.syncRootSurfaceColor();
     });
 
     const btnRevive = document.getElementById('btnRevive');
