@@ -723,43 +723,6 @@ class BlockBlastGame {
     if (currentThemeLabel && baseTheme) {
       currentThemeLabel.textContent = baseTheme.name;
     }
-
-    const autoSwitch = document.getElementById('autoPaletteSwitch');
-    const autoDesc = document.getElementById('autoPaletteDesc');
-    const autoBtn = document.getElementById('btnAutoPalette');
-    const supportsAuto = Boolean(baseTheme && baseTheme.supportsAutoPalette);
-    if (autoSwitch) {
-      autoSwitch.classList.toggle('on', Boolean(this.autoPalette && supportsAuto));
-    }
-    if (autoDesc) {
-      autoDesc.textContent = supportsAuto
-        ? (this.autoPalette ? 'Сдвиг оттенков каждые 800 оч.' : 'Фиксированная классическая палитра')
-        : 'Сейчас фиксирована выбранная тема';
-    }
-    if (autoBtn) {
-      autoBtn.style.opacity = supportsAuto ? '' : '0.78';
-    }
-
-    const trophyPill = document.getElementById('settingsTrophyPill');
-    if (trophyPill && window.questManager) {
-      trophyPill.textContent = `${window.questManager.trophies || 0} 🏆`;
-    }
-
-    const lbPill = document.getElementById('settingsLbPill');
-    const lbDesc = document.getElementById('settingsLbDesc');
-    if (window.leaderboardManager) {
-      const lm = window.leaderboardManager;
-      if (lbPill) {
-        lbPill.textContent = lm.cachedRank
-          ? `#${lm.cachedRank} в мире`
-          : (this.bestScore > 0 ? this.bestScore.toLocaleString('ru-RU') : 'Топ 50');
-      }
-      if (lbDesc) {
-        lbDesc.textContent = lm.hasCustomName()
-          ? `Игрок: ${lm.playerName}`
-          : 'Таблица лучших игроков мира';
-      }
-    }
   }
 
   resize() {
@@ -872,15 +835,6 @@ class BlockBlastGame {
       btnQuests.addEventListener('click', openQuests);
     }
 
-    // Quests Button in Settings Menu
-    const btnSettingsQuests = document.getElementById('btnSettingsQuests');
-    if (btnSettingsQuests) {
-      btnSettingsQuests.addEventListener('click', (e) => {
-        hide('settingsModal');
-        openQuests(e);
-      });
-    }
-
     // Quests Button on Start Screen
     const btnStartQuests = document.getElementById('btnStartQuests');
     if (btnStartQuests) {
@@ -909,14 +863,6 @@ class BlockBlastGame {
     if (btnLeaderboard) {
       btnLeaderboard.addEventListener('pointerup', openLeaderboard);
       btnLeaderboard.addEventListener('click', openLeaderboard);
-    }
-
-    const btnSettingsLeaderboard = document.getElementById('btnSettingsLeaderboard');
-    if (btnSettingsLeaderboard) {
-      btnSettingsLeaderboard.addEventListener('click', (e) => {
-        hide('settingsModal');
-        openLeaderboard(e);
-      });
     }
 
     const btnStartLeaderboard = document.getElementById('btnStartLeaderboard');
@@ -984,24 +930,6 @@ class BlockBlastGame {
       window.soundEngine.toggle();
       this.updateHUD();
     });
-
-    const btnAutoPalette = document.getElementById('btnAutoPalette');
-    if (btnAutoPalette) {
-      btnAutoPalette.addEventListener('click', () => {
-        window.soundEngine.playPickup();
-        const baseTheme = (window.THEMES && (window.THEMES[this.themeId] || window.THEMES.classic)) || this.theme;
-        if (!baseTheme || !baseTheme.supportsAutoPalette) {
-          this.autoPalette = true;
-          localStorage.setItem('bb_auto_palette', '1');
-          this.applyTheme('classic');
-        } else {
-          this.autoPalette = !this.autoPalette;
-          localStorage.setItem('bb_auto_palette', this.autoPalette ? '1' : '0');
-          this.applyTheme(this.themeId);
-        }
-        this.updateHUD();
-      });
-    }
 
     document.getElementById('btnRestart').addEventListener('click', () => {
       window.soundEngine.playPickup();
