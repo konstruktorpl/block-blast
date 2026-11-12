@@ -164,23 +164,51 @@ class BlockBlastGame {
     let isTransitioning = false;
     let outTimer = null;
     let inTimer = null;
+    let inRaf = null;
+
+    const resetSwapState = () => {
+      clearTimeout(outTimer);
+      clearTimeout(inTimer);
+      if (inRaf !== null) {
+        cancelAnimationFrame(inRaf);
+        inRaf = null;
+      }
+      stage.classList.remove('is-swapping');
+      pieceEl.classList.remove('is-swapping-out', 'is-swapping-prep', 'is-swapping-in');
+      isTransitioning = false;
+    };
 
     const swapToNext = () => {
+      if (document.hidden || !startScreen || startScreen.classList.contains('hidden')) {
+        if (isTransitioning) resetSwapState();
+        return;
+      }
       if (isTransitioning) return;
-      if (!startScreen || startScreen.classList.contains('hidden')) return;
       isTransitioning = true;
 
       idx = (idx + 1) % showcase.length;
       const item = showcase[idx];
 
       stage.classList.add('is-swapping');
-      pieceEl.classList.remove('is-swapping-in');
+      pieceEl.classList.remove('is-swapping-in', 'is-swapping-prep');
       pieceEl.classList.add('is-swapping-out');
 
       clearTimeout(outTimer);
       clearTimeout(inTimer);
+      if (inRaf !== null) {
+        cancelAnimationFrame(inRaf);
+        inRaf = null;
+      }
 
       outTimer = setTimeout(() => {
+        if (!startScreen || startScreen.classList.contains('hidden')) {
+          resetSwapState();
+          return;
+        }
+
+        pieceEl.classList.add('is-swapping-prep');
+        pieceEl.classList.remove('is-swapping-out');
+
         pieceEl.style.gridTemplateColumns = `repeat(${item.cols}, 28px)`;
         pieceEl.style.gridTemplateRows = `repeat(${item.rows}, 28px)`;
         pieceEl.style.setProperty('--pc-base', item.c.base);
@@ -189,31 +217,40 @@ class BlockBlastGame {
         pieceEl.style.setProperty('--pc-right', item.c.right);
         pieceEl.style.setProperty('--pc-bottom', item.c.bottom);
 
-        pieceEl.innerHTML = '';
+        const frag = document.createDocumentFragment();
         let fillIdx = 0;
         item.cells.forEach((filled) => {
           const el = document.createElement(filled ? 'i' : 'b');
           if (filled) {
-            el.style.setProperty('--cell-delay', `${fillIdx * 45}ms`);
+            el.style.setProperty('--cell-delay', `${fillIdx * 30}ms`);
             fillIdx++;
           }
-          pieceEl.appendChild(el);
+          frag.appendChild(el);
         });
+        pieceEl.textContent = '';
+        pieceEl.appendChild(frag);
 
         if (shadowEl) {
-          shadowEl.style.width = `${item.cols * 28 + 4}px`;
+          const shadowScale = ((item.cols * 28 + 4) / 112).toFixed(3);
+          stage.style.setProperty('--shadow-scale', shadowScale);
         }
 
-        pieceEl.classList.remove('is-swapping-out');
-        void pieceEl.offsetWidth;
-        stage.classList.remove('is-swapping');
-        pieceEl.classList.add('is-swapping-in');
+        inRaf = requestAnimationFrame(() => {
+          inRaf = null;
+          if (!startScreen || startScreen.classList.contains('hidden')) {
+            resetSwapState();
+            return;
+          }
+          pieceEl.classList.remove('is-swapping-prep');
+          stage.classList.remove('is-swapping');
+          pieceEl.classList.add('is-swapping-in');
 
-        inTimer = setTimeout(() => {
-          pieceEl.classList.remove('is-swapping-in');
-          isTransitioning = false;
-        }, 500);
-      }, 220);
+          inTimer = setTimeout(() => {
+            pieceEl.classList.remove('is-swapping-in');
+            isTransitioning = false;
+          }, 460);
+        });
+      }, 210);
     };
 
     stage.addEventListener('click', () => {
