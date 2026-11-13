@@ -663,9 +663,29 @@ button {
   border: none;
   background: var(--modal-row);
   color: #fff;
-  font-size: 1rem;
-  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+}
+
+.close-btn svg {
+  width: 17px;
+  height: 17px;
+  display: block;
+}
+
+.inline-svg {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -0.15em;
+  flex-shrink: 0;
+}
+
+.trophy-inline {
+  width: 1.05em;
+  height: 1.05em;
 }
 
 .settings-section-label {
@@ -729,8 +749,13 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
   flex-shrink: 0;
+}
+
+.settings-icon svg {
+  width: 19px;
+  height: 19px;
+  display: block;
 }
 
 .settings-text {
@@ -831,6 +856,9 @@ button {
 .version-pill {
   color: var(--text-accent);
   font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 /* Theme list */
@@ -937,6 +965,9 @@ button {
   font-size: 0.7rem;
   font-weight: 900;
   color: var(--text-accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
 
 /* iPhone modal */
@@ -1130,6 +1161,17 @@ button {
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
 }
 
+.revive-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.revive-bolt {
+  width: 1.1em;
+  height: 1.1em;
+}
+
 .revive-cost-pill {
   background: rgba(0, 0, 0, 0.22);
   color: #fff6cf;
@@ -1137,6 +1179,20 @@ button {
   border-radius: 999px;
   font-size: 0.95rem;
   font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-icon-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.globe-svg {
+  width: 1.15em;
+  height: 1.15em;
 }
 
 .revive-btn.locked .revive-cost-pill {
@@ -1286,6 +1342,9 @@ button {
 }
 
 .quest-timer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 0.75rem;
   font-weight: 800;
   color: #ffd43b;
@@ -1686,12 +1745,21 @@ button {
 
 .lb-rank {
   width: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   font-family: var(--font-game);
   font-weight: 800;
   font-size: 1.02rem;
   color: rgba(255, 255, 255, 0.8);
   flex-shrink: 0;
+}
+
+.lb-medal-svg {
+  width: 24px;
+  height: 24px;
+  display: block;
 }
 
 .lb-name-wrap {
@@ -1835,14 +1903,16 @@ button {
     <div class="modal-card settings-modal-card">
       <div class="modal-header">
         <h2>Настройки</h2>
-        <button class="close-btn" data-close="settingsModal">✕</button>
+        <button class="close-btn" data-close="settingsModal" aria-label="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg></button>
       </div>
 
       <div class="settings-section-label">ЗВУК И ВИД</div>
       <div class="settings-group">
         <button id="btnSound" class="settings-row">
           <div class="settings-row-left">
-            <span class="settings-icon">🔊</span>
+            <span class="settings-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path fill="#74c0fc" d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.2 5.8a8.8 8.8 0 0 1 0 12.4" fill="none" stroke="#ffd43b" stroke-width="2.2" stroke-linecap="round"/></svg>
+            </span>
             <div class="settings-text">
               <span class="settings-title">Звуки и эффекты</span>
               <span class="settings-desc" id="soundDesc">Приятные щелчки и комбо</span>
@@ -1853,7 +1923,9 @@ button {
 
         <button id="btnTheme" class="settings-row">
           <div class="settings-row-left">
-            <span class="settings-icon">🎨</span>
+            <span class="settings-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path fill="#ffd43b" d="M12 3a9 9 0 0 0 0 18c1.1 0 1.8-.7 1.8-1.6 0-.4-.2-.8-.4-1.1-.3-.3-.4-.6-.4-1 0-.9.7-1.5 1.6-1.5h1.9c2.5 0 4.5-2 4.5-4.4C21 7.1 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.4" fill="#ff6b6b"/><circle cx="10.2" cy="7.4" r="1.4" fill="#51cf66"/><circle cx="14.5" cy="7.4" r="1.4" fill="#4dabf7"/><circle cx="16.8" cy="10.8" r="1.4" fill="#cc5de8"/></svg>
+            </span>
             <div class="settings-text">
               <span class="settings-title">Оформление (Тема)</span>
               <span class="settings-desc" id="currentThemeLabel">Классика (Хамелеон)</span>
@@ -1867,7 +1939,9 @@ button {
       <div class="settings-group">
         <button id="btnRestart" class="settings-row">
           <div class="settings-row-left">
-            <span class="settings-icon">🔄</span>
+            <span class="settings-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="#63e6be" stroke-width="2.4" stroke-linecap="round"/><path fill="#63e6be" d="M20 4v5.5h-5.5z"/></svg>
+            </span>
             <div class="settings-text">
               <span class="settings-title">Начать заново</span>
               <span class="settings-desc">Сбросить поле и начать новую</span>
@@ -1878,7 +1952,9 @@ button {
 
         <button id="btnHome" class="settings-row">
           <div class="settings-row-left">
-            <span class="settings-icon">🏠</span>
+            <span class="settings-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path fill="#ffa94d" d="M12 3.2 3.5 10.4v9.8a1 1 0 0 0 1 1h5.2v-5.6h4.6v5.6h5.2a1 1 0 0 0 1-1v-9.8L12 3.2z"/><path fill="#ffe8cc" d="M10.5 15.6h3v5.6h-3z"/></svg>
+            </span>
             <div class="settings-text">
               <span class="settings-title">Главное меню</span>
               <span class="settings-desc">Вернуться на стартовый экран</span>
@@ -1891,7 +1967,7 @@ button {
       <div class="settings-footer">
         <button id="btnReloadApp" class="settings-reload-btn">
           <span>Обновить игру / очистить кэш</span>
-          <span class="version-pill">v52 🔄</span>
+          <span class="version-pill"><span>v53</span><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path fill="currentColor" d="M20.5 3.5V9H15z"/></svg></span>
         </button>
       </div>
     </div>
@@ -1902,7 +1978,7 @@ button {
     <div class="modal-card theme-modal-card">
       <div class="modal-header">
         <h2>Оформление</h2>
-        <button class="close-btn" data-close="themeModal">✕</button>
+        <button class="close-btn" data-close="themeModal" aria-label="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg></button>
       </div>
       <p class="theme-modal-tip">Выберите стиль поля и блоков. В теме «Классика» цвета могут плавно меняться во время игры.</p>
       <div id="themeList" class="theme-list"></div>
@@ -1914,7 +1990,7 @@ button {
     <div class="modal-card">
       <div class="modal-header">
         <h2>Играть на iPhone</h2>
-        <button class="close-btn" data-close="iphoneModal">✕</button>
+        <button class="close-btn" data-close="iphoneModal" aria-label="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg></button>
       </div>
       <div class="iphone-modal-body">
         <p class="modal-desc">
@@ -1962,8 +2038,8 @@ button {
 
       <div class="gameover-actions">
         <button id="btnRevive" class="revive-btn">
-          <span class="revive-main">⚡ Второй шанс</span>
-          <span id="reviveCostPill" class="revive-cost-pill">50 🏆</span>
+          <span class="revive-main"><svg class="inline-svg revive-bolt" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13 2L4.5 13.5H11L9.5 22L19.5 10.5H13L13 2z"/></svg><span>Второй шанс</span></span>
+          <span id="reviveCostPill" class="revive-cost-pill">50 <svg class="inline-svg trophy-inline" viewBox="0 0 24 24" aria-hidden="true"><path fill="#ffd43b" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.78-.37 3.22-1.63 3.61-3.06C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg></span>
         </button>
         <div id="reviveHint" class="revive-hint"></div>
 
@@ -1972,7 +2048,7 @@ button {
         </button>
 
         <button id="btnGameOverLeaderboard" class="secondary-btn">
-          <span>🌍 Глобальный рейтинг</span>
+          <span class="btn-icon-label"><svg class="inline-svg globe-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#38bdf8" fill-opacity="0.22" stroke="#74c0fc" stroke-width="1.8"/><ellipse cx="12" cy="12" rx="4.2" ry="9" fill="none" stroke="#74c0fc" stroke-width="1.6"/><path d="M3.6 9.5h16.8M3.6 14.5h16.8" fill="none" stroke="#74c0fc" stroke-width="1.5"/></svg><span>Глобальный рейтинг</span></span>
           <span id="gameOverRankBadge" class="gameover-rank-pill hidden"></span>
         </button>
       </div>
@@ -1990,18 +2066,18 @@ button {
             <span id="modalTrophyCount">0</span>
           </div>
         </div>
-        <button class="close-btn" data-close="questsModal">✕</button>
+        <button class="close-btn" data-close="questsModal" aria-label="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg></button>
       </div>
 
       <div class="quest-section-header">
         <span class="quest-section-label">ЭКСПРЕСС-КВЕСТЫ</span>
-        <span id="hourlyTimer" class="quest-timer-badge">⏱ 59:59</span>
+        <span id="hourlyTimer" class="quest-timer-badge"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="7.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 9v4l2.5 1.8M9.5 3h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span id="hourlyTimerText">59:59</span></span>
       </div>
       <div id="hourlyQuestsList" class="quest-list"></div>
 
       <div class="quest-section-header" style="margin-top: 18px;">
         <span class="quest-section-label">ЕЖЕДНЕВНЫЕ КВЕСТЫ</span>
-        <span id="dailyTimer" class="quest-timer-badge">⏱ 24ч</span>
+        <span id="dailyTimer" class="quest-timer-badge"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="7.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 9v4l2.5 1.8M9.5 3h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span id="dailyTimerText">24ч</span></span>
       </div>
       <div id="dailyQuestsList" class="quest-list"></div>
     </div>
@@ -2016,8 +2092,8 @@ button {
           <span id="lbOnlineTag" class="lb-online-tag">Онлайн</span>
         </div>
         <div class="lb-header-actions">
-          <button id="btnLbRefresh" class="close-btn lb-refresh-btn" title="Обновить рейтинг" aria-label="Обновить">↻</button>
-          <button class="close-btn" data-close="leaderboardModal">✕</button>
+          <button id="btnLbRefresh" class="close-btn lb-refresh-btn" title="Обновить рейтинг" aria-label="Обновить"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path fill="currentColor" d="M20.5 3.5V9H15z"/></svg></button>
+          <button class="close-btn" data-close="leaderboardModal" aria-label="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg></button>
         </div>
       </div>
 
@@ -5378,6 +5454,21 @@ window.FXManager = FXManager;
   <script>
 // Core 8x8 Game Engine, Touch Controller & Renderer for Block Blast!
 
+const UI_ICONS = {
+  trophy: '<svg class="inline-svg trophy-inline" viewBox="0 0 24 24" aria-hidden="true"><path fill="#ffd43b" stroke="rgba(0,0,0,0.22)" stroke-width="0.9" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.78-.37 3.22-1.63 3.61-3.06C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>',
+  check: '<svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  medal(rank) {
+    const palettes = {
+      1: { outer: '#ffd43b', inner: '#f59f00', text: '#5c3b00', ribbonL: '#3b82f6', ribbonR: '#ef4444' },
+      2: { outer: '#e2e8f0', inner: '#94a3b8', text: '#1e293b', ribbonL: '#3b82f6', ribbonR: '#ef4444' },
+      3: { outer: '#f4a261', inner: '#c26d27', text: '#421e04', ribbonL: '#3b82f6', ribbonR: '#ef4444' }
+    };
+    const p = palettes[rank];
+    if (!p) return '';
+    return `<svg class="lb-medal-svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="${p.ribbonL}" d="M7 2h4l1 6H8.5z"/><path fill="${p.ribbonR}" d="M13 2h4l-1.5 6H12z"/><circle cx="12" cy="14.5" r="7" fill="${p.outer}" stroke="${p.inner}" stroke-width="1.6"/><circle cx="12" cy="14.5" r="4.6" fill="${p.inner}" opacity="0.28"/><text x="12" y="17.3" text-anchor="middle" font-size="8.5" font-weight="900" font-family="Nunito, sans-serif" fill="${p.text}">${rank}</text></svg>`;
+  }
+};
+
 class BlockBlastGame {
   constructor() {
     this.canvas = document.getElementById('gameCanvas');
@@ -6921,18 +7012,18 @@ class BlockBlastGame {
     btn.classList.remove('hidden');
     const cost = this.getReviveCost();
     const trophies = window.questManager ? window.questManager.trophies : 0;
-    pill.textContent = `${cost} 🏆`;
+    pill.innerHTML = `${cost} ${UI_ICONS.trophy}`;
 
     if (trophies >= cost) {
       btn.classList.remove('locked');
-      hint.textContent = `Взорвёт 4×4 в центре завала и сменит фигуры • У вас: ${trophies} 🏆`;
+      hint.innerHTML = `Взорвёт 4×4 в центре завала и сменит фигуры • У вас: ${trophies} ${UI_ICONS.trophy}`;
     } else {
       btn.classList.add('locked');
       const missing = cost - trophies;
       const hasClaimable = window.questManager && window.questManager.hasUnclaimed();
-      hint.textContent = hasClaimable
-        ? 'Есть готовые награды в квестах! Нажми, чтобы забрать 🏆'
-        : `Не хватает ${missing} 🏆 — нажми, чтобы открыть квесты`;
+      hint.innerHTML = hasClaimable
+        ? `Есть готовые награды в квестах! Нажми, чтобы забрать ${UI_ICONS.trophy}`
+        : `Не хватает ${missing} ${UI_ICONS.trophy} — нажми, чтобы открыть квесты`;
     }
   }
 
@@ -7382,10 +7473,10 @@ class BlockBlastGame {
 
     // Update timer badges
     const updateTimers = () => {
-      const hTimerEl = document.getElementById('hourlyTimer');
-      const dTimerEl = document.getElementById('dailyTimer');
-      if (hTimerEl) hTimerEl.textContent = `⏱ ${qm.getRemainingHourFormatted()}`;
-      if (dTimerEl) dTimerEl.textContent = `⏱ ${qm.getRemainingDayFormatted()}`;
+      const hTimerEl = document.getElementById('hourlyTimerText');
+      const dTimerEl = document.getElementById('dailyTimerText');
+      if (hTimerEl) hTimerEl.textContent = qm.getRemainingHourFormatted();
+      if (dTimerEl) dTimerEl.textContent = qm.getRemainingDayFormatted();
     };
     updateTimers();
 
@@ -7419,11 +7510,11 @@ class BlockBlastGame {
 
         let btnHtml = '';
         if (q.claimed) {
-          btnHtml = '<button class="quest-action-btn done" disabled>Получено ✓</button>';
+          btnHtml = `<button class="quest-action-btn done" disabled>Получено ${UI_ICONS.check}</button>`;
         } else if (canClaim) {
-          btnHtml = `<button class="quest-action-btn claim" data-claim="${q.id}" data-cat="${category}">Забрать +${q.reward} 🏆</button>`;
+          btnHtml = `<button class="quest-action-btn claim" data-claim="${q.id}" data-cat="${category}">Забрать +${q.reward} ${UI_ICONS.trophy}</button>`;
         } else {
-          btnHtml = `<div class="quest-action-btn done">${q.reward} 🏆</div>`;
+          btnHtml = `<div class="quest-action-btn done">${q.reward} ${UI_ICONS.trophy}</div>`;
         }
 
         item.innerHTML = `
@@ -7561,7 +7652,11 @@ class BlockBlastGame {
 
       const rankEl = document.createElement('span');
       rankEl.className = 'lb-rank';
-      rankEl.textContent = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+      if (rank <= 3) {
+        rankEl.innerHTML = UI_ICONS.medal(rank);
+      } else {
+        rankEl.textContent = `#${rank}`;
+      }
 
       const nameWrap = document.createElement('div');
       nameWrap.className = 'lb-name-wrap';
@@ -7620,7 +7715,7 @@ class BlockBlastGame {
         </div>
         <div class="theme-right">
           <div class="theme-swatches">${swatchesHtml}</div>
-          ${isActive ? '<span class="theme-active-tag">✓ Выбрана</span>' : ''}
+          ${isActive ? `<span class="theme-active-tag">${UI_ICONS.check}<span>Выбрана</span></span>` : ''}
         </div>
       `;
 

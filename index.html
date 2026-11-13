@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=52" />
+  <link rel="stylesheet" href="style.css?v=53" />
 </head>
 <body class="on-start-screen">
   <div id="bgCrossfade" class="bg-crossfade"></div>
@@ -123,14 +123,16 @@
     <div class="modal-card settings-modal-card">
       <div class="modal-header">
         <h2>Настройки</h2>
-        <button class="close-btn" data-close="settingsModal">✕</button>
+        <button class="close-btn" data-close="settingsModal" aria-label="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg></button>
       </div>
 
       <div class="settings-section-label">ЗВУК И ВИД</div>
       <div class="settings-group">
         <button id="btnSound" class="settings-row">
           <div class="settings-row-left">
-            <span class="settings-icon">🔊</span>
+            <span class="settings-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path fill="#74c0fc" d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.2 5.8a8.8 8.8 0 0 1 0 12.4" fill="none" stroke="#ffd43b" stroke-width="2.2" stroke-linecap="round"/></svg>
+            </span>
             <div class="settings-text">
               <span class="settings-title">Звуки и эффекты</span>
               <span class="settings-desc" id="soundDesc">Приятные щелчки и комбо</span>
@@ -141,7 +143,9 @@
 
         <button id="btnTheme" class="settings-row">
           <div class="settings-row-left">
-            <span class="settings-icon">🎨</span>
+            <span class="settings-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path fill="#ffd43b" d="M12 3a9 9 0 0 0 0 18c1.1 0 1.8-.7 1.8-1.6 0-.4-.2-.8-.4-1.1-.3-.3-.4-.6-.4-1 0-.9.7-1.5 1.6-1.5h1.9c2.5 0 4.5-2 4.5-4.4C21 7.1 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.4" fill="#ff6b6b"/><circle cx="10.2" cy="7.4" r="1.4" fill="#51cf66"/><circle cx="14.5" cy="7.4" r="1.4" fill="#4dabf7"/><circle cx="16.8" cy="10.8" r="1.4" fill="#cc5de8"/></svg>
+            </span>
             <div class="settings-text">
               <span class="settings-title">Оформление (Тема)</span>
               <span class="settings-desc" id="currentThemeLabel">Классика (Хамелеон)</span>
@@ -155,7 +159,9 @@
       <div class="settings-group">
         <button id="btnRestart" class="settings-row">
           <div class="settings-row-left">
-            <span class="settings-icon">🔄</span>
+            <span class="settings-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="#63e6be" stroke-width="2.4" stroke-linecap="round"/><path fill="#63e6be" d="M20 4v5.5h-5.5z"/></svg>
+            </span>
             <div class="settings-text">
               <span class="settings-title">Начать заново</span>
               <span class="settings-desc">Сбросить поле и начать новую</span>
@@ -166,7 +172,9 @@
 
         <button id="btnHome" class="settings-row">
           <div class="settings-row-left">
-            <span class="settings-icon">🏠</span>
+            <span class="settings-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path fill="#ffa94d" d="M12 3.2 3.5 10.4v9.8a1 1 0 0 0 1 1h5.2v-5.6h4.6v5.6h5.2a1 1 0 0 0 1-1v-9.8L12 3.2z"/><path fill="#ffe8cc" d="M10.5 15.6h3v5.6h-3z"/></svg>
+            </span>
             <div class="settings-text">
               <span class="settings-title">Главное меню</span>
               <span class="settings-desc">Вернуться на стартовый экран</span>
@@ -179,7 +187,7 @@
       <div class="settings-footer">
         <button id="btnReloadApp" class="settings-reload-btn">
           <span>Обновить игру / очистить кэш</span>
-          <span class="version-pill">v52 🔄</span>
+          <span class="version-pill"><span>v53</span><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path fill="currentColor" d="M20.5 3.5V9H15z"/></svg></span>
         </button>
       </div>
     </div>
@@ -190,7 +198,7 @@
     <div class="modal-card theme-modal-card">
       <div class="modal-header">
         <h2>Оформление</h2>
-        <button class="close-btn" data-close="themeModal">✕</button>
+        <button class="close-btn" data-close="themeModal" aria-label="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg></button>
       </div>
       <p class="theme-modal-tip">Выберите стиль поля и блоков. В теме «Классика» цвета могут плавно меняться во время игры.</p>
       <div id="themeList" class="theme-list"></div>
@@ -202,7 +210,7 @@
     <div class="modal-card">
       <div class="modal-header">
         <h2>Играть на iPhone</h2>
-        <button class="close-btn" data-close="iphoneModal">✕</button>
+        <button class="close-btn" data-close="iphoneModal" aria-label="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg></button>
       </div>
       <div class="iphone-modal-body">
         <p class="modal-desc">
@@ -250,8 +258,8 @@
 
       <div class="gameover-actions">
         <button id="btnRevive" class="revive-btn">
-          <span class="revive-main">⚡ Второй шанс</span>
-          <span id="reviveCostPill" class="revive-cost-pill">50 🏆</span>
+          <span class="revive-main"><svg class="inline-svg revive-bolt" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13 2L4.5 13.5H11L9.5 22L19.5 10.5H13L13 2z"/></svg><span>Второй шанс</span></span>
+          <span id="reviveCostPill" class="revive-cost-pill">50 <svg class="inline-svg trophy-inline" viewBox="0 0 24 24" aria-hidden="true"><path fill="#ffd43b" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.78-.37 3.22-1.63 3.61-3.06C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg></span>
         </button>
         <div id="reviveHint" class="revive-hint"></div>
 
@@ -260,7 +268,7 @@
         </button>
 
         <button id="btnGameOverLeaderboard" class="secondary-btn">
-          <span>🌍 Глобальный рейтинг</span>
+          <span class="btn-icon-label"><svg class="inline-svg globe-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#38bdf8" fill-opacity="0.22" stroke="#74c0fc" stroke-width="1.8"/><ellipse cx="12" cy="12" rx="4.2" ry="9" fill="none" stroke="#74c0fc" stroke-width="1.6"/><path d="M3.6 9.5h16.8M3.6 14.5h16.8" fill="none" stroke="#74c0fc" stroke-width="1.5"/></svg><span>Глобальный рейтинг</span></span>
           <span id="gameOverRankBadge" class="gameover-rank-pill hidden"></span>
         </button>
       </div>
@@ -278,18 +286,18 @@
             <span id="modalTrophyCount">0</span>
           </div>
         </div>
-        <button class="close-btn" data-close="questsModal">✕</button>
+        <button class="close-btn" data-close="questsModal" aria-label="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg></button>
       </div>
 
       <div class="quest-section-header">
         <span class="quest-section-label">ЭКСПРЕСС-КВЕСТЫ</span>
-        <span id="hourlyTimer" class="quest-timer-badge">⏱ 59:59</span>
+        <span id="hourlyTimer" class="quest-timer-badge"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="7.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 9v4l2.5 1.8M9.5 3h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span id="hourlyTimerText">59:59</span></span>
       </div>
       <div id="hourlyQuestsList" class="quest-list"></div>
 
       <div class="quest-section-header" style="margin-top: 18px;">
         <span class="quest-section-label">ЕЖЕДНЕВНЫЕ КВЕСТЫ</span>
-        <span id="dailyTimer" class="quest-timer-badge">⏱ 24ч</span>
+        <span id="dailyTimer" class="quest-timer-badge"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="7.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 9v4l2.5 1.8M9.5 3h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span id="dailyTimerText">24ч</span></span>
       </div>
       <div id="dailyQuestsList" class="quest-list"></div>
     </div>
@@ -304,8 +312,8 @@
           <span id="lbOnlineTag" class="lb-online-tag">Онлайн</span>
         </div>
         <div class="lb-header-actions">
-          <button id="btnLbRefresh" class="close-btn lb-refresh-btn" title="Обновить рейтинг" aria-label="Обновить">↻</button>
-          <button class="close-btn" data-close="leaderboardModal">✕</button>
+          <button id="btnLbRefresh" class="close-btn lb-refresh-btn" title="Обновить рейтинг" aria-label="Обновить"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path fill="currentColor" d="M20.5 3.5V9H15z"/></svg></button>
+          <button class="close-btn" data-close="leaderboardModal" aria-label="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg></button>
         </div>
       </div>
 
@@ -336,12 +344,12 @@
     </div>
   </div>
 
-  <script src="quests.js?v=52"></script>
-  <script src="themes.js?v=52"></script>
-  <script src="audio.js?v=52"></script>
-  <script src="shapes.js?v=52"></script>
-  <script src="particles.js?v=52"></script>
-  <script src="leaderboard.js?v=52"></script>
-  <script src="game.js?v=52"></script>
+  <script src="quests.js?v=53"></script>
+  <script src="themes.js?v=53"></script>
+  <script src="audio.js?v=53"></script>
+  <script src="shapes.js?v=53"></script>
+  <script src="particles.js?v=53"></script>
+  <script src="leaderboard.js?v=53"></script>
+  <script src="game.js?v=53"></script>
 </body>
 </html>

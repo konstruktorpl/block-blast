@@ -1,5 +1,20 @@
 // Core 8x8 Game Engine, Touch Controller & Renderer for Block Blast!
 
+const UI_ICONS = {
+  trophy: '<svg class="inline-svg trophy-inline" viewBox="0 0 24 24" aria-hidden="true"><path fill="#ffd43b" stroke="rgba(0,0,0,0.22)" stroke-width="0.9" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.78-.37 3.22-1.63 3.61-3.06C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>',
+  check: '<svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  medal(rank) {
+    const palettes = {
+      1: { outer: '#ffd43b', inner: '#f59f00', text: '#5c3b00', ribbonL: '#3b82f6', ribbonR: '#ef4444' },
+      2: { outer: '#e2e8f0', inner: '#94a3b8', text: '#1e293b', ribbonL: '#3b82f6', ribbonR: '#ef4444' },
+      3: { outer: '#f4a261', inner: '#c26d27', text: '#421e04', ribbonL: '#3b82f6', ribbonR: '#ef4444' }
+    };
+    const p = palettes[rank];
+    if (!p) return '';
+    return `<svg class="lb-medal-svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="${p.ribbonL}" d="M7 2h4l1 6H8.5z"/><path fill="${p.ribbonR}" d="M13 2h4l-1.5 6H12z"/><circle cx="12" cy="14.5" r="7" fill="${p.outer}" stroke="${p.inner}" stroke-width="1.6"/><circle cx="12" cy="14.5" r="4.6" fill="${p.inner}" opacity="0.28"/><text x="12" y="17.3" text-anchor="middle" font-size="8.5" font-weight="900" font-family="Nunito, sans-serif" fill="${p.text}">${rank}</text></svg>`;
+  }
+};
+
 class BlockBlastGame {
   constructor() {
     this.canvas = document.getElementById('gameCanvas');
@@ -1543,18 +1558,18 @@ class BlockBlastGame {
     btn.classList.remove('hidden');
     const cost = this.getReviveCost();
     const trophies = window.questManager ? window.questManager.trophies : 0;
-    pill.textContent = `${cost} 🏆`;
+    pill.innerHTML = `${cost} ${UI_ICONS.trophy}`;
 
     if (trophies >= cost) {
       btn.classList.remove('locked');
-      hint.textContent = `Взорвёт 4×4 в центре завала и сменит фигуры • У вас: ${trophies} 🏆`;
+      hint.innerHTML = `Взорвёт 4×4 в центре завала и сменит фигуры • У вас: ${trophies} ${UI_ICONS.trophy}`;
     } else {
       btn.classList.add('locked');
       const missing = cost - trophies;
       const hasClaimable = window.questManager && window.questManager.hasUnclaimed();
-      hint.textContent = hasClaimable
-        ? 'Есть готовые награды в квестах! Нажми, чтобы забрать 🏆'
-        : `Не хватает ${missing} 🏆 — нажми, чтобы открыть квесты`;
+      hint.innerHTML = hasClaimable
+        ? `Есть готовые награды в квестах! Нажми, чтобы забрать ${UI_ICONS.trophy}`
+        : `Не хватает ${missing} ${UI_ICONS.trophy} — нажми, чтобы открыть квесты`;
     }
   }
 
@@ -2004,10 +2019,10 @@ class BlockBlastGame {
 
     // Update timer badges
     const updateTimers = () => {
-      const hTimerEl = document.getElementById('hourlyTimer');
-      const dTimerEl = document.getElementById('dailyTimer');
-      if (hTimerEl) hTimerEl.textContent = `⏱ ${qm.getRemainingHourFormatted()}`;
-      if (dTimerEl) dTimerEl.textContent = `⏱ ${qm.getRemainingDayFormatted()}`;
+      const hTimerEl = document.getElementById('hourlyTimerText');
+      const dTimerEl = document.getElementById('dailyTimerText');
+      if (hTimerEl) hTimerEl.textContent = qm.getRemainingHourFormatted();
+      if (dTimerEl) dTimerEl.textContent = qm.getRemainingDayFormatted();
     };
     updateTimers();
 
@@ -2041,11 +2056,11 @@ class BlockBlastGame {
 
         let btnHtml = '';
         if (q.claimed) {
-          btnHtml = '<button class="quest-action-btn done" disabled>Получено ✓</button>';
+          btnHtml = `<button class="quest-action-btn done" disabled>Получено ${UI_ICONS.check}</button>`;
         } else if (canClaim) {
-          btnHtml = `<button class="quest-action-btn claim" data-claim="${q.id}" data-cat="${category}">Забрать +${q.reward} 🏆</button>`;
+          btnHtml = `<button class="quest-action-btn claim" data-claim="${q.id}" data-cat="${category}">Забрать +${q.reward} ${UI_ICONS.trophy}</button>`;
         } else {
-          btnHtml = `<div class="quest-action-btn done">${q.reward} 🏆</div>`;
+          btnHtml = `<div class="quest-action-btn done">${q.reward} ${UI_ICONS.trophy}</div>`;
         }
 
         item.innerHTML = `
@@ -2183,7 +2198,11 @@ class BlockBlastGame {
 
       const rankEl = document.createElement('span');
       rankEl.className = 'lb-rank';
-      rankEl.textContent = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+      if (rank <= 3) {
+        rankEl.innerHTML = UI_ICONS.medal(rank);
+      } else {
+        rankEl.textContent = `#${rank}`;
+      }
 
       const nameWrap = document.createElement('div');
       nameWrap.className = 'lb-name-wrap';
@@ -2242,7 +2261,7 @@ class BlockBlastGame {
         </div>
         <div class="theme-right">
           <div class="theme-swatches">${swatchesHtml}</div>
-          ${isActive ? '<span class="theme-active-tag">✓ Выбрана</span>' : ''}
+          ${isActive ? `<span class="theme-active-tag">${UI_ICONS.check}<span>Выбрана</span></span>` : ''}
         </div>
       `;
 

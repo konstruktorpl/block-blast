@@ -645,9 +645,29 @@ button {
   border: none;
   background: var(--modal-row);
   color: #fff;
-  font-size: 1rem;
-  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+}
+
+.close-btn svg {
+  width: 17px;
+  height: 17px;
+  display: block;
+}
+
+.inline-svg {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -0.15em;
+  flex-shrink: 0;
+}
+
+.trophy-inline {
+  width: 1.05em;
+  height: 1.05em;
 }
 
 .settings-section-label {
@@ -711,8 +731,13 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
   flex-shrink: 0;
+}
+
+.settings-icon svg {
+  width: 19px;
+  height: 19px;
+  display: block;
 }
 
 .settings-text {
@@ -813,6 +838,9 @@ button {
 .version-pill {
   color: var(--text-accent);
   font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 /* Theme list */
@@ -919,6 +947,9 @@ button {
   font-size: 0.7rem;
   font-weight: 900;
   color: var(--text-accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
 
 /* iPhone modal */
@@ -1112,6 +1143,17 @@ button {
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
 }
 
+.revive-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.revive-bolt {
+  width: 1.1em;
+  height: 1.1em;
+}
+
 .revive-cost-pill {
   background: rgba(0, 0, 0, 0.22);
   color: #fff6cf;
@@ -1119,6 +1161,20 @@ button {
   border-radius: 999px;
   font-size: 0.95rem;
   font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-icon-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.globe-svg {
+  width: 1.15em;
+  height: 1.15em;
 }
 
 .revive-btn.locked .revive-cost-pill {
@@ -1268,6 +1324,9 @@ button {
 }
 
 .quest-timer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 0.75rem;
   font-weight: 800;
   color: #ffd43b;
@@ -1668,12 +1727,21 @@ button {
 
 .lb-rank {
   width: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   font-family: var(--font-game);
   font-weight: 800;
   font-size: 1.02rem;
   color: rgba(255, 255, 255, 0.8);
   flex-shrink: 0;
+}
+
+.lb-medal-svg {
+  width: 24px;
+  height: 24px;
+  display: block;
 }
 
 .lb-name-wrap {
