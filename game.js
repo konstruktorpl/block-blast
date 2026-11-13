@@ -132,11 +132,10 @@ class BlockBlastGame {
 
   initStartPieceShowcase() {
     const stage = document.getElementById('startPieceStage');
-    const bobEl = stage ? stage.querySelector('.start-piece-bob') : null;
     const pieceEl = document.getElementById('startPiece');
     const shadowEl = document.getElementById('startPieceShadow');
     const startScreen = document.getElementById('startScreen');
-    if (!stage || !bobEl || !pieceEl) return;
+    if (!stage || !pieceEl) return;
 
     const showcase = [
       { cols: 3, rows: 2, cells: [1, 1, 0, 0, 1, 1] },
@@ -150,8 +149,6 @@ class BlockBlastGame {
 
     let idx = 0;
     let isTransitioning = false;
-    let floatTimer = null;
-    let beatTimer = null;
     let outTimer = null;
     let inTimer = null;
     let inRaf = null;
@@ -161,12 +158,8 @@ class BlockBlastGame {
       Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
     const clearShowcaseTimers = () => {
-      clearTimeout(floatTimer);
-      clearTimeout(beatTimer);
       clearTimeout(outTimer);
       clearTimeout(inTimer);
-      floatTimer = null;
-      beatTimer = null;
       outTimer = null;
       inTimer = null;
       if (inRaf !== null) {
@@ -199,50 +192,9 @@ class BlockBlastGame {
 
     const pauseShowcase = () => {
       clearShowcaseTimers();
-      stage.classList.remove('is-floating', 'is-swapping');
+      stage.classList.remove('is-swapping');
       pieceEl.classList.remove('is-swapping-out', 'is-swapping-prep', 'is-swapping-in');
       isTransitioning = false;
-    };
-
-    const scheduleSwapAfterRest = (delayMs = 140) => {
-      clearTimeout(beatTimer);
-      beatTimer = setTimeout(() => {
-        beatTimer = null;
-        if (!isStartVisible()) {
-          pauseShowcase();
-          return;
-        }
-        swapToNext();
-      }, delayMs);
-    };
-
-    const startFloatCycle = () => {
-      if (!isStartVisible() || isTransitioning) return;
-      clearShowcaseTimers();
-      stage.classList.remove('is-floating');
-
-      if (prefersReducedMotion()) {
-        floatTimer = setTimeout(() => {
-          floatTimer = null;
-          scheduleSwapAfterRest(120);
-        }, 2600);
-        return;
-      }
-
-      // Force clean keyframe restart from 0% only after previous swap/settle finished
-      void bobEl.offsetWidth;
-      stage.classList.add('is-floating');
-
-      // Fallback in case animationend is throttled when tab switches
-      floatTimer = setTimeout(() => {
-        floatTimer = null;
-        if (!isStartVisible()) {
-          pauseShowcase();
-          return;
-        }
-        stage.classList.remove('is-floating');
-        scheduleSwapAfterRest(140);
-      }, 2700);
     };
 
     const swapToNext = () => {
@@ -257,21 +209,17 @@ class BlockBlastGame {
       idx = (idx + 1) % showcase.length;
       const item = showcase[idx];
 
-      // Note: Do NOT strip is-floating here if tapped mid-float; wait until pieceEl has faded to opacity: 0
       stage.classList.add('is-swapping');
       pieceEl.classList.remove('is-swapping-in', 'is-swapping-prep');
       pieceEl.classList.add('is-swapping-out');
 
-      const finishSwapOut = () => {
-        clearTimeout(outTimer);
+      outTimer = setTimeout(() => {
         outTimer = null;
         if (!isStartVisible()) {
           pauseShowcase();
           return;
         }
 
-        // Now completely invisible: reset bob container to rest pose (0, 0deg, 1) with zero visual snap
-        stage.classList.remove('is-floating');
         pieceEl.classList.add('is-swapping-prep');
         pieceEl.classList.remove('is-swapping-out');
 
@@ -305,22 +253,10 @@ class BlockBlastGame {
             inTimer = null;
             pieceEl.classList.remove('is-swapping-in');
             isTransitioning = false;
-            beatTimer = setTimeout(startFloatCycle, 110);
           }, 430);
         });
-      };
-
-      outTimer = setTimeout(finishSwapOut, prefersReducedMotion() ? 20 : 230);
+      }, prefersReducedMotion() ? 20 : 230);
     };
-
-    bobEl.addEventListener('animationend', (e) => {
-      if (e.target !== bobEl || e.animationName !== 'pieceFloatOnce') return;
-      if (!stage.classList.contains('is-floating') || isTransitioning) return;
-      clearTimeout(floatTimer);
-      floatTimer = null;
-      stage.classList.remove('is-floating');
-      scheduleSwapAfterRest(140);
-    });
 
     stage.addEventListener('click', () => {
       window.soundEngine.init();
@@ -328,22 +264,8 @@ class BlockBlastGame {
       swapToNext();
     });
 
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        pauseShowcase();
-      } else if (isStartVisible()) {
-        startFloatCycle();
-      }
-    });
-
     this.pauseStartShowcase = pauseShowcase;
-    this.resumeStartShowcase = () => {
-      if (isStartVisible() && !isTransitioning && !stage.classList.contains('is-floating')) {
-        beatTimer = setTimeout(startFloatCycle, 120);
-      }
-    };
-
-    startFloatCycle();
+    this.resumeStartShowcase = () => {};
   }
 
   /**
