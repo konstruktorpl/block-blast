@@ -152,14 +152,14 @@ button {
   position: absolute;
   width: clamp(72px, 18vw, 92px);
   height: clamp(72px, 18vw, 92px);
-  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 50%, #0369a1 100%);
+  background: var(--diamond-bg, linear-gradient(135deg, #38bdf8 0%, #0284c7 50%, #0369a1 100%));
   border-radius: 16px;
   transform: rotate(45deg) scale(0.6);
   opacity: 0;
   pointer-events: none;
   z-index: 1;
-  box-shadow: 0 4px 20px rgba(2, 132, 199, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.6);
-  transition: opacity 0.28s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: var(--diamond-shadow, 0 4px 20px rgba(2, 132, 199, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.6));
+  transition: opacity 0.28s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.6s ease;
 }
 
 .combo-diamond.active {
@@ -196,24 +196,31 @@ button {
 }
 
 .gear-btn {
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.22);
+  color: rgba(255, 255, 255, 0.92);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.15s ease;
+  transition: transform 0.12s ease, background 0.15s ease;
 }
 
 .gear-btn svg {
-  width: 30px;
-  height: 30px;
+  width: 19px;
+  height: 19px;
+  transition: transform 0.18s ease;
 }
 
 .gear-btn:active {
-  transform: rotate(40deg) scale(0.92);
+  transform: scale(0.92);
+}
+
+.gear-btn:active svg {
+  transform: rotate(40deg);
 }
 
 .current-score {
@@ -638,6 +645,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   margin-bottom: 14px;
 }
 
@@ -650,6 +658,7 @@ button {
 .close-btn {
   width: 34px;
   height: 34px;
+  flex-shrink: 0;
   border-radius: 10px;
   border: none;
   background: var(--modal-row);
@@ -1147,14 +1156,15 @@ button {
 .quest-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
+  height: 34px;
   background: rgba(0, 0, 0, 0.22);
-  border: 1.5px solid rgba(255, 212, 59, 0.45);
-  padding: 4px 10px;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  padding: 0 11px;
   border-radius: 999px;
   cursor: pointer;
   position: relative;
-  transition: transform 0.12s ease;
+  transition: transform 0.12s ease, background 0.15s ease;
 }
 
 .quest-btn:active {
@@ -1162,14 +1172,15 @@ button {
 }
 
 .trophy-icon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 
 .trophy-val {
   font-family: var(--font-game);
   font-weight: 800;
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   color: #ffd43b;
   line-height: 1;
 }
@@ -1198,20 +1209,29 @@ button {
 .quests-header-title {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.quests-header-title h2 {
+  font-size: clamp(1.12rem, 4.5vw, 1.45rem);
+  white-space: nowrap;
+  line-height: 1.15;
 }
 
 .trophy-pill {
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
   background: rgba(0, 0, 0, 0.3);
-  padding: 4px 10px;
+  padding: 4px 9px;
   border-radius: 999px;
   font-family: var(--font-game);
   font-weight: 800;
   color: #ffd43b;
-  font-size: 1rem;
+  font-size: 0.92rem;
 }
 
 .quest-tabs {
@@ -1430,23 +1450,24 @@ button {
 .lb-hud-btn {
   width: 34px;
   height: 34px;
-  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
   background: rgba(0, 0, 0, 0.22);
+  color: rgba(255, 255, 255, 0.92);
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.12s ease;
+  transition: transform 0.12s ease, background 0.15s ease;
 }
 
 .lb-hud-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
 }
 
 .lb-hud-btn:active {
-  transform: scale(0.9);
+  transform: scale(0.92);
 }
 
 /* Game Over Secondary Leaderboard Button */
@@ -1737,13 +1758,13 @@ button {
 
         <button id="btnLeaderboard" class="lb-hud-btn" aria-label="Глобальный лидерборд" title="Лидерборд">
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path fill="#9fd8ff" d="M7.5 21H2V9h5.5v12zm7.25-18h-5.5v18h5.5V3zM22 11h-5.5v10H22V11z"/>
+            <path fill="currentColor" d="M7.5 21H2V9h5.5v12zm7.25-18h-5.5v18h5.5V3zM22 11h-5.5v10H22V11z"/>
           </svg>
         </button>
 
         <button id="btnSettings" class="gear-btn" aria-label="Настройки">
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path fill="#9fd8ff" d="M19.14 12.94a7.07 7.07 0 0 0 .06-.94 7.07 7.07 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.67 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.05.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/>
+            <path fill="currentColor" d="M19.14 12.94a7.07 7.07 0 0 0 .06-.94 7.07 7.07 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.67 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.05.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/>
           </svg>
         </button>
       </div>
@@ -1870,7 +1891,7 @@ button {
       <div class="settings-footer">
         <button id="btnReloadApp" class="settings-reload-btn">
           <span>Обновить игру / очистить кэш</span>
-          <span class="version-pill">v51 🔄</span>
+          <span class="version-pill">v52 🔄</span>
         </button>
       </div>
     </div>
@@ -2364,6 +2385,9 @@ const DYNAMIC_PALETTES = [
     boardBorder: '#141c39',
     cellEmpty: '#222d56',
     cellEmptyBorder: '#18203f',
+    modalRow: '#273566',
+    diamondBg: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 50%, #0369a1 100%)',
+    diamondShadow: '0 4px 20px rgba(2, 132, 199, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.6)',
     palette: [
       { id: 'coral',  base: '#e55a60', top: '#f89498', left: '#ee7378', right: '#c64247', bottom: '#a83035', inner: '#e55a60', glow: '#f89498' },
       { id: 'orange', base: '#ea7834', top: '#f8a876', left: '#f18e50', right: '#ca5d1c', bottom: '#aa4710', inner: '#ea7834', glow: '#f8a876' },
@@ -2382,6 +2406,11 @@ const DYNAMIC_PALETTES = [
     boardBorder: '#435c47',
     cellEmpty: '#3f5644',
     cellEmptyBorder: '#344738',
+    modalBg: '#46614b',
+    modalRow: '#374e3b',
+    modalShadow: '#2a3d2d',
+    diamondBg: 'linear-gradient(135deg, #7fb85b 0%, #58933c 55%, #3f6f29 100%)',
+    diamondShadow: '0 4px 20px rgba(63, 111, 41, 0.42), inset 0 2px 4px rgba(255, 255, 255, 0.5)',
     palette: [
       { id: 'coral',    base: '#dc7382', top: '#eea0ab', left: '#e58895', right: '#bf5766', bottom: '#a64453', inner: '#dc7382', glow: '#f7b8c2' },
       { id: 'lavender', base: '#8c7bc7', top: '#b4a7df', left: '#9f90d4', right: '#7261ab', bottom: '#5a4b90', inner: '#8c7bc7', glow: '#d1c8ed' },
@@ -2399,6 +2428,9 @@ const DYNAMIC_PALETTES = [
     boardBorder: '#201338',
     cellEmpty: '#281a44',
     cellEmptyBorder: '#1d1133',
+    modalRow: '#392660',
+    diamondBg: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 50%, #5b21b6 100%)',
+    diamondShadow: '0 4px 20px rgba(124, 58, 237, 0.48), inset 0 2px 4px rgba(255, 255, 255, 0.5)',
     palette: [
       { id: 'magenta', base: '#e64980', top: '#faa2c1', left: '#f783ac', right: '#c2255c', bottom: '#9c1444', inner: '#e64980', glow: '#faa2c1' },
       { id: 'lime',    base: '#82c91e', top: '#c0eb75', left: '#a9e34b', right: '#5c940d', bottom: '#3e6605', inner: '#82c91e', glow: '#c0eb75' },
@@ -2417,6 +2449,9 @@ const DYNAMIC_PALETTES = [
     boardBorder: '#0b2e34',
     cellEmpty: '#0f3c44',
     cellEmptyBorder: '#082328',
+    modalRow: '#17545f',
+    diamondBg: 'linear-gradient(135deg, #22d3ee 0%, #0891b2 50%, #155e75 100%)',
+    diamondShadow: '0 4px 20px rgba(8, 145, 178, 0.48), inset 0 2px 4px rgba(255, 255, 255, 0.55)',
     palette: [
       { id: 'amber',   base: '#f59f00', top: '#ffe066', left: '#fcc419', right: '#d97706', bottom: '#b45309', inner: '#f59f00', glow: '#fde68a' },
       { id: 'emerald', base: '#10b981', top: '#6ee7b7', left: '#34d399', right: '#059669', bottom: '#047857', inner: '#10b981', glow: '#a7f3d0' },
@@ -2434,6 +2469,9 @@ const DYNAMIC_PALETTES = [
     boardBorder: '#380e20',
     cellEmpty: '#471429',
     cellEmptyBorder: '#2a0917',
+    modalRow: '#601d39',
+    diamondBg: 'linear-gradient(135deg, #fb7185 0%, #e11d48 50%, #9f1239 100%)',
+    diamondShadow: '0 4px 20px rgba(225, 29, 72, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.5)',
     palette: [
       { id: 'yellow',  base: '#eab308', top: '#fde047', left: '#facc15', right: '#ca8a04', bottom: '#a16207', inner: '#eab308', glow: '#fef08a' },
       { id: 'orange',  base: '#ea580c', top: '#fb923c', left: '#f97316', right: '#c2410c', bottom: '#9a3412', inner: '#ea580c', glow: '#ffedd5' },
@@ -2451,6 +2489,9 @@ const DYNAMIC_PALETTES = [
     boardBorder: '#0e2d1c',
     cellEmpty: '#143d27',
     cellEmptyBorder: '#091f13',
+    modalRow: '#1d5638',
+    diamondBg: 'linear-gradient(135deg, #34d399 0%, #059669 50%, #065f46 100%)',
+    diamondShadow: '0 4px 20px rgba(5, 150, 105, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.5)',
     palette: [
       { id: 'gold',    base: '#eab308', top: '#fef08a', left: '#fde047', right: '#ca8a04', bottom: '#854d0e', inner: '#eab308', glow: '#fef9c3' },
       { id: 'mint',    base: '#14b8a6', top: '#5eead4', left: '#2dd4bf', right: '#0f766e', bottom: '#115e59', inner: '#14b8a6', glow: '#ccfbf1' },
@@ -2481,6 +2522,8 @@ const THEMES = {
     modalBg: '#364d94',
     modalRow: '#2b3f7d',
     modalShadow: '#213063',
+    diamondBg: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 50%, #0369a1 100%)',
+    diamondShadow: '0 4px 20px rgba(2, 132, 199, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.6)',
     dockBg: 'transparent',
     dockBorder: 'transparent',
     textPrimary: '#ffffff',
@@ -2512,6 +2555,8 @@ const THEMES = {
     modalBg: '#46614b',
     modalRow: '#384f3c',
     modalShadow: '#2a3d2d',
+    diamondBg: 'linear-gradient(135deg, #7fb85b 0%, #58933c 55%, #3f6f29 100%)',
+    diamondShadow: '0 4px 20px rgba(63, 111, 41, 0.42), inset 0 2px 4px rgba(255, 255, 255, 0.5)',
     dockBg: 'transparent',
     dockBorder: 'transparent',
     textPrimary: '#ffffff',
@@ -2542,6 +2587,8 @@ const THEMES = {
     modalBg: '#191333',
     modalRow: '#241c47',
     modalShadow: '#0a0718',
+    diamondBg: 'linear-gradient(135deg, #9d4edd 0%, #5a189a 55%, #240046 100%)',
+    diamondShadow: '0 4px 22px rgba(157, 78, 221, 0.55), inset 0 2px 4px rgba(0, 245, 212, 0.45)',
     dockBg: 'rgba(14, 12, 30, 0.72)',
     dockBorder: 'rgba(132, 94, 247, 0.35)',
     textPrimary: '#f8f9fa',
@@ -2572,6 +2619,8 @@ const THEMES = {
     modalBg: '#3e2718',
     modalRow: '#2e1c10',
     modalShadow: '#1c1008',
+    diamondBg: 'linear-gradient(135deg, #e6af6c 0%, #c2723e 55%, #8c4a20 100%)',
+    diamondShadow: '0 4px 20px rgba(140, 74, 32, 0.5), inset 0 2px 4px rgba(255, 244, 230, 0.45)',
     dockBg: 'rgba(35, 21, 12, 0.7)',
     dockBorder: 'rgba(138, 90, 54, 0.45)',
     textPrimary: '#fff4e6',
@@ -2602,6 +2651,8 @@ const THEMES = {
     modalBg: '#2d2654',
     modalRow: '#393066',
     modalShadow: '#191433',
+    diamondBg: 'linear-gradient(135deg, #b197fc 0%, #845ef7 50%, #5f3dc4 100%)',
+    diamondShadow: '0 4px 20px rgba(132, 94, 247, 0.48), inset 0 2px 4px rgba(255, 255, 255, 0.55)',
     dockBg: 'rgba(26, 22, 48, 0.65)',
     dockBorder: 'rgba(116, 102, 184, 0.35)',
     textPrimary: '#ffffff',
@@ -2632,6 +2683,8 @@ const THEMES = {
     modalBg: '#0f4754',
     modalRow: '#155c6d',
     modalShadow: '#07242b',
+    diamondBg: 'linear-gradient(135deg, #22d3ee 0%, #0891b2 50%, #155e75 100%)',
+    diamondShadow: '0 4px 20px rgba(8, 145, 178, 0.48), inset 0 2px 4px rgba(255, 255, 255, 0.55)',
     dockBg: 'transparent',
     dockBorder: 'transparent',
     textPrimary: '#f0fbff',
@@ -5647,6 +5700,8 @@ class BlockBlastGame {
     if (surface.modalBg) document.documentElement.style.setProperty('--modal-bg', surface.modalBg);
     if (surface.modalRow) document.documentElement.style.setProperty('--modal-row', surface.modalRow);
     if (surface.modalShadow) document.documentElement.style.setProperty('--modal-shadow', surface.modalShadow);
+    if (surface.diamondBg) document.documentElement.style.setProperty('--diamond-bg', surface.diamondBg);
+    if (surface.diamondShadow) document.documentElement.style.setProperty('--diamond-shadow', surface.diamondShadow);
 
     this.syncRootSurfaceColor(instant);
   }
@@ -5699,9 +5754,11 @@ class BlockBlastGame {
     this.activeThemeState.cellEmpty = dyn.cellEmpty;
     this.activeThemeState.cellEmptyBorder = dyn.cellEmptyBorder;
     this.activeThemeState.palette = dyn.palette;
-    this.activeThemeState.modalBg = dyn.boardBg;
-    this.activeThemeState.modalRow = dyn.cellEmpty;
-    this.activeThemeState.modalShadow = dyn.boardBorder;
+    this.activeThemeState.modalBg = dyn.modalBg || dyn.boardBg;
+    this.activeThemeState.modalRow = dyn.modalRow || dyn.cellEmpty;
+    this.activeThemeState.modalShadow = dyn.modalShadow || dyn.boardBorder;
+    this.activeThemeState.diamondBg = dyn.diamondBg || base.diamondBg;
+    this.activeThemeState.diamondShadow = dyn.diamondShadow || base.diamondShadow;
 
     this.applyVisualSurface(this.activeThemeState, instant);
   }

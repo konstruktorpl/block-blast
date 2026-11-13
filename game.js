@@ -322,6 +322,8 @@ class BlockBlastGame {
     if (surface.modalBg) document.documentElement.style.setProperty('--modal-bg', surface.modalBg);
     if (surface.modalRow) document.documentElement.style.setProperty('--modal-row', surface.modalRow);
     if (surface.modalShadow) document.documentElement.style.setProperty('--modal-shadow', surface.modalShadow);
+    if (surface.diamondBg) document.documentElement.style.setProperty('--diamond-bg', surface.diamondBg);
+    if (surface.diamondShadow) document.documentElement.style.setProperty('--diamond-shadow', surface.diamondShadow);
 
     this.syncRootSurfaceColor(instant);
   }
@@ -374,9 +376,11 @@ class BlockBlastGame {
     this.activeThemeState.cellEmpty = dyn.cellEmpty;
     this.activeThemeState.cellEmptyBorder = dyn.cellEmptyBorder;
     this.activeThemeState.palette = dyn.palette;
-    this.activeThemeState.modalBg = dyn.boardBg;
-    this.activeThemeState.modalRow = dyn.cellEmpty;
-    this.activeThemeState.modalShadow = dyn.boardBorder;
+    this.activeThemeState.modalBg = dyn.modalBg || dyn.boardBg;
+    this.activeThemeState.modalRow = dyn.modalRow || dyn.cellEmpty;
+    this.activeThemeState.modalShadow = dyn.modalShadow || dyn.boardBorder;
+    this.activeThemeState.diamondBg = dyn.diamondBg || base.diamondBg;
+    this.activeThemeState.diamondShadow = dyn.diamondShadow || base.diamondShadow;
 
     this.applyVisualSurface(this.activeThemeState, instant);
   }
