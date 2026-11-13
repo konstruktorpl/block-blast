@@ -400,8 +400,14 @@ button {
   justify-content: center;
   width: 124px;
   height: 94px;
-  animation: pieceFloat 3.2s ease-in-out infinite;
+  transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
   will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.start-piece-stage.is-floating .start-piece-bob {
+  animation: pieceFloatOnce 2.6s cubic-bezier(0.45, 0, 0.55, 1) 1 forwards;
 }
 
 .start-piece {
@@ -414,37 +420,42 @@ button {
   grid-template-columns: repeat(3, 28px);
   grid-template-rows: repeat(2, 28px);
   gap: 1px;
+  transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
   will-change: transform, opacity;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .start-piece.is-swapping-out {
-  animation: pieceSwapOut 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
+  animation: pieceSwapOut 0.22s cubic-bezier(0.4, 0, 1, 1) forwards;
 }
 
 .start-piece.is-swapping-prep {
   opacity: 0;
-  transform: scale(0.45) rotate(10deg);
+  transform: translate3d(0, 0, 0) scale(0.48) rotate(8deg);
 }
 
 .start-piece.is-swapping-in {
-  animation: pieceSwapIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: pieceSwapIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes pieceSwapOut {
-  0%   { transform: scale(1) rotate(0deg); opacity: 1; }
-  100% { transform: scale(0.42) rotate(-10deg); opacity: 0; }
+  0%   { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); opacity: 1; }
+  100% { transform: translate3d(0, 0, 0) scale(0.46) rotate(-8deg); opacity: 0; }
 }
 
 @keyframes pieceSwapIn {
-  0%   { transform: scale(0.45) rotate(10deg); opacity: 0; }
+  0%   { transform: translate3d(0, 0, 0) scale(0.48) rotate(8deg); opacity: 0; }
   45%  { opacity: 1; }
-  72%  { transform: scale(1.06) rotate(-1.5deg); opacity: 1; }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  74%  { transform: translate3d(0, 0, 0) scale(1.05) rotate(-1deg); opacity: 1; }
+  100% { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); opacity: 1; }
 }
 
-@keyframes pieceFloat {
-  0%, 100% { transform: translateY(0px) rotate(-2deg) scale(1); }
-  50%      { transform: translateY(-9px) rotate(2deg) scale(1.03); }
+@keyframes pieceFloatOnce {
+  0%   { transform: translate3d(0, 0px, 0) rotate(0deg) scale(1); }
+  30%  { transform: translate3d(0, -8px, 0) rotate(-2deg) scale(1.025); }
+  65%  { transform: translate3d(0, -9px, 0) rotate(2deg) scale(1.03); }
+  100% { transform: translate3d(0, 0px, 0) rotate(0deg) scale(1); }
 }
 
 .start-piece i,
@@ -523,16 +534,6 @@ button {
   pointer-events: none;
 }
 
-.start-piece.is-swapping-in i {
-  animation: cellPopIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-  animation-delay: var(--cell-delay, 0ms);
-}
-
-@keyframes cellPopIn {
-  0%   { transform: scale(0.45); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
 .start-piece b {
   background: transparent;
 }
@@ -553,13 +554,19 @@ button {
   height: 14px;
   border-radius: 50%;
   background: radial-gradient(ellipse at center, var(--start-shadow-color) 0%, var(--start-shadow-mid) 55%, rgba(0, 0, 0, 0) 76%);
-  animation: pieceShadowPulse 3.2s ease-in-out infinite;
+  opacity: 0.9;
   will-change: transform, opacity;
 }
 
-@keyframes pieceShadowPulse {
-  0%, 100% { transform: scaleX(1) scaleY(1); opacity: 0.9; }
-  50%      { transform: scaleX(0.82) scaleY(0.86); opacity: 0.55; }
+.start-piece-stage.is-floating .start-piece-shadow {
+  animation: pieceShadowOnce 2.6s cubic-bezier(0.45, 0, 0.55, 1) 1 forwards;
+}
+
+@keyframes pieceShadowOnce {
+  0%   { transform: scaleX(1) scaleY(1); opacity: 0.9; }
+  30%  { transform: scaleX(0.84) scaleY(0.88); opacity: 0.58; }
+  65%  { transform: scaleX(0.82) scaleY(0.86); opacity: 0.54; }
+  100% { transform: scaleX(1) scaleY(1); opacity: 0.9; }
 }
 
 .start-buttons {
@@ -625,7 +632,7 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bg-block, .logo, .logo-top span, .logo-crown, .start-piece-bob, .start-piece, .start-piece i, .start-piece-shadow, .menu-btn.green::after {
+  .bg-block, .logo, .logo-top span, .logo-crown, .start-piece-bob, .start-piece-stage.is-floating .start-piece-bob, .start-piece, .start-piece i, .start-piece-shadow, .start-piece-stage.is-floating .start-piece-shadow, .menu-btn.green::after {
     animation: none !important;
   }
 }
