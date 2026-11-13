@@ -138,41 +138,13 @@ class BlockBlastGame {
     if (!stage || !pieceEl) return;
 
     const showcase = [
-      {
-        cols: 3, rows: 2,
-        cells: [1, 1, 0, 0, 1, 1],
-        c: { base: '#f5b72e', top: '#fcd875', left: '#f8c64c', right: '#d99a17', bottom: '#b9800c' }
-      },
-      {
-        cols: 3, rows: 2,
-        cells: [0, 1, 0, 1, 1, 1],
-        c: { base: '#f0445c', top: '#ff8a9b', left: '#ff6378', right: '#d1263e', bottom: '#a3172c' }
-      },
-      {
-        cols: 2, rows: 2,
-        cells: [1, 1, 1, 1],
-        c: { base: '#24c98b', top: '#7ef0c2', left: '#46dca1', right: '#15a66e', bottom: '#0e7d52' }
-      },
-      {
-        cols: 3, rows: 2,
-        cells: [1, 0, 0, 1, 1, 1],
-        c: { base: '#26b6e8', top: '#8ee3ff', left: '#52caf4', right: '#1494c4', bottom: '#0d7099' }
-      },
-      {
-        cols: 4, rows: 1,
-        cells: [1, 1, 1, 1],
-        c: { base: '#9c5cff', top: '#ceb0ff', left: '#b27eff', right: '#7b3de0', bottom: '#5b24b8' }
-      },
-      {
-        cols: 3, rows: 3,
-        cells: [1, 0, 0, 1, 0, 0, 1, 1, 1],
-        c: { base: '#ff8c24', top: '#ffc278', left: '#ffa64d', right: '#d96a0b', bottom: '#ab4f02' }
-      },
-      {
-        cols: 3, rows: 2,
-        cells: [0, 1, 1, 1, 1, 0],
-        c: { base: '#3d7eff', top: '#8fb8ff', left: '#5e96ff', right: '#235cd6', bottom: '#1742a8' }
-      }
+      { cols: 3, rows: 2, cells: [1, 1, 0, 0, 1, 1] },
+      { cols: 3, rows: 2, cells: [0, 1, 0, 1, 1, 1] },
+      { cols: 2, rows: 2, cells: [1, 1, 1, 1] },
+      { cols: 3, rows: 2, cells: [1, 0, 0, 1, 1, 1] },
+      { cols: 4, rows: 1, cells: [1, 1, 1, 1] },
+      { cols: 3, rows: 3, cells: [1, 0, 0, 1, 0, 0, 1, 1, 1] },
+      { cols: 3, rows: 2, cells: [0, 1, 1, 1, 1, 0] }
     ];
 
     let idx = 0;
@@ -180,6 +152,27 @@ class BlockBlastGame {
     let outTimer = null;
     let inTimer = null;
     let inRaf = null;
+
+    const applyShowcaseColor = (pieceIdx) => {
+      const theme = this.theme;
+      const palette = (theme && theme.palette && theme.palette.length > 0)
+        ? theme.palette
+        : window.THEMES.classic.palette;
+      const color = palette[pieceIdx % palette.length];
+      pieceEl.dataset.style = (theme && theme.styleType) || 'bevel3d';
+      pieceEl.style.setProperty('--pc-base', color.base);
+      pieceEl.style.setProperty('--pc-top', color.top);
+      pieceEl.style.setProperty('--pc-left', color.left);
+      pieceEl.style.setProperty('--pc-right', color.right);
+      pieceEl.style.setProperty('--pc-bottom', color.bottom);
+      pieceEl.style.setProperty('--pc-inner', color.inner || color.base);
+      pieceEl.style.setProperty('--pc-glow', color.glow || color.top || color.base);
+    };
+
+    this.syncStartPieceTheme = () => {
+      applyShowcaseColor(idx);
+    };
+    this.syncStartPieceTheme();
 
     const resetSwapState = () => {
       clearTimeout(outTimer);
@@ -226,11 +219,7 @@ class BlockBlastGame {
 
         pieceEl.style.gridTemplateColumns = `repeat(${item.cols}, 28px)`;
         pieceEl.style.gridTemplateRows = `repeat(${item.rows}, 28px)`;
-        pieceEl.style.setProperty('--pc-base', item.c.base);
-        pieceEl.style.setProperty('--pc-top', item.c.top);
-        pieceEl.style.setProperty('--pc-left', item.c.left);
-        pieceEl.style.setProperty('--pc-right', item.c.right);
-        pieceEl.style.setProperty('--pc-bottom', item.c.bottom);
+        applyShowcaseColor(idx);
 
         const frag = document.createDocumentFragment();
         let fillIdx = 0;
@@ -288,8 +277,8 @@ class BlockBlastGame {
   }
 
   /**
-   * Aligns document root background, body state, and meta theme-color with the visible screen
-   * (Start Screen blue vs active gameplay theme) so iOS PWA safe-area edges match seamlessly.
+   * Aligns document root background, body state, and meta theme-color with the active theme
+   * on both Start Screen and gameplay so iOS PWA safe-area edges match seamlessly.
    */
   syncRootSurfaceColor(instant = true) {
     const startScreen = document.getElementById('startScreen');
@@ -297,13 +286,11 @@ class BlockBlastGame {
     document.body.classList.toggle('on-start-screen', onStartScreen);
 
     const surface = this.lastVisualSurface || this.theme;
-    const rootBg = onStartScreen ? '#2384dc' : this.getSurfaceBottomColor(surface);
+    const rootBg = this.getSurfaceBottomColor(surface);
     const isStandalone =
       window.navigator.standalone === true ||
       (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-    const metaColor = onStartScreen
-      ? (isStandalone ? '#2384dc' : '#2350c9')
-      : (isStandalone ? rootBg : ((surface && surface.themeColor) || rootBg));
+    const metaColor = isStandalone ? rootBg : ((surface && surface.themeColor) || rootBg);
 
     document.documentElement.style.transition = instant ? 'none' : 'background-color 0.85s ease-in-out';
     document.documentElement.style.backgroundColor = rootBg;
@@ -331,15 +318,22 @@ class BlockBlastGame {
       document.documentElement.style.setProperty('--bg-gradient', surface.bgGradient);
     }
 
-    document.documentElement.style.setProperty('--board-bg', surface.boardBg);
-    document.documentElement.style.setProperty('--board-border', surface.boardBorder);
-    document.documentElement.style.setProperty('--text-accent', surface.textAccent || '#ffc633');
-    if (surface.modalBg) document.documentElement.style.setProperty('--modal-bg', surface.modalBg);
-    if (surface.modalRow) document.documentElement.style.setProperty('--modal-row', surface.modalRow);
-    if (surface.modalShadow) document.documentElement.style.setProperty('--modal-shadow', surface.modalShadow);
-    if (surface.diamondBg) document.documentElement.style.setProperty('--diamond-bg', surface.diamondBg);
-    if (surface.diamondShadow) document.documentElement.style.setProperty('--diamond-shadow', surface.diamondShadow);
+    const rootStyle = document.documentElement.style;
+    rootStyle.setProperty('--board-bg', surface.boardBg);
+    rootStyle.setProperty('--board-border', surface.boardBorder);
+    rootStyle.setProperty('--text-accent', surface.textAccent || '#ffc633');
+    if (surface.modalBg) rootStyle.setProperty('--modal-bg', surface.modalBg);
+    if (surface.modalRow) rootStyle.setProperty('--modal-row', surface.modalRow);
+    if (surface.modalShadow) rootStyle.setProperty('--modal-shadow', surface.modalShadow);
+    if (surface.diamondBg) rootStyle.setProperty('--diamond-bg', surface.diamondBg);
+    if (surface.diamondShadow) rootStyle.setProperty('--diamond-shadow', surface.diamondShadow);
+    rootStyle.setProperty('--start-block-bg', surface.startBlockBg || 'rgba(255, 255, 255, 0.09)');
+    rootStyle.setProperty('--start-block-border', surface.startBlockBorder || 'rgba(255, 255, 255, 0.15)');
+    rootStyle.setProperty('--start-block-highlight', surface.startBlockHighlight || 'rgba(255, 255, 255, 0.2)');
+    rootStyle.setProperty('--start-shadow-color', surface.startShadowColor || 'rgba(7, 18, 56, 0.44)');
+    rootStyle.setProperty('--start-shadow-mid', surface.startShadowMid || 'rgba(7, 18, 56, 0.16)');
 
+    if (this.syncStartPieceTheme) this.syncStartPieceTheme();
     this.syncRootSurfaceColor(instant);
   }
 
@@ -396,6 +390,11 @@ class BlockBlastGame {
     this.activeThemeState.modalShadow = dyn.modalShadow || dyn.boardBorder;
     this.activeThemeState.diamondBg = dyn.diamondBg || base.diamondBg;
     this.activeThemeState.diamondShadow = dyn.diamondShadow || base.diamondShadow;
+    this.activeThemeState.startBlockBg = dyn.startBlockBg || base.startBlockBg;
+    this.activeThemeState.startBlockBorder = dyn.startBlockBorder || base.startBlockBorder;
+    this.activeThemeState.startBlockHighlight = dyn.startBlockHighlight || base.startBlockHighlight;
+    this.activeThemeState.startShadowColor = dyn.startShadowColor || base.startShadowColor;
+    this.activeThemeState.startShadowMid = dyn.startShadowMid || base.startShadowMid;
 
     this.applyVisualSurface(this.activeThemeState, instant);
   }
@@ -960,6 +959,7 @@ class BlockBlastGame {
       window.soundEngine.playPickup();
       hide('settingsModal');
       show('startScreen');
+      if (this.syncStartPieceTheme) this.syncStartPieceTheme();
       this.syncRootSurfaceColor();
     });
 

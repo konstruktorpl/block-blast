@@ -1,15 +1,15 @@
-const CACHE_NAME = 'block-blast-ios-v53';
+const CACHE_NAME = 'block-blast-ios-v54';
 const ASSETS = [
   './',
   './index.html',
-  './style.css?v=53',
-  './quests.js?v=53',
-  './themes.js?v=53',
-  './audio.js?v=53',
-  './shapes.js?v=53',
-  './particles.js?v=53',
-  './leaderboard.js?v=53',
-  './game.js?v=53',
+  './style.css?v=54',
+  './quests.js?v=54',
+  './themes.js?v=54',
+  './audio.js?v=54',
+  './shapes.js?v=54',
+  './particles.js?v=54',
+  './leaderboard.js?v=54',
+  './game.js?v=54',
   './manifest.json',
   './icon.svg'
 ];

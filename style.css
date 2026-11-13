@@ -5,6 +5,11 @@
   --modal-bg: #364d94;
   --modal-row: #2b3f7d;
   --modal-shadow: #213063;
+  --start-block-bg: rgba(255, 255, 255, 0.09);
+  --start-block-border: rgba(255, 255, 255, 0.15);
+  --start-block-highlight: rgba(255, 255, 255, 0.2);
+  --start-shadow-color: rgba(7, 18, 56, 0.44);
+  --start-shadow-mid: rgba(7, 18, 56, 0.16);
   --font-game: "Baloo 2", "Nunito", -apple-system, "SF Pro Rounded", "Segoe UI", sans-serif;
 }
 
@@ -21,7 +26,7 @@
 html {
   width: 100%;
   height: 100%;
-  background: #2384dc;
+  background: #3f5aa5;
 }
 
 body {
@@ -48,10 +53,6 @@ body::before {
   background: var(--bg-gradient);
   z-index: 0;
   pointer-events: none;
-}
-
-body.on-start-screen::before {
-  background: #2384dc;
 }
 
 .bg-crossfade {
@@ -253,7 +254,8 @@ button {
   position: fixed;
   inset: 0;
   z-index: 90;
-  background: linear-gradient(180deg, #2350c9 0%, #1f6fd6 60%, #2384dc 100%);
+  background: var(--bg-gradient);
+  transition: background 0.6s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -281,9 +283,9 @@ button {
   position: absolute;
   bottom: -60px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.09);
-  border: 2px solid rgba(255, 255, 255, 0.14);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.18), 0 6px 14px rgba(7, 18, 56, 0.15);
+  background: var(--start-block-bg);
+  border: 2px solid var(--start-block-border);
+  box-shadow: inset 0 2px 0 var(--start-block-highlight), 0 6px 14px var(--start-shadow-mid);
   animation: bgFloatUp linear infinite;
   will-change: transform, opacity;
 }
@@ -321,7 +323,7 @@ button {
   font-family: var(--font-game);
   font-weight: 800;
   line-height: 0.9;
-  filter: drop-shadow(0 10px 12px rgba(7, 18, 56, 0.44));
+  filter: drop-shadow(0 10px 12px var(--start-shadow-color));
   animation: logoFloat 4.2s ease-in-out infinite;
   will-change: transform;
 }
@@ -364,7 +366,7 @@ button {
   left: 50%;
   top: -0.32em;
   transform: translateX(-50%);
-  filter: drop-shadow(0 4px 5px rgba(7, 18, 56, 0.35));
+  filter: drop-shadow(0 4px 5px var(--start-shadow-color));
   animation: crownTilt 3.6s ease-in-out infinite;
 }
 
@@ -453,13 +455,72 @@ button {
 }
 
 .start-piece i {
+  position: relative;
+  overflow: hidden;
   background: var(--pc-base);
   border-style: solid;
   border-width: 3px;
   border-radius: 3px;
   border-color: var(--pc-top) var(--pc-right) var(--pc-bottom) var(--pc-left);
-  box-shadow: 3px 5px 7px rgba(7, 18, 56, 0.34);
+  box-shadow: 3px 5px 7px var(--start-shadow-color);
   will-change: transform, opacity;
+}
+
+.start-piece[data-style="neon"] i {
+  background: var(--pc-inner, #110b22);
+  border-width: 2.5px;
+  border-radius: 5px;
+  border-color: var(--pc-base);
+  box-shadow: 0 0 11px var(--pc-glow, var(--pc-base)), inset 0 0 5px var(--pc-glow, var(--pc-base));
+}
+
+.start-piece[data-style="neon"] i::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 2px;
+  background: var(--pc-base);
+  opacity: 0.85;
+}
+
+.start-piece[data-style="wood"] i {
+  border-radius: 5px;
+}
+
+.start-piece[data-style="wood"] i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(14deg, transparent 36%, rgba(60, 30, 10, 0.16) 50%, transparent 64%);
+  pointer-events: none;
+}
+
+.start-piece[data-style="pastel"] i {
+  border-radius: 6px;
+}
+
+.start-piece[data-style="pastel"] i::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  width: 58%;
+  height: 24%;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.36);
+  pointer-events: none;
+}
+
+.start-piece[data-style="crystal"] i {
+  border-radius: 5px;
+}
+
+.start-piece[data-style="crystal"] i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.22) 42%, transparent 43%);
+  pointer-events: none;
 }
 
 .start-piece.is-swapping-in i {
@@ -491,7 +552,7 @@ button {
   width: 112px;
   height: 14px;
   border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(7, 18, 56, 0.44) 0%, rgba(7, 18, 56, 0.16) 55%, rgba(7, 18, 56, 0) 76%);
+  background: radial-gradient(ellipse at center, var(--start-shadow-color) 0%, var(--start-shadow-mid) 55%, rgba(0, 0, 0, 0) 76%);
   animation: pieceShadowPulse 3.2s ease-in-out infinite;
   will-change: transform, opacity;
 }
