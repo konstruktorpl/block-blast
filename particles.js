@@ -49,6 +49,26 @@ class FXManager {
     });
   }
 
+  spawnHeartSparkle(cx, cy, cellSize, colorObj) {
+    for (let i = 0; i < 3; i++) {
+      this.particles.push({
+        x: cx + (Math.random() - 0.5) * (cellSize * 0.55),
+        y: cy + (Math.random() - 0.5) * (cellSize * 0.55),
+        vx: (Math.random() - 0.5) * (cellSize * 0.8),
+        vy: -cellSize * (0.9 + Math.random() * 1.4),
+        gravity: -cellSize * 0.4,
+        size: cellSize * (0.14 + Math.random() * 0.12),
+        rotation: Math.random() * Math.PI * 2,
+        vRot: (Math.random() - 0.5) * 6,
+        color: i === 0 ? '#ffffff' : (colorObj.glow || colorObj.top || colorObj.base),
+        glow: colorObj.glow || colorObj.base,
+        age: 0,
+        life: 0.42 + Math.random() * 0.22,
+        shape: i === 0 ? 'star' : 'pixelCube'
+      });
+    }
+  }
+
   spawnLightning(x1, y1, x2, y2, color = '#00f0ff') {
     const steps = 7;
     const segments = [];

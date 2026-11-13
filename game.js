@@ -176,12 +176,13 @@ class BlockBlastGame {
     };
 
     const applyShowcaseColor = (pieceIdx) => {
-      const theme = this.theme;
-      const palette = (theme && theme.palette && theme.palette.length > 0)
-        ? theme.palette
-        : window.THEMES.classic.palette;
+      const classicTheme = (window.THEMES && window.THEMES.classic) || {};
+      const palette = (classicTheme.palette && classicTheme.palette.length > 0)
+        ? classicTheme.palette
+        : [];
+      if (palette.length === 0) return;
       const color = palette[pieceIdx % palette.length];
-      pieceEl.dataset.style = (theme && theme.styleType) || 'bevel3d';
+      pieceEl.dataset.style = classicTheme.styleType || 'bevel3d';
       pieceEl.style.setProperty('--pc-base', color.base);
       pieceEl.style.setProperty('--pc-top', color.top);
       pieceEl.style.setProperty('--pc-left', color.left);
@@ -355,16 +356,23 @@ class BlockBlastGame {
     return (surface && surface.themeColor) || '#3f5aa5';
   }
 
+  isOnStartScreen() {
+    const startScreen = document.getElementById('startScreen');
+    return Boolean(startScreen && !startScreen.classList.contains('hidden'));
+  }
+
   /**
-   * Aligns document root background, body state, and meta theme-color with the active theme
-   * on both Start Screen and gameplay so iOS PWA safe-area edges match seamlessly.
+   * Aligns document root background, body state, and meta theme-color with classic blue on the
+   * Start Screen and with the active theme during gameplay so iOS PWA safe-area edges match seamlessly.
    */
   syncRootSurfaceColor(instant = true) {
-    const startScreen = document.getElementById('startScreen');
-    const onStartScreen = Boolean(startScreen && !startScreen.classList.contains('hidden'));
+    const onStartScreen = this.isOnStartScreen();
     document.body.classList.toggle('on-start-screen', onStartScreen);
 
-    const surface = this.lastVisualSurface || this.theme;
+    const classicSurface = window.THEMES && window.THEMES.classic;
+    const surface = onStartScreen
+      ? (classicSurface || this.theme)
+      : (this.lastVisualSurface || this.theme);
     const rootBg = this.getSurfaceBottomColor(surface);
     const isStandalone =
       window.navigator.standalone === true ||
@@ -379,41 +387,50 @@ class BlockBlastGame {
 
   /**
    * Applies background gradients, CSS modal/surface variables, and meta theme color smoothly or instantly.
+   * Keeps the start menu locked to classic blue and smoothly transitions to the active theme on launch.
    */
   applyVisualSurface(surface, instant = false) {
     this.lastVisualSurface = surface;
+    const onStartScreen = this.isOnStartScreen();
+    const classicSurface = window.THEMES && window.THEMES.classic;
+    const displaySurface = onStartScreen ? (classicSurface || surface) : surface;
+
     const crossfadeEl = document.getElementById('bgCrossfade');
-    if (crossfadeEl && !instant) {
-      crossfadeEl.style.background = surface.bgGradient;
-      crossfadeEl.style.opacity = '1';
+    if (crossfadeEl && !instant && !onStartScreen) {
       clearTimeout(this._crossfadeTimeout);
+      crossfadeEl.style.transition = 'none';
+      crossfadeEl.style.opacity = '0';
+      crossfadeEl.style.background = displaySurface.bgGradient;
+      void crossfadeEl.offsetWidth;
+      crossfadeEl.style.transition = '';
+      crossfadeEl.style.opacity = '1';
       this._crossfadeTimeout = setTimeout(() => {
-        document.documentElement.style.setProperty('--bg-gradient', surface.bgGradient);
-        this.syncRootSurfaceColor(false);
+        document.documentElement.style.setProperty('--bg-gradient', displaySurface.bgGradient);
         crossfadeEl.style.opacity = '0';
       }, 860);
     } else {
+      clearTimeout(this._crossfadeTimeout);
       if (crossfadeEl) crossfadeEl.style.opacity = '0';
-      document.documentElement.style.setProperty('--bg-gradient', surface.bgGradient);
+      document.documentElement.style.setProperty('--bg-gradient', displaySurface.bgGradient);
     }
 
     const rootStyle = document.documentElement.style;
-    rootStyle.setProperty('--board-bg', surface.boardBg);
-    rootStyle.setProperty('--board-border', surface.boardBorder);
-    rootStyle.setProperty('--text-accent', surface.textAccent || '#ffc633');
-    if (surface.modalBg) rootStyle.setProperty('--modal-bg', surface.modalBg);
-    if (surface.modalRow) rootStyle.setProperty('--modal-row', surface.modalRow);
-    if (surface.modalShadow) rootStyle.setProperty('--modal-shadow', surface.modalShadow);
-    if (surface.diamondBg) rootStyle.setProperty('--diamond-bg', surface.diamondBg);
-    if (surface.diamondShadow) rootStyle.setProperty('--diamond-shadow', surface.diamondShadow);
-    rootStyle.setProperty('--start-block-bg', surface.startBlockBg || 'rgba(255, 255, 255, 0.09)');
-    rootStyle.setProperty('--start-block-border', surface.startBlockBorder || 'rgba(255, 255, 255, 0.15)');
-    rootStyle.setProperty('--start-block-highlight', surface.startBlockHighlight || 'rgba(255, 255, 255, 0.2)');
-    rootStyle.setProperty('--start-shadow-color', surface.startShadowColor || 'rgba(7, 18, 56, 0.44)');
-    rootStyle.setProperty('--start-shadow-mid', surface.startShadowMid || 'rgba(7, 18, 56, 0.16)');
+    rootStyle.setProperty('--board-bg', displaySurface.boardBg);
+    rootStyle.setProperty('--board-border', displaySurface.boardBorder);
+    rootStyle.setProperty('--text-accent', displaySurface.textAccent || '#ffc633');
+    if (displaySurface.modalBg) rootStyle.setProperty('--modal-bg', displaySurface.modalBg);
+    if (displaySurface.modalRow) rootStyle.setProperty('--modal-row', displaySurface.modalRow);
+    if (displaySurface.modalShadow) rootStyle.setProperty('--modal-shadow', displaySurface.modalShadow);
+    if (displaySurface.diamondBg) rootStyle.setProperty('--diamond-bg', displaySurface.diamondBg);
+    if (displaySurface.diamondShadow) rootStyle.setProperty('--diamond-shadow', displaySurface.diamondShadow);
+    rootStyle.setProperty('--start-block-bg', displaySurface.startBlockBg || 'rgba(255, 255, 255, 0.09)');
+    rootStyle.setProperty('--start-block-border', displaySurface.startBlockBorder || 'rgba(255, 255, 255, 0.15)');
+    rootStyle.setProperty('--start-block-highlight', displaySurface.startBlockHighlight || 'rgba(255, 255, 255, 0.2)');
+    rootStyle.setProperty('--start-shadow-color', displaySurface.startShadowColor || 'rgba(7, 18, 56, 0.44)');
+    rootStyle.setProperty('--start-shadow-mid', displaySurface.startShadowMid || 'rgba(7, 18, 56, 0.16)');
 
     if (this.syncStartPieceTheme) this.syncStartPieceTheme();
-    this.syncRootSurfaceColor(instant);
+    this.syncRootSurfaceColor(instant || onStartScreen);
   }
 
   applyTheme(themeId, instant = false) {
@@ -478,7 +495,7 @@ class BlockBlastGame {
     this.applyVisualSurface(this.activeThemeState, instant);
   }
 
-  startNewGame(runIntro = false) {
+  startNewGame(runIntro = false, animateTheme = false) {
     this.grid = Array.from({ length: 8 }, () => Array(8).fill(null));
     this.score = 0;
     this.displayedScore = 0;
@@ -494,17 +511,16 @@ class BlockBlastGame {
     this.drag.active = false;
     this.hasCountedGamePlayed = false;
 
-    this.applyTheme(this.themeId, true);
+    this.applyTheme(this.themeId, !animateTheme);
 
-    this.saveGameState();
     this.updateHUD(true);
     document.getElementById('gameOverModal').classList.add('hidden');
 
     if (runIntro) {
-      this.tray = []; // dock stays empty while intro fills and disassembles
+      this.tray = []; // dock stays empty while intro fills and reveals board
+      localStorage.removeItem('bb_saved_state');
       this.startIntroAnimation(() => {
-        // After intro finishes: generate puzzle pattern + scripted giant starter hand
-        this.seedRandomStartingBlocks();
+        // Target grid is already populated cleanly at intro end; deal opening hand with spring reveal
         this.isStartingHand = true;
         this.spawnNewTray();
         this.saveGameState();
@@ -527,6 +543,29 @@ class BlockBlastGame {
     const sawHeart = localStorage.getItem('bb_saw_heart');
     const isHeart = !sawHeart || Math.random() < 0.60;
     localStorage.setItem('bb_saw_heart', '1');
+
+    const palette = (this.theme && this.theme.palette) || window.THEMES.classic.palette;
+    const targetGrid = typeof window.generateStartingBoard === 'function'
+      ? window.generateStartingBoard(palette.length)
+      : Array.from({ length: 8 }, () => Array(8).fill(null));
+
+    const targetCells = [];
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const val = targetGrid[r][c];
+        if (val !== null) {
+          const dist = Math.hypot(r - 3.5, c - 3.5);
+          targetCells.push({
+            r,
+            c,
+            colorObj: palette[val % palette.length],
+            delay: dist * 0.042,
+            scale: 0,
+            soundPlayed: false
+          });
+        }
+      }
+    }
 
     const cells = [];
 
@@ -626,18 +665,24 @@ class BlockBlastGame {
         });
       }
     } else {
-      // Full grid diagonal wave fill
-      const palette = (this.theme && this.theme.palette) || window.THEMES.classic.palette;
+      // Full grid diagonal wave fill; cells belonging to targetGrid survive the shatter
       for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
           const delay = (r + c) * 0.032;
-          const colorObj = palette[(r * 2 + c) % palette.length];
+          const targetVal = targetGrid[r][c];
+          const isSurvivor = targetVal !== null;
+          const colorObj = isSurvivor
+            ? palette[targetVal % palette.length]
+            : palette[(r * 2 + c) % palette.length];
           cells.push({
             r,
             c,
             colorObj,
             delay,
             scale: 0,
+            isSurvivor,
+            shattered: false,
+            settleElapsed: 0,
             soundPlayed: false
           });
         }
@@ -649,7 +694,11 @@ class BlockBlastGame {
       elapsed: 0,
       isHeart,
       cells,
+      targetGrid,
+      targetCells: isHeart ? targetCells : [],
+      heartRevealStart: 1.28,
       shattered: false,
+      dissolveStarted: false,
       lastSoundTime: 0,
       onComplete
     };
@@ -658,6 +707,9 @@ class BlockBlastGame {
   skipIntroAnimation() {
     if (!this.introAnim || !this.introAnim.active) return;
     this.introAnim.active = false;
+    if (this.introAnim.targetGrid) {
+      this.grid = this.introAnim.targetGrid;
+    }
     if (typeof this.introAnim.onComplete === 'function') {
       const cb = this.introAnim.onComplete;
       this.introAnim.onComplete = null;
@@ -684,6 +736,14 @@ class BlockBlastGame {
         postReviveMoves: this.postReviveMoves
       });
     }
+    this.tray.forEach((item, idx) => {
+      if (item && !item.placed) {
+        item.scale = 0;
+        item.targetScale = 1;
+        item.appearElapsed = -idx * 0.06;
+        item.appearDuration = 0.34;
+      }
+    });
     if (this.tray.some((t) => t && t.shape && t.shape.id === 'dot1')) {
       this.movesSinceDot = 0;
     }
@@ -1013,8 +1073,7 @@ class BlockBlastGame {
       window.soundEngine.playPickup();
       hide('startScreen');
       if (this.pauseStartShowcase) this.pauseStartShowcase();
-      this.syncRootSurfaceColor();
-      this.startNewGame(true);
+      this.startNewGame(true, true);
     });
 
     // Settings (gear)
@@ -1039,8 +1098,11 @@ class BlockBlastGame {
       window.soundEngine.playPickup();
       hide('settingsModal');
       show('startScreen');
-      if (this.syncStartPieceTheme) this.syncStartPieceTheme();
-      this.syncRootSurfaceColor();
+      if (this.lastVisualSurface) {
+        this.applyVisualSurface(this.lastVisualSurface, true);
+      } else {
+        this.syncRootSurfaceColor(true);
+      }
       if (this.resumeStartShowcase) this.resumeStartShowcase();
     });
 
@@ -1752,12 +1814,23 @@ class BlockBlastGame {
       }
     }
 
-    // Intro board fill and disassemble animation
+    const easeOutBack = (x, overshoot = 1.35) => {
+      const tNorm = Math.max(0, Math.min(1, x));
+      const c3 = overshoot + 1;
+      return 1 + c3 * Math.pow(tNorm - 1, 3) + overshoot * Math.pow(tNorm - 1, 2);
+    };
+
+    // Intro board fill and reveal animation
     if (this.introAnim && this.introAnim.active) {
       this.introAnim.elapsed += dt;
       const t = this.introAnim.elapsed;
+      const { boardX, boardY, boardPad, cellSize } = this.metrics;
+      const gridOriginX = boardX + boardPad;
+      const gridOriginY = boardY + boardPad;
 
+      const phaseEnd = this.introAnim.isHeart ? 1.12 : 1.02;
       for (const cell of this.introAnim.cells) {
+        if (cell.shattered) continue;
         if (t >= cell.delay) {
           if (!cell.soundPlayed) {
             cell.soundPlayed = true;
@@ -1766,16 +1839,17 @@ class BlockBlastGame {
               window.soundEngine.playHoverTick();
             }
           }
-          if (t < 1.15) {
-            cell.scale = Math.min(1.0, cell.scale + dt * 10);
+          if (t < phaseEnd) {
+            const p = Math.min(1, (t - cell.delay) / 0.24);
+            cell.scale = p < 1 ? easeOutBack(p, 1.15) : 1.0;
           }
         }
       }
 
-      // Disassemble / Melt / Shatter phase
       if (this.introAnim.isHeart) {
-        // Heart: blocks gently shrink away without exploding into sparks
-        if (t >= 1.15) {
+        // Heart phase 2: gentle upward sparkle dissolve -> staggered radial pop-in of targetGrid
+        let anyHeartVisible = false;
+        if (t >= 1.12) {
           if (!this.introAnim.dissolveStarted) {
             this.introAnim.dissolveStarted = true;
             if (window.soundEngine && typeof window.soundEngine.playHeartDissolve === 'function') {
@@ -1783,50 +1857,99 @@ class BlockBlastGame {
             }
           }
 
-          let anyVisible = false;
           for (const cell of this.introAnim.cells) {
-            // Soft ripple shrink from top lobes down to the tip
-            const shrinkDelay = 1.15 + (cell.r * 0.04) + Math.abs(cell.c - 3.5) * 0.02;
+            const shrinkDelay = 1.12 + (cell.r * 0.032) + Math.abs(cell.c - 3.5) * 0.018;
             if (t >= shrinkDelay) {
-              cell.scale = Math.max(0, cell.scale - dt * 5.5);
+              if (!cell.sparkled) {
+                cell.sparkled = true;
+                const cx = gridOriginX + (cell.c + 0.5) * cellSize;
+                const cy = gridOriginY + (cell.r + 0.5) * cellSize;
+                if (this.fx && typeof this.fx.spawnHeartSparkle === 'function') {
+                  this.fx.spawnHeartSparkle(cx, cy, cellSize, cell.colorObj);
+                }
+              }
+              cell.scale = Math.max(0, cell.scale - dt * 6.5);
             }
-            if (cell.scale > 0.01) {
-              anyVisible = true;
+            if (cell.scale > 0.01) anyHeartVisible = true;
+          }
+        } else {
+          anyHeartVisible = true;
+        }
+
+        // Reveal actual starting board cells with radial spring bounce
+        let allTargetsSettled = true;
+        const revealStart = this.introAnim.heartRevealStart || 1.28;
+        if (t >= revealStart) {
+          for (const tCell of this.introAnim.targetCells) {
+            const localT = t - (revealStart + tCell.delay);
+            if (localT >= 0) {
+              if (!tCell.soundPlayed) {
+                tCell.soundPlayed = true;
+                if (t - this.introAnim.lastSoundTime > 0.045) {
+                  this.introAnim.lastSoundTime = t;
+                  window.soundEngine.playHoverTick();
+                }
+              }
+              const p = Math.min(1, localT / 0.28);
+              tCell.scale = p < 1 ? easeOutBack(p, 1.35) : 1.0;
+              if (p < 1) allTargetsSettled = false;
+            } else {
+              allTargetsSettled = false;
             }
           }
+        } else if (this.introAnim.targetCells.length > 0) {
+          allTargetsSettled = false;
+        }
 
-          // Complete when all cells shrink to 0 or safety timeout at 1.72s
-          if ((t >= 1.55 && !anyVisible) || t >= 1.72) {
-            this.introAnim.active = false;
-            if (typeof this.introAnim.onComplete === 'function') {
-              const cb = this.introAnim.onComplete;
-              this.introAnim.onComplete = null;
-              cb();
-            }
+        if ((t >= revealStart + 0.28 && !anyHeartVisible && allTargetsSettled) || t >= 1.92) {
+          this.introAnim.active = false;
+          if (this.introAnim.targetGrid) {
+            this.grid = this.introAnim.targetGrid;
+          }
+          if (typeof this.introAnim.onComplete === 'function') {
+            const cb = this.introAnim.onComplete;
+            this.introAnim.onComplete = null;
+            cb();
           }
         }
       } else {
-        // Full grid pattern: explosive shatter into sparks & screen shake
-        if (t >= 1.15 && !this.introAnim.shattered) {
+        // Full grid pattern: shatter ONLY non-survivor cells; targetGrid blocks stay with settle bounce
+        if (t >= 1.02 && !this.introAnim.shattered) {
           this.introAnim.shattered = true;
-          const { boardX, boardY, boardPad, cellSize } = this.metrics;
-          const gridOriginX = boardX + boardPad;
-          const gridOriginY = boardY + boardPad;
-
           for (const cell of this.introAnim.cells) {
+            if (cell.isSurvivor) {
+              cell.scale = 1.0;
+              cell.settleElapsed = 0;
+              continue;
+            }
+            cell.shattered = true;
+            cell.scale = 0;
             const cx = gridOriginX + (cell.c + 0.5) * cellSize;
             const cy = gridOriginY + (cell.r + 0.5) * cellSize;
-            const stagger = (cell.r + cell.c) * 0.012;
+            const stagger = (cell.r + cell.c) * 0.010;
             this.fx.spawnCellShatter(cx, cy, cellSize, cell.colorObj, stagger);
           }
 
           window.soundEngine.playLineClear(2, 2, false);
-          this.fx.triggerShake(6, 0.28);
+          this.fx.triggerShake(5, 0.24);
         }
 
-        // End intro at 1.55s
-        if (t >= 1.55) {
+        if (this.introAnim.shattered) {
+          for (const cell of this.introAnim.cells) {
+            if (cell.isSurvivor && !cell.shattered) {
+              cell.settleElapsed = Math.min(0.32, (cell.settleElapsed || 0) + dt);
+              const sp = cell.settleElapsed / 0.32;
+              cell.scale = 1.0 + 0.11 * Math.sin(sp * Math.PI);
+            }
+          }
+        }
+
+        // Complete at 1.38s once survivors settle cleanly
+        if (t >= 1.38) {
           this.introAnim.active = false;
+          if (this.introAnim.targetGrid) {
+            this.grid = this.introAnim.targetGrid;
+          }
           if (typeof this.introAnim.onComplete === 'function') {
             const cb = this.introAnim.onComplete;
             this.introAnim.onComplete = null;
@@ -1844,10 +1967,22 @@ class BlockBlastGame {
       this.scoreEl.textContent = this.displayedScore.toLocaleString('ru-RU');
     }
 
-    // Smooth spawn scale animation for tray pieces
+    // Staggered spring-bounce spawn animation for tray pieces
     for (const item of this.tray) {
       if (!item || item.placed) continue;
-      if (item.scale < item.targetScale) {
+      if (typeof item.appearDuration === 'number' && item.appearDuration > 0) {
+        if ((item.appearElapsed || 0) < item.appearDuration) {
+          item.appearElapsed = Math.min(item.appearDuration, (item.appearElapsed || 0) + dt);
+          if (item.appearElapsed <= 0) {
+            item.scale = 0;
+          } else {
+            const p = item.appearElapsed / item.appearDuration;
+            item.scale = p < 1 ? easeOutBack(p, 1.35) * item.targetScale : item.targetScale;
+          }
+        } else {
+          item.scale = item.targetScale;
+        }
+      } else if (item.scale < item.targetScale) {
         item.scale = Math.min(item.targetScale, item.scale + dt * 5.5);
       }
     }
@@ -1988,21 +2123,42 @@ class BlockBlastGame {
       }
     }
 
-    // 4.5. Draw Intro Animated Cells (Fill & Disassemble)
-    if (this.introAnim && this.introAnim.active && !this.introAnim.shattered) {
+    // 4.5. Draw Intro Animated Cells (Fill, Selective Shatter & Reveal)
+    if (this.introAnim && this.introAnim.active) {
       const isHeart = this.introAnim.isHeart;
-      const pulse = isHeart ? (1.0 + 0.04 * Math.sin(now * 0.015)) : 1.0;
+      let pulse = 1.0;
+      if (isHeart && this.introAnim.elapsed < 1.12 && this.introAnim.elapsed >= 0.52) {
+        const bp = this.introAnim.elapsed - 0.52;
+        const b1 = Math.exp(-Math.pow((bp - 0.12) / 0.075, 2));
+        const b2 = Math.exp(-Math.pow((bp - 0.34) / 0.085, 2)) * 0.78;
+        pulse = 1.0 + 0.075 * (b1 + b2);
+      }
 
       for (const cell of this.introAnim.cells) {
-        if (cell.scale <= 0.01) continue;
+        if (cell.shattered || cell.scale <= 0.01) continue;
         const cx = gridOriginX + (cell.c + 0.5) * cellSize;
         const cy = gridOriginY + (cell.r + 0.5) * cellSize;
-        const s = cellSize * cell.scale * pulse;
+        const cellPulse = isHeart ? pulse : 1.0;
+        const s = cellSize * cell.scale * cellPulse;
         const bx = cx - s / 2;
         const by = cy - s / 2;
         window.drawStyledBlock(ctx, bx, by, s, cell.colorObj, this.themeId, {
           alpha: Math.min(1, cell.scale * 1.15)
         });
+      }
+
+      if (this.introAnim.targetCells && this.introAnim.targetCells.length > 0) {
+        for (const tCell of this.introAnim.targetCells) {
+          if (tCell.scale <= 0.01) continue;
+          const cx = gridOriginX + (tCell.c + 0.5) * cellSize;
+          const cy = gridOriginY + (tCell.r + 0.5) * cellSize;
+          const s = cellSize * tCell.scale;
+          const bx = cx - s / 2;
+          const by = cy - s / 2;
+          window.drawStyledBlock(ctx, bx, by, s, tCell.colorObj, this.themeId, {
+            alpha: Math.min(1, tCell.scale * 1.15)
+          });
+        }
       }
     }
 
@@ -2013,6 +2169,7 @@ class BlockBlastGame {
       const item = this.tray[i];
       if (!item || item.placed) continue;
       if (this.drag.active && this.drag.slotIndex === i) continue;
+      if (item.scale <= 0.01) continue;
 
       const center = dockSlotCenters[i];
       const shape = item.shape;
