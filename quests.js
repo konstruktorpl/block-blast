@@ -10,13 +10,14 @@ class QuestManager {
     const savedHourlyExpires = parseInt(localStorage.getItem('bb_hourly_expires_at'), 10);
     const savedDailyExpires = parseInt(localStorage.getItem('bb_daily_expires_at'), 10);
 
-    this.hourlyExpiresAt = (!isNaN(savedHourlyExpires) && savedHourlyExpires > now)
+    // Keep expired timestamps intact so checkTimeExpiry() below processes missed resets/rotations
+    this.hourlyExpiresAt = (!isNaN(savedHourlyExpires) && savedHourlyExpires > 0)
       ? savedHourlyExpires
       : now + 3600 * 1000;
 
     const nextMidnight = new Date();
     nextMidnight.setHours(24, 0, 0, 0);
-    this.dailyExpiresAt = (!isNaN(savedDailyExpires) && savedDailyExpires > now)
+    this.dailyExpiresAt = (!isNaN(savedDailyExpires) && savedDailyExpires > 0)
       ? savedDailyExpires
       : nextMidnight.getTime();
 

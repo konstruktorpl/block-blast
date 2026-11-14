@@ -2025,7 +2025,7 @@ button {
       <div class="settings-footer">
         <button id="btnReloadApp" class="settings-reload-btn">
           <span>Обновить игру / очистить кэш</span>
-          <span class="version-pill"><span>v57</span><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path fill="currentColor" d="M20.5 3.5V9H15z"/></svg></span>
+          <span class="version-pill"><span>v58</span><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path fill="currentColor" d="M20.5 3.5V9H15z"/></svg></span>
         </button>
       </div>
     </div>
@@ -2195,13 +2195,14 @@ class QuestManager {
     const savedHourlyExpires = parseInt(localStorage.getItem('bb_hourly_expires_at'), 10);
     const savedDailyExpires = parseInt(localStorage.getItem('bb_daily_expires_at'), 10);
 
-    this.hourlyExpiresAt = (!isNaN(savedHourlyExpires) && savedHourlyExpires > now)
+    // Keep expired timestamps intact so checkTimeExpiry() below processes missed resets/rotations
+    this.hourlyExpiresAt = (!isNaN(savedHourlyExpires) && savedHourlyExpires > 0)
       ? savedHourlyExpires
       : now + 3600 * 1000;
 
     const nextMidnight = new Date();
     nextMidnight.setHours(24, 0, 0, 0);
-    this.dailyExpiresAt = (!isNaN(savedDailyExpires) && savedDailyExpires > now)
+    this.dailyExpiresAt = (!isNaN(savedDailyExpires) && savedDailyExpires > 0)
       ? savedDailyExpires
       : nextMidnight.getTime();
 
